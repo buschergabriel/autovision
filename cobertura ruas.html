@@ -21,6 +21,7 @@
   #row-search{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:7px;align-items:center;flex-shrink:0}
   #bairro-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:6px 8px;border-radius:2px;outline:none}
   #bairro-input:focus{border-color:var(--am)}
+  #row-density{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:7px;align-items:center;flex-shrink:0}
   #row-toolbar{background:var(--bg);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:6px;flex-shrink:0;overflow-x:auto}
   .btn{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;padding:6px 10px;border-radius:2px;cursor:pointer;white-space:nowrap;transition:all .15s;text-transform:uppercase}
   .btn.on{background:#1A1500;border-color:var(--am);color:var(--am)}
@@ -73,12 +74,13 @@
   <button class="btn sm" onclick="irGPS()">📍</button>
 </div>
 
-<div id="row-density" style="background:var(--panel);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:7px;align-items:center;flex-shrink:0">
+<div id="row-density">
   <div style="font-size:8px;color:var(--muted);letter-spacing:2px;white-space:nowrap">DENSIDADE</div>
   <button class="btn on" id="d1" onclick="setDensity(1)">🔵 Principal</button>
   <button class="btn"    id="d2" onclick="setDensity(2)">🟡 Equilibrado</button>
   <button class="btn"    id="d3" onclick="setDensity(3)">🔴 Total</button>
 </div>
+
 <div id="row-toolbar">
   <button class="btn on"  id="btnAdd"  onclick="setMode('add')">✚ Adicionar</button>
   <button class="btn"     id="btnMove" onclick="setMode('move')">✎ Mover</button>
@@ -118,6 +120,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).
 map.setView([-30.0112, -51.0960], 15);
 
 let mode = 'add';
+let densityM = 150;
 let pts = [], polyLayer = null, vtxMarkers = [], routeLayer = null, startMkr = null, gpsMkr = null;
 
 // ── STATUS ────────────────────────────────────────────────────
@@ -126,17 +129,24 @@ function st(msg, cls) {
   document.getElementById('dot').className = 'dot' + (cls ? ' '+cls : '');
 }
 
+// ── DENSITY ───────────────────────────────────────────────────
+function setDensity(d) {
+  [1,2,3].forEach(i => document.getElementById('d'+i).className = 'btn' + (i===d?' on':''));
+  densityM = d===1 ? 150 : d===2 ? 100 : 60;
+  const labels = {1:'Ruas principais (~150m)', 2:'Equilibrado (~100m)', 3:'Cobertura total (~60m)'};
+  st('Densidade: ' + labels[d] + ' — clique ▶ GERAR para aplicar', '');
+}
+
 // ── MODE ──────────────────────────────────────────────────────
 const modeConfig = {
-  add:  { btn:'btnAdd',  cls:'on',       hint:'Toque no mapa para adicionar pontos ao perímetro' },
-  move: { btn:'btnMove', cls:'on-move',  hint:'Toque e arraste um ponto amarelo para movê-lo' },
-  del:  { btn:'btnDel',  cls:'on-del',   hint:'Toque num ponto para removê-lo' },
+  add:  {btn:'btnAdd',  cls:'on',      hint:'Toque no mapa para adicionar pontos ao perímetro'},
+  move: {btn:'btnMove', cls:'on-move', hint:'Toque e arraste um ponto para movê-lo'},
+  del:  {btn:'btnDel',  cls:'on-del',  hint:'Toque num ponto para removê-lo'},
 };
 function setMode(m) {
   mode = m;
   Object.keys(modeConfig).forEach(k => {
-    const b = document.getElementById(modeConfig[k].btn);
-    b.className = 'btn' + (k===m ? ' '+modeConfig[k].cls : '');
+    document.getElementById(modeConfig[k].btn).className = 'btn' + (k===m?' '+modeConfig[k].cls:'');
   });
   redraw();
   st(modeConfig[m].hint, '');
@@ -154,24 +164,14 @@ function redraw() {
   vtxMarkers = [];
   pts.forEach((pt, i) => {
     const draggable = (mode === 'move');
-    const vxClass = mode === 'move' ? 'vx move-mode' : mode === 'del' ? 'vx del-mode' : 'vx add-mode';
+    const vxClass = mode==='move' ? 'vx move-mode' : mode==='del' ? 'vx del-mode' : 'vx add-mode';
     const mkr = L.marker(pt, {
       draggable,
       icon: L.divIcon({className:'', html:`<div class="${vxClass}"></div>`, iconSize:[13,13], iconAnchor:[6,6]})
     }).addTo(map);
-
-    mkr.on('dragend', () => {
-      pts[i] = [mkr.getLatLng().lat, mkr.getLatLng().lng];
-      redraw();
-      st(`Ponto ${i+1} movido`, 'g');
-    });
+    mkr.on('dragend', () => { pts[i] = [mkr.getLatLng().lat, mkr.getLatLng().lng]; redraw(); st(`Ponto ${i+1} movido`,'g'); });
     mkr.on('click', e => {
-      if (mode === 'del') {
-        L.DomEvent.stopPropagation(e);
-        pts.splice(i, 1);
-        redraw();
-        st(`Ponto removido — ${pts.length} restantes`, '');
-      }
+      if (mode==='del') { L.DomEvent.stopPropagation(e); pts.splice(i,1); redraw(); st(`Ponto removido — ${pts.length} restantes`,''); }
     });
     vtxMarkers.push(mkr);
   });
@@ -206,31 +206,25 @@ async function buscarBairro() {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+', Porto Alegre, RS, Brasil')}&format=json&polygon_geojson=1&limit=3`,
-      {headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/2.3'}}
+      {headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/2.4'}}
     );
     const data = await res.json();
-    const item = data.find(d=>['suburb','neighbourhood','quarter'].includes(d.type)) || data[0];
+    const item = data.find(d=>['suburb','neighbourhood','quarter'].includes(d.type))||data[0];
     if (!item) { st('Bairro não encontrado','r'); return; }
-
     const bb = item.boundingbox;
     map.fitBounds([[+bb[0],+bb[2]], [+bb[1],+bb[3]]], {padding:[20,20]});
-
     if (item.geojson && (item.geojson.type==='Polygon'||item.geojson.type==='MultiPolygon')) {
-      let coords = item.geojson.type==='Polygon'
-        ? item.geojson.coordinates[0]
-        : item.geojson.coordinates[0][0];
+      let coords = item.geojson.type==='Polygon' ? item.geojson.coordinates[0] : item.geojson.coordinates[0][0];
       const want = Math.min(28, Math.max(16, Math.floor(coords.length/4)));
       const step = Math.max(1, Math.floor(coords.length/want));
       pts = coords.filter((_,i)=>i%step===0).map(c=>[c[1],c[0]]);
       if (pts.length>1) {
         const [f,l]=[pts[0],pts[pts.length-1]];
-        if (Math.abs(f[0]-l[0])<0.00001 && Math.abs(f[1]-l[1])<0.00001) pts.pop();
+        if (Math.abs(f[0]-l[0])<0.00001&&Math.abs(f[1]-l[1])<0.00001) pts.pop();
       }
       redraw();
-      st(`"${item.display_name.split(',')[0]}" — use ✎ Mover para ajustar pontos, depois ▶ GERAR`, 'g');
-    } else {
-      st('Encontrado — desenhe o perímetro manualmente','g');
-    }
+      st(`"${item.display_name.split(',')[0]}" — use ✎ Mover para ajustar, depois ▶ GERAR`, 'g');
+    } else { st('Encontrado — desenhe o perímetro manualmente','g'); }
   } catch(e) { st('Erro na busca','r'); }
 }
 document.getElementById('bairro-input').addEventListener('keydown', e => { if(e.key==='Enter') buscarBairro(); });
@@ -238,7 +232,7 @@ document.getElementById('bairro-input').addEventListener('keydown', e => { if(e.
 // ── LIMPAR ────────────────────────────────────────────────────
 function limpar() {
   pts = [];
-  [polyLayer, routeLayer, startMkr].forEach(l=>{if(l)map.removeLayer(l);});
+  [polyLayer,routeLayer,startMkr].forEach(l=>{if(l)map.removeLayer(l);});
   vtxMarkers.forEach(m=>map.removeLayer(m));
   polyLayer=routeLayer=startMkr=null; vtxMarkers=[];
   document.getElementById('result').classList.remove('show');
@@ -250,36 +244,55 @@ function limpar() {
 function scanLine(poly, lat) {
   const xs=[];
   for (let i=0;i<poly.length;i++) {
-    const[la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
+    const [la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
     if((la<=lat&&lat<lb)||(lb<=lat&&lat<la)) xs.push(lo+(lat-la)/(lb-la)*(lp-lo));
   }
   return xs.sort((a,b)=>a-b);
 }
 
-// Zigue-zague denso com espaçamento em metros
-function coverageLawnmower(poly, spcM) {
-  const lats = poly.map(p=>p[0]);
+// Lawnmower com paridade forçada + orientação pelo quadrante do startPt
+// Plano A: paridade par garante que última faixa termina no mesmo lado
+function coverageLawnmower(poly, spcM, startPt) {
+  const lats = poly.map(p=>p[0]), lons = poly.map(p=>p[1]);
   const [loLat,hiLat] = [Math.min(...lats), Math.max(...lats)];
-  const stepLat = spcM / 111320;
+  const centerLat = (loLat+hiLat)/2;
+  const centerLon = (Math.min(...lons)+Math.max(...lons))/2;
+
+  // Número de faixas com paridade forçada para par
+  let numRows = Math.max(2, Math.round((hiLat-loLat)/(spcM/111320))+1);
+  if (numRows % 2 !== 0) numRows += 1; // força par
+
+  // Recalcula step real para cobrir toda a área com numRows pares
+  const stepLat = (hiLat-loLat) / (numRows-1);
+
+  // Orientação: quadrante do startPt determina direção de varredura
+  const goSouthToNorth = startPt ? (startPt[0] <= centerLat) : true;
+  const startLtr       = startPt ? (startPt[1] <= centerLon) : true; // W→E ou E→W
+
+  const startLatVal = goSouthToNorth ? loLat : hiLat;
+  const stepDir     = goSouthToNorth ? stepLat : -stepLat;
+
   const out = [];
-  let ltr = true;
-  for (let lat=loLat+stepLat*.5; lat<=hiLat; lat+=stepLat) {
+  let ltr = startLtr;
+
+  for (let i=0; i<numRows; i++) {
+    const lat = startLatVal + i*stepDir;
     const xs = scanLine(poly, lat);
     const row = [];
-    for (let i=0; i<xs.length-1; i+=2) {
-      const stepLon = spcM / (111320 * Math.cos(lat*Math.PI/180));
-      for (let lon=xs[i]; lon<=xs[i+1]; lon+=stepLon) row.push([lat,lon]);
+    for (let j=0; j<xs.length-1; j+=2) {
+      const stepLon = spcM/(111320*Math.cos(lat*Math.PI/180));
+      for (let lon=xs[j]; lon<=xs[j+1]; lon+=stepLon) row.push([lat,lon]);
     }
-    if (row.length) { if(!ltr) row.reverse(); out.push(...row); ltr=!ltr; }
+    if (row.length) { if (!ltr) row.reverse(); out.push(...row); ltr=!ltr; }
   }
   return out;
 }
 
-// Ponto de início: canto da borda mais próximo de um extremo do bbox
+// Ponto de início ótimo na borda
 function bestStart(poly) {
   const border=[];
   for (let i=0;i<poly.length;i++) {
-    const[la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
+    const [la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
     for (let t=0;t<=1;t+=0.1) border.push([la+(lb-la)*t,lo+(lp-lo)*t]);
   }
   const lats=poly.map(p=>p[0]),lons=poly.map(p=>p[1]);
@@ -301,16 +314,16 @@ function haversine(a,b) {
 
 function fmtT(h) {
   const hh=Math.floor(h),mm=Math.round((h-hh)*60);
-  if(mm===60) return`${hh+1}h00`;
+  if(mm===60)return`${hh+1}h00`;
   return hh>0?`${hh}h${String(mm).padStart(2,'0')}`:`${mm}min`;
 }
 
-// OSRM /route chunked — circuito fechado: adiciona startPt no final
+// OSRM /route chunked
 async function osrmRouteChunked(pts2) {
   const CHUNK=80;
   let totalDist=0, fullGeom=[];
-  for (let i=0; i<pts2.length; i+=CHUNK-1) {
-    const chunk=pts2.slice(i, i+CHUNK);
+  for (let i=0;i<pts2.length;i+=CHUNK-1) {
+    const chunk=pts2.slice(i,i+CHUNK);
     if(chunk.length<2) continue;
     const coords=chunk.map(p=>`${p[1].toFixed(6)},${p[0].toFixed(6)}`).join(';');
     const url=`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
@@ -324,17 +337,6 @@ async function osrmRouteChunked(pts2) {
   return {distM:totalDist, geom:fullGeom};
 }
 
-let densityM = 150; // default: Ruas Principais
-function setDensity(d) {
-  [1,2,3].forEach(i => {
-    const b = document.getElementById("d"+i);
-    b.className = "btn" + (i===d ? " on" : "");
-  });
-  densityM = d===1 ? 150 : d===2 ? 100 : 60;
-  const labels = {1:"Ruas principais (~150m)", 2:"Equilibrado (~100m)", 3:"Cobertura total (~60m)"};
-  st("Densidade: " + labels[d] + " — clique ▶ GERAR para aplicar", "");
-}
-
 // ── GERAR ─────────────────────────────────────────────────────
 async function gerar() {
   if(pts.length<3){st('Adicione pelo menos 3 pontos ao perímetro','r');return;}
@@ -342,30 +344,29 @@ async function gerar() {
   const cliente  = document.getElementById('iCliente').value||'—';
   const campanha = document.getElementById('iCampanha').value||'—';
 
-  st('Calculando grade de cobertura (60m)...','y');
-  const anchors = coverageLawnmower(pts, densityM);
+  st('Calculando grade com paridade forçada...','y');
+
+  // 1. Ponto de referência na borda (orienta o U, não entra na rota)
+  const startRef = bestStart(pts);
+
+  // 2. Grade lawnmower orientada pelo quadrante do startRef, faixas pares
+  const anchors = coverageLawnmower(pts, densityM, startRef);
   if(anchors.length<3){st('Área muito pequena','r');return;}
 
-  const startPt = bestStart(pts);
+  // 3. Ponto de início = primeiro ponto da grade (borda real da cobertura)
+  const startPt = anchors[0];
 
-  // Ordena anchors: começa pelos mais próximos do startPt (borda)
-  // mantém a ordem de zigue-zague mas rotaciona para começar no ponto certo
-  let minIdx=0, minDist=Infinity;
-  for(let i=0;i<anchors.length;i++){
-    const d=haversine(anchors[i],startPt);
-    if(d<minDist){minDist=d;minIdx=i;}
-  }
-  const ordered=[...anchors.slice(minIdx),...anchors.slice(0,minIdx)];
-
-  // CIRCUITO FECHADO: adiciona startPt no início e no final
-  const allPts=[startPt, ...ordered, startPt];
+  // 4. CIRCUITO FECHADO: primeiro ponto repetido no final
+  // Com paridade par, anchors[last] já está no mesmo lado de anchors[0]
+  // O retorno é curto e natural
+  const allPts = [...anchors, startPt];
 
   if(startMkr) map.removeLayer(startMkr);
-  startMkr=L.circleMarker(startPt,{radius:9,color:'#F5C800',fillColor:'#F5C800',fillOpacity:1,weight:2})
-    .addTo(map).bindPopup('<b>▶ PONTO DE INÍCIO / FIM</b>').openPopup();
+  startMkr = L.circleMarker(startPt,{radius:9,color:'#F5C800',fillColor:'#F5C800',fillOpacity:1,weight:2})
+    .addTo(map).bindPopup('<b>▶ INÍCIO / FIM DO CIRCUITO</b>').openPopup();
 
-  const nChunks=Math.ceil(allPts.length/79);
-  st(`Calculando circuito — ${allPts.length} pontos · ${nChunks} blocos OSRM...`,'y');
+  const nChunks = Math.ceil(allPts.length/79);
+  st(`Calculando circuito — ${allPts.length} pts · ${nChunks} blocos · paridade ${anchors.length%2===0?'par ✓':'ímpar'}...`,'y');
 
   let distM,geom,viaRua=true;
   try {
@@ -394,7 +395,7 @@ async function gerar() {
   document.getElementById('rInfo').innerHTML    =`<strong>▶ INÍCIO/FIM:</strong> ${startPt[0].toFixed(5)}, ${startPt[1].toFixed(5)} &nbsp;·&nbsp; ${cliente} / ${campanha}`;
   document.getElementById('rTag').innerHTML     =`<span class="rtag ${viaRua?'real':'est'}">${viaRua?'🛣 CIRCUITO VIA RUAS REAIS':'≈ ESTIMATIVA LINHA RETA'}</span>`;
   document.getElementById('result').classList.add('show');
-  st(`Circuito gerado — ${allPts.length} pontos · ${nChunks} blocos · ${viaRua?'OSRM real':'estimativa'}`, 'g');
+  st(`Circuito gerado — ${allPts.length} pts · ${nChunks} blocos · ${viaRua?'OSRM real':'estimativa'}`,'g');
 }
 </script>
 </body>
