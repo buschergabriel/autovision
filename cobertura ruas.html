@@ -2,496 +2,457 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>RUTACOB</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AUTOVISION — Rota</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root {
-  --bg: #080C0A; --panel: #0E1410; --border: #1A2420;
-  --green: #00FF88; --gdim: #00FF8818; --yellow: #FFD600;
-  --red: #FF4444; --text: #C8D8D0; --dim: #4A6058;
-  --mono: 'Space Mono', monospace; --dis: 'Syne', sans-serif;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--mono); }
+  :root {
+    --amarelo: #F5C800;
+    --bg: #0A0A0A;
+    --panel: #111111;
+    --border: #1E1E1E;
+    --text: #E0E0E0;
+    --muted: #555;
+    --green: #4CAF50;
+    --orange: #F5A623;
+    --purple: #C084FC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* MAPA ocupa tudo */
-#map { position: fixed; inset: 0; z-index: 1; }
-.leaflet-container { background: #060A08 !important; }
-.leaflet-control-zoom a { background: var(--panel) !important; color: var(--text) !important; border-color: var(--border) !important; }
+  /* HEADER */
+  #header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  #header .logo { font-size: 11px; letter-spacing: 4px; color: var(--amarelo); font-weight: bold; }
+  #header .subtitle { font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-top: 2px; }
 
-/* HEADER flutuante */
-#hdr {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px;
-  background: rgba(14,20,16,0.95); border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(8px);
-}
-.logo { font-family: var(--dis); font-size: 16px; color: var(--green); font-weight: 800; }
-.logo small { color: var(--dim); font-family: var(--mono); font-size: 9px; margin-left: 6px; }
+  /* INPUTS */
+  #inputs {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .inp-group { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 80px; }
+  .inp-label { font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+  input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 2px;
+    width: 100%;
+    outline: none;
+  }
+  input:focus { border-color: var(--amarelo); }
 
-/* GAVETA inferior */
-#drawer {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-  border-radius: 16px 16px 0 0;
-  max-height: 75vh;
-  display: flex; flex-direction: column;
-  transition: transform 0.3s ease;
-}
+  /* TOOLBAR */
+  #toolbar {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+  .btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 7px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .btn:hover { border-color: var(--amarelo); color: var(--amarelo); }
+  .btn.active { background: #1A1500; border-color: var(--amarelo); color: var(--amarelo); }
+  .btn.primary { background: var(--amarelo); border-color: var(--amarelo); color: #000; font-weight: bold; }
+  .btn.primary:hover { background: #FFD700; }
+  .btn.danger { border-color: #3A1010; color: #884444; }
+  .btn.danger:hover { border-color: #FF4444; color: #FF4444; }
 
-/* Alça da gaveta */
-#handle {
-  display: flex; align-items: center; justify-content: center;
-  padding: 10px; cursor: pointer; flex-shrink: 0;
-}
-#handle-bar {
-  width: 36px; height: 4px; background: var(--border); border-radius: 2px;
-}
+  /* MAP */
+  #map { flex: 1; cursor: crosshair; }
 
-/* Conteúdo scrollável */
-#drawer-content {
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-  flex: 1; padding: 0 14px 32px;
-}
+  /* STATUS BAR */
+  #status {
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 6px 14px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  #status .dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  #status .dot.yellow { background: var(--amarelo); box-shadow: 0 0 6px var(--amarelo); animation: pulse 1s infinite; }
+  #status .dot.red { background: #FF4444; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* Seções */
-.sec { padding: 12px 0; border-bottom: 1px solid var(--border); }
-.sec:last-child { border-bottom: none; }
-.sec-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
-
-/* Botões */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border);
-  background: var(--bg); color: var(--dim); font-family: var(--mono);
-  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.15s; white-space: nowrap;
-}
-.btn:active { opacity: 0.7; }
-.btn.pri { background: var(--gdim); border-color: #00FF8855; color: var(--green); }
-.btn.danger { border-color: #FF444433; color: #FF444488; }
-.btn:disabled { opacity: 0.3; pointer-events: none; }
-.btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.btn-full { width: 100%; }
-
-/* Upload */
-.upload {
-  border: 1px dashed var(--border); border-radius: 6px; padding: 14px;
-  text-align: center; cursor: pointer; background: var(--bg); transition: all 0.2s;
-}
-.upload:active { background: var(--gdim); border-color: #00FF8855; }
-.upload p { font-size: 11px; color: var(--dim); line-height: 1.7; }
-.upload strong { color: var(--green); }
-
-/* GPX list */
-.gpx-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 10px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: 4px; margin-top: 6px; font-size: 10px;
-}
-.gpx-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.gpx-rm { background: none; border: none; color: var(--dim); cursor: pointer; padding: 0 4px; font-size: 14px; flex-shrink: 0; }
-
-/* Steps */
-.steps { display: flex; gap: 6px; margin-bottom: 12px; }
-.step { flex: 1; padding: 8px 6px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); text-align: center; }
-.step.on { border-color: #00FF8844; background: var(--gdim); }
-.step.done { border-color: #00FF8822; opacity: 0.55; }
-.step-n { font-size: 11px; color: var(--dim); font-weight: 700; }
-.step.on .step-n { color: var(--green); }
-.step-t { font-size: 9px; color: var(--dim); margin-top: 2px; }
-.step.on .step-t { color: var(--text); }
-
-/* Stats */
-.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-.stat { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 8px 10px; }
-.stat-l { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; }
-.stat-v { font-family: var(--dis); font-size: 17px; font-weight: 700; color: var(--green); }
-.stat-u { font-size: 8px; color: var(--dim); }
-.stat.miss .stat-v { color: var(--yellow); }
-.stat.tot .stat-v { color: var(--text); font-size: 14px; }
-
-/* Progress */
-.prog-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; height: 5px; overflow: hidden; margin: 0 0 4px; }
-.prog-bar { height: 100%; background: linear-gradient(90deg, var(--green), #00DDAA); width: 0%; transition: width 0.6s; }
-.prog-lbl { display: flex; justify-content: space-between; font-size: 9px; color: var(--dim); }
-
-/* Info area */
-.area-info { font-size: 11px; color: var(--green); margin-top: 8px; }
-
-/* Overlay no mapa */
-#overlay {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-60%);
-  background: rgba(8,12,10,0.92); border: 1px solid var(--border);
-  border-radius: 8px; padding: 20px 22px; text-align: center; z-index: 50;
-  pointer-events: none; max-width: 240px;
-}
-#overlay h3 { font-family: var(--dis); font-size: 14px; color: var(--green); margin-bottom: 6px; }
-#overlay p { font-size: 10px; color: var(--dim); line-height: 1.7; }
-
-/* Loading */
-#loading {
-  position: fixed; inset: 0; background: rgba(8,12,10,0.88);
-  display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9000;
-}
-.spin { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: sp 0.8s linear infinite; margin-bottom: 12px; }
-@keyframes sp { to { transform: rotate(360deg); } }
-#lmsg { font-size: 10px; color: var(--dim); letter-spacing: 2px; }
-
-/* Toast */
-#toast {
-  position: fixed; bottom: 20px; left: 16px; right: 16px;
-  background: var(--panel); border: 1px solid #00FF8844; border-radius: 6px;
-  padding: 10px 14px; font-size: 11px; color: var(--green); z-index: 9999;
-  transform: translateY(80px); opacity: 0; transition: all 0.3s; text-align: center;
-}
-#toast.show { transform: translateY(0); opacity: 1; }
+  /* RESULT PANEL */
+  #result-panel {
+    display: none;
+    background: var(--panel);
+    border-top: 2px solid var(--amarelo);
+    padding: 12px 14px;
+    flex-shrink: 0;
+  }
+  #result-panel.show { display: block; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .result-block { }
+  .result-label { font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .result-value { font-size: 20px; font-weight: bold; color: var(--purple); }
+  .result-value span { font-size: 10px; color: var(--muted); margin-left: 3px; }
+  .result-value.orange { color: var(--orange); }
+  .result-tag { display: inline-block; margin-top: 6px; font-size: 9px; padding: 3px 8px; border-radius: 2px; letter-spacing: 1px; }
+  .result-tag.real { background: #0A1F0A; border: 1px solid #1A4A1A; color: var(--green); }
+  .result-tag.est { background: #1A1200; border: 1px solid #3A2A00; color: var(--orange); }
+  .start-info { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted); }
+  .start-info strong { color: var(--amarelo); }
 </style>
 </head>
 <body>
 
+<div id="header">
+  <div>
+    <div class="logo">AUTOVISION</div>
+    <div class="subtitle">PLANEJADOR DE ROTA</div>
+  </div>
+  <div style="font-size:9px;color:#333;letter-spacing:1px;">v1.0</div>
+</div>
+
+<div id="inputs">
+  <div class="inp-group">
+    <div class="inp-label">Cliente</div>
+    <input type="text" id="cliente" placeholder="ex: CYBER" value="CYBER"/>
+  </div>
+  <div class="inp-group">
+    <div class="inp-label">Campanha</div>
+    <input type="text" id="campanha" placeholder="ex: Junho 2026" value="Junho 2026"/>
+  </div>
+  <div class="inp-group" style="max-width:70px;">
+    <div class="inp-label">Horas</div>
+    <input type="number" id="horas" value="3" min="0.5" max="12" step="0.5"/>
+  </div>
+</div>
+
+<div id="toolbar">
+  <button class="btn active" id="btn-perim" onclick="setMode('perim')">✏ Perímetro</button>
+  <button class="btn primary" id="btn-gerar" onclick="gerar()">▶ GERAR</button>
+  <button class="btn danger" onclick="limpar()">✕ Limpar</button>
+</div>
+
 <div id="map"></div>
 
-<div id="overlay">
-  <h3>Como usar</h3>
-  <p>1. Toque <strong style="color:var(--green)">Começar</strong> e trace o perímetro no mapa<br>2. Suba as pedaladas GPX<br>3. Calcule</p>
+<div id="status">
+  <div class="dot" id="dot"></div>
+  <span id="status-text">Toque no mapa para desenhar o perímetro da área</span>
 </div>
 
-<div id="hdr">
-  <div class="logo">RUTACOB <small>v3.2</small></div>
-  <div style="font-size:9px;color:var(--dim);letter-spacing:1px;">Porto Alegre · RS</div>
-</div>
-
-<!-- GAVETA -->
-<div id="drawer">
-  <div id="handle" onclick="toggleDrawer()">
-    <div id="handle-bar"></div>
+<div id="result-panel">
+  <div class="result-grid">
+    <div class="result-block">
+      <div class="result-label">1 volta completa</div>
+      <div class="result-value" id="r-volta-km">—<span>km</span></div>
+      <div class="result-value" id="r-volta-t" style="font-size:16px;margin-top:2px;">—</div>
+    </div>
+    <div class="result-block">
+      <div class="result-label" id="r-horas-label">— h de veiculação</div>
+      <div class="result-value orange" id="r-voltas">—<span>voltas</span></div>
+      <div class="result-value orange" id="r-total-km" style="font-size:16px;margin-top:2px;">—<span>km total</span></div>
+    </div>
   </div>
-
-  <div id="drawer-content">
-
-    <!-- STEPS -->
-    <div class="steps">
-      <div class="step on" id="s1"><div class="step-n">1</div><div class="step-t">Área</div></div>
-      <div class="step" id="s2"><div class="step-n">2</div><div class="step-t">GPX</div></div>
-      <div class="step" id="s3"><div class="step-n">3</div><div class="step-t">Calcular</div></div>
-    </div>
-
-    <!-- PASSO 1: ÁREA -->
-    <div class="sec">
-      <div class="sec-label">1 — Área do bairro</div>
-      <div class="btn-row">
-        <button class="btn pri" id="btn-start" onclick="startDraw()">✏ Começar a desenhar</button>
-        <button class="btn" id="btn-finish" onclick="finishDraw()" disabled>✓ Fechar</button>
-        <button class="btn danger" id="btn-clear" onclick="clearArea()" style="display:none">✕ Limpar</button>
-      </div>
-      <div id="area-info" class="area-info" style="display:none"></div>
-      <div style="margin-top:10px;font-size:9px;color:var(--dim);line-height:1.6;">
-        Ou suba um GPX de perímetro:
-      </div>
-      <div class="upload" style="margin-top:6px;" onclick="document.getElementById('inp-per').click()">
-        <p><strong>GPX de perímetro</strong><br>volta ao redor do bairro</p>
-      </div>
-      <input type="file" id="inp-per" accept=".gpx" style="display:none" onchange="loadPerim(this)">
-    </div>
-
-    <!-- PASSO 2: PEDALADAS -->
-    <div class="sec">
-      <div class="sec-label">2 — Pedaladas dentro da área</div>
-      <div class="upload" onclick="document.getElementById('inp-rides').click()">
-        <p><strong>Subir GPX das pedaladas</strong><br>pode selecionar vários de uma vez</p>
-      </div>
-      <input type="file" id="inp-rides" accept=".gpx" multiple style="display:none" onchange="loadRides(this)">
-      <div id="ride-list"></div>
-    </div>
-
-    <!-- PASSO 3: CALCULAR -->
-    <div class="sec">
-      <div class="sec-label">3 — Calcular</div>
-      <button class="btn pri btn-full" id="btn-calc" onclick="calculate()" disabled>⚡ Calcular cobertura</button>
-    </div>
-
-    <!-- RESULTADO -->
-    <div class="sec" id="sec-result" style="display:none">
-      <div class="sec-label">Resultado</div>
-      <div class="stats">
-        <div class="stat"><div class="stat-l">Coberto</div><div class="stat-v" id="sv-cov">—</div><div class="stat-u">km</div></div>
-        <div class="stat miss"><div class="stat-l">Faltando</div><div class="stat-v" id="sv-mis">—</div><div class="stat-u">km</div></div>
-        <div class="stat tot"><div class="stat-l">Total</div><div class="stat-v" id="sv-tot">—</div><div class="stat-u">km</div></div>
-      </div>
-      <div class="prog-wrap"><div class="prog-bar" id="prog"></div></div>
-      <div class="prog-lbl"><span id="pct">0%</span><span>cobertura</span></div>
-    </div>
-
-  </div>
+  <div class="start-info" id="start-info"></div>
+  <div id="r-tag"></div>
 </div>
-
-<div id="loading"><div class="spin"></div><p id="lmsg">CARREGANDO...</p></div>
-<div id="toast"></div>
 
 <script>
-const S = {
-  drawing: false, perimPts: [], perimLayer: null,
-  drawMarkers: [], drawLine: null,
-  rides: [], rideLayer: null,
-  streetL: { cov: null, miss: null }, areaOk: false,
-  drawerOpen: true,
-};
+const SPEED_KMH = 15;
+const OSRM = 'https://router.project-osrm.org';
 
-// MAPA
-const map = L.map('map', { center:[-30.03,-51.20], zoom:13, zoomControl:true });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution:'© OSM © Carto', maxZoom:19
-}).addTo(map);
+// Map
+const map = L.map('map', { zoomControl: true, attributionControl: false });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+map.setView([-30.0112, -51.0960], 14); // Rubem Berta, Porto Alegre
 
-// Ajusta mapa para não ficar sob header e gaveta
-function resizeMap() {
-  const hh = document.getElementById('hdr').offsetHeight;
-  const dh = document.getElementById('drawer').offsetHeight;
-  document.getElementById('map').style.top = hh + 'px';
-  document.getElementById('map').style.height = (window.innerHeight - hh - dh) + 'px';
-  map.invalidateSize();
+// State
+let mode = 'perim';
+let perimPts = [];
+let perimLayer = null;
+let routeLayer = null;
+let startMarker = null;
+let anchorsLayer = null;
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.btn[id^=btn-]').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('btn-' + m);
+  if (el) el.classList.add('active');
 }
 
-// GAVETA
-function toggleDrawer() {
-  S.drawerOpen = !S.drawerOpen;
-  const d = document.getElementById('drawer');
-  const content = document.getElementById('drawer-content');
-  content.style.display = S.drawerOpen ? '' : 'none';
-  setTimeout(resizeMap, 320);
+function setStatus(msg, state) {
+  document.getElementById('status-text').textContent = msg;
+  const dot = document.getElementById('dot');
+  dot.className = 'dot' + (state ? ' ' + state : '');
 }
 
-window.addEventListener('resize', resizeMap);
-setTimeout(resizeMap, 100);
-
-// DESENHO
-function startDraw() {
-  clearArea();
-  S.drawing = true; S.perimPts = [];
-  document.getElementById('btn-start').disabled = true;
-  document.getElementById('btn-finish').disabled = false;
-  map.getContainer().style.cursor = 'crosshair';
-  document.getElementById('overlay').style.display = 'none';
-  toast('Toque no mapa para adicionar pontos. Mínimo 3.');
-}
-
-map.on('click', function(e) {
-  if (!S.drawing) return;
-  const pt = [e.latlng.lat, e.latlng.lng];
-  S.perimPts.push(pt);
-  const isFirst = S.perimPts.length === 1;
-  const m = L.circleMarker(pt, {
-    radius: isFirst ? 8 : 4, color:'#FFD600',
-    fillColor:'#FFD600', fillOpacity: isFirst ? 1 : 0.6, weight:2
-  }).addTo(map);
-  if (isFirst) m.on('click', ev => { L.DomEvent.stopPropagation(ev); if(S.perimPts.length>=3) finishDraw(); });
-  S.drawMarkers.push(m);
-  if (S.drawLine) map.removeLayer(S.drawLine);
-  if (S.perimPts.length >= 2)
-    S.drawLine = L.polyline(S.perimPts, {color:'#FFD600',weight:2,dashArray:'6 4',opacity:0.7}).addTo(map);
+// Map click
+map.on('click', e => {
+  const {lat, lng} = e.latlng;
+  if (mode === 'perim') {
+    perimPts.push([lat, lng]);
+    drawPerim();
+    if (perimPts.length === 1) setStatus('Continue tocando para definir o perímetro. Feche tocando próximo ao 1º ponto.', '');
+    else setStatus(`${perimPts.length} pontos. Continue ou toque próximo ao início para fechar.`, '');
+    // Auto-close if close to start
+    if (perimPts.length > 3) {
+      const [la, lo] = perimPts[0];
+      const dist = Math.sqrt((lat-la)**2 + (lng-lo)**2) * 111320;
+      if (dist < 80) {
+        perimPts.pop();
+        closePerim();
+      }
+    }
+  }
 });
 
-function finishDraw() {
-  if (S.perimPts.length < 3) { toast('Mínimo 3 pontos.'); return; }
-  S.drawing = false;
-  map.getContainer().style.cursor = '';
-  document.getElementById('btn-start').disabled = false;
-  document.getElementById('btn-finish').disabled = true;
-  S.drawMarkers.forEach(m => map.removeLayer(m)); S.drawMarkers = [];
-  if (S.drawLine) { map.removeLayer(S.drawLine); S.drawLine = null; }
-  renderPerim();
+function drawPerim() {
+  if (perimLayer) map.removeLayer(perimLayer);
+  if (perimPts.length < 2) {
+    perimLayer = L.circleMarker(perimPts[0], {radius:5, color: '#F5C800', fillColor:'#F5C800', fillOpacity:1}).addTo(map);
+    return;
+  }
+  const pts = [...perimPts, perimPts[0]];
+  perimLayer = L.polyline(pts, {color:'#F5C800', weight:2, dashArray:'6,4', opacity:0.8}).addTo(map);
 }
 
-function renderPerim() {
-  if (S.perimLayer) map.removeLayer(S.perimLayer);
-  S.perimLayer = L.polygon(S.perimPts, {color:'#FFD600',weight:2,fillColor:'#FFD600',fillOpacity:0.06}).addTo(map);
-  map.fitBounds(S.perimLayer.getBounds(), {padding:[30,30]});
-  const lat0 = S.perimPts.reduce((s,p)=>s+p[0],0)/S.perimPts.length;
-  const a = Math.abs(polyArea(S.perimPts)) * 111.32 * 111.32 * Math.cos(lat0*Math.PI/180);
-  const info = `✅ Área: ${a.toFixed(2)} km²`;
-  const el = document.getElementById('area-info');
-  el.textContent = info; el.style.display = '';
-  document.getElementById('btn-clear').style.display = '';
-  S.areaOk = true; step(2); checkCalc();
-  toast(info);
+function closePerim() {
+  if (perimLayer) map.removeLayer(perimLayer);
+  perimLayer = L.polygon(perimPts, {color:'#F5C800', weight:2, fillColor:'#F5C800', fillOpacity:0.08}).addTo(map);
+  setStatus(`Perímetro fechado — ${perimPts.length} pontos. Clique GERAR.`, 'green');
+  setMode(null);
 }
 
-function polyArea(pts) {
-  let a=0,n=pts.length;
-  for(let i=0;i<n;i++){const j=(i+1)%n;a+=pts[i][1]*pts[j][0]-pts[j][1]*pts[i][0];}
-  return a/2;
+function limpar() {
+  perimPts = [];
+  [perimLayer, routeLayer, startMarker, anchorsLayer].forEach(l => { if(l) map.removeLayer(l); });
+  perimLayer = routeLayer = startMarker = anchorsLayer = null;
+  document.getElementById('result-panel').classList.remove('show');
+  setStatus('Toque no mapa para desenhar o perímetro da área', '');
+  setMode('perim');
 }
 
-function clearArea() {
-  S.drawing=false; S.perimPts=[]; S.areaOk=false;
-  if(S.perimLayer){map.removeLayer(S.perimLayer);S.perimLayer=null;}
-  S.drawMarkers.forEach(m=>map.removeLayer(m)); S.drawMarkers=[];
-  if(S.drawLine){map.removeLayer(S.drawLine);S.drawLine=null;}
-  document.getElementById('area-info').style.display='none';
-  document.getElementById('btn-clear').style.display='none';
-  document.getElementById('btn-start').disabled=false;
-  document.getElementById('btn-finish').disabled=true;
-  clearResult(); step(1); checkCalc();
+// ── Geometry helpers ─────────────────────────────────────────
+function ptInPoly(pt, poly) {
+  let inside = false;
+  const [px, py] = pt;
+  for (let i = 0, j = poly.length-1; i < poly.length; j=i++) {
+    const [xi,yi]=poly[i], [xj,yj]=poly[j];
+    if (((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
 }
 
-// GPX PERÍMETRO
-function loadPerim(inp) {
-  const f=inp.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=e=>{
-    const pts=parseGPX(e.target.result);
-    if(pts.length<3){toast('GPX inválido.');return;}
-    S.perimPts=pts; renderPerim();
-  };
-  r.readAsText(f); inp.value='';
+function scanLine(poly, lat) {
+  const xs = [];
+  for (let i=0; i<poly.length; i++) {
+    const [la,lo]=poly[i], [lb,lp]=poly[(i+1)%poly.length];
+    if ((la<=lat&&lat<lb)||(lb<=lat&&lat<la))
+      xs.push(lo + (lat-la)/(lb-la)*(lp-lo));
+  }
+  return xs.sort((a,b)=>a-b);
 }
 
-// GPX PEDALADAS
-function loadRides(inp) {
-  const files=Array.from(inp.files); let done=0;
-  files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      S.rides.push({name:f.name.replace('.gpx',''),points:parseGPX(e.target.result)});
-      if(++done===files.length){
-        renderRideList(); renderRideLayer(); clearResult();
-        step(S.areaOk?3:2); checkCalc();
-        toast(`${files.length} pedalada(s) carregada(s)`);
-      }
-    };
-    r.readAsText(f);
-  });
-  inp.value='';
+function coverageAnchors(poly, spacingM) {
+  if (poly.length < 3) return [];
+  const lats = poly.map(p=>p[0]);
+  const [lo,hi] = [Math.min(...lats), Math.max(...lats)];
+  const step = spacingM / 111320;
+  const pts = [];
+  for (let lat=lo+step*0.5; lat<=hi; lat+=step) {
+    const xs = scanLine(poly, lat);
+    for (let i=0; i<xs.length-1; i+=2) {
+      pts.push([lat, (xs[i]+xs[i+1])/2]);
+    }
+  }
+  return pts;
 }
 
-function removeRide(i){S.rides.splice(i,1);renderRideList();renderRideLayer();clearResult();checkCalc();}
-
-function renderRideList(){
-  document.getElementById('ride-list').innerHTML=S.rides.map((r,i)=>
-    `<div class="gpx-item">
-      <span class="gpx-name" title="${r.name}">${r.name}</span>
-      <span style="color:var(--dim);font-size:9px;margin:0 6px;flex-shrink:0">${(r.points.length/1000).toFixed(1)}k pts</span>
-      <button class="gpx-rm" onclick="removeRide(${i})">✕</button>
-    </div>`
-  ).join('');
+// Ponto ótimo de início: percorre borda e testa qual minimiza
+// a soma de distâncias ao centroide das faixas mais extremas
+// Na prática: escolhe ponto de borda mais próximo de uma esquina do bbox
+function bestStartPoint(poly) {
+  // Amostra 40 pontos na borda e escolhe o que está no "canto" mais exposto
+  const pts = [];
+  const n = poly.length;
+  for (let i=0; i<n; i++) {
+    const [la,lo]=poly[i], [lb,lp]=poly[(i+1)%n];
+    for (let t=0; t<=1; t+=0.25) {
+      pts.push([la+(lb-la)*t, lo+(lp-lo)*t]);
+    }
+  }
+  const lats = poly.map(p=>p[0]), lons = poly.map(p=>p[1]);
+  const minLat=Math.min(...lats), maxLat=Math.max(...lats);
+  const minLon=Math.min(...lons), maxLon=Math.max(...lons);
+  const corners = [
+    [minLat,minLon],[minLat,maxLon],
+    [maxLat,minLon],[maxLat,maxLon]
+  ];
+  let bestPt = pts[0], bestScore = Infinity;
+  for (const pt of pts) {
+    const score = Math.min(...corners.map(c => Math.hypot(pt[0]-c[0], pt[1]-c[1])));
+    if (score < bestScore) { bestScore=score; bestPt=pt; }
+  }
+  return bestPt;
 }
 
-function renderRideLayer(){
-  if(S.rideLayer){map.removeLayer(S.rideLayer);S.rideLayer=null;}
-  if(!S.rides.length) return;
-  S.rideLayer=L.layerGroup(S.rides.map(r=>L.polyline(r.points,{color:'#4FC3F7',weight:1.5,opacity:0.4}))).addTo(map);
+function haversine(a,b) {
+  const R=6371000, dLat=(b[0]-a[0])*Math.PI/180, dLon=(b[1]-a[1])*Math.PI/180;
+  const s=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
 }
 
-function parseGPX(txt){
-  const doc=new DOMParser().parseFromString(txt,'application/xml');
-  return Array.from(doc.querySelectorAll('trkpt')).map(t=>[parseFloat(t.getAttribute('lat')),parseFloat(t.getAttribute('lon'))]);
+function downsample(pts, max) {
+  if (pts.length<=max) return pts;
+  const res=[], step=(pts.length-1)/(max-1);
+  for (let i=0;i<max;i++) res.push(pts[Math.round(i*step)]);
+  return res;
 }
 
-// OVERPASS
-async function fetchStreets(poly){
-  const s=simplify(poly,80).map(p=>`${p[0]} ${p[1]}`).join(' ');
-  const q=`[out:json][timeout:60];way["highway"]["highway"!~"footway|cycleway|path|steps|pedestrian|service|track"](poly:"${s}");out geom;`;
-  const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q)});
-  if(!res.ok) throw new Error('Overpass: '+res.status);
-  return res.json();
+function fmtT(h) {
+  const hh=Math.floor(h), mm=Math.round((h-hh)*60);
+  if(mm===60) return `${hh+1}h00`;
+  return hh>0 ? `${hh}h${String(mm).padStart(2,'0')}` : `${mm}min`;
 }
 
-// CÁLCULO
-async function calculate(){
-  if(!S.areaOk||!S.rides.length) return;
-  load(true,'BAIXANDO RUAS...');
-  try{
-    const data=await fetchStreets(S.perimPts);
-    const ways=data.elements.filter(e=>e.type==='way'&&e.geometry);
-    load(true,'CALCULANDO...');
-    const allPts=S.rides.flatMap(r=>r.points);
-    const THR=0.00018;
-    const cov=[],miss=[];
-    let covKm=0,misKm=0;
-    ways.forEach(w=>{
-      let len=0;
-      for(let i=0;i<w.geometry.length-1;i++)
-        len+=hav(w.geometry[i].lat,w.geometry[i].lon,w.geometry[i+1].lat,w.geometry[i+1].lon);
-      if(minDist(w.geometry,allPts,THR)<THR){cov.push(w);covKm+=len;}
-      else{miss.push(w);misKm+=len;}
-    });
-    renderStreets(cov,miss);
-    const tot=covKm+misKm,pct=tot>0?(covKm/tot)*100:0;
-    showResult(covKm,misKm,tot,pct);
-    load(false); toast(`✅ ${pct.toFixed(1)}% coberto`);
-  }catch(err){load(false);toast('Erro: '+err.message);console.error(err);}
+// ── OSRM /trip ────────────────────────────────────────────────
+async function osrmTrip(pts) {
+  const safe = downsample(pts, 90);
+  const coords = safe.map(p=>`${p[1].toFixed(6)},${p[0].toFixed(6)}`).join(';');
+  const radii  = safe.map(()=>'300').join(';');
+  const url = `${OSRM}/trip/v1/driving/${coords}?roundtrip=true&source=first&overview=full&geometries=geojson&radiuses=${radii}`;
+  const res = await fetch(url, {signal: AbortSignal.timeout(25000)});
+  if (!res.ok) throw new Error('OSRM HTTP ' + res.status);
+  const data = await res.json();
+  if (data.code !== 'Ok') throw new Error('OSRM: ' + data.code);
+  // Total distance
+  const distM = data.trips[0].distance;
+  const geom  = data.trips[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+  return { distM, geom };
 }
 
-function hav(a,b,c,d){
-  const R=6371,dl=(c-a)*Math.PI/180,dL=(d-b)*Math.PI/180;
-  const x=Math.sin(dl/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dL/2)**2;
-  return R*2*Math.asin(Math.sqrt(x));
+// Fallback: soma haversine dos pontos em ordem
+function estimateDist(pts) {
+  let d=0;
+  for (let i=0;i<pts.length-1;i++) d+=haversine(pts[i],pts[i+1]);
+  d+=haversine(pts[pts.length-1],pts[0]);
+  return d;
 }
 
-function minDist(nodes,pts,thr){
-  for(const n of nodes) for(const p of pts)
-    if(Math.abs(n.lat-p[0])<thr&&Math.abs(n.lon-p[1])<thr) return 0;
-  return 999;
-}
+// ── GERAR ─────────────────────────────────────────────────────
+async function gerar() {
+  if (perimPts.length < 3) {
+    setStatus('Desenhe o perímetro primeiro (mínimo 3 pontos)', 'red');
+    return;
+  }
+  // Fechar perímetro se ainda aberto
+  if (perimLayer && !(perimLayer instanceof L.Polygon)) closePerim();
 
-function simplify(pts,max){
-  if(pts.length<=max) return pts;
-  const s=Math.ceil(pts.length/max);
-  return pts.filter((_,i)=>i%s===0);
-}
+  const horas = parseFloat(document.getElementById('horas').value) || 3;
+  const cliente = document.getElementById('cliente').value || '—';
+  const campanha = document.getElementById('campanha').value || '—';
 
-function renderStreets(cov,miss){
-  if(S.streetL.cov)map.removeLayer(S.streetL.cov);
-  if(S.streetL.miss)map.removeLayer(S.streetL.miss);
-  const ll=w=>w.geometry.map(n=>[n.lat,n.lon]);
-  S.streetL.miss=L.layerGroup(miss.map(w=>L.polyline(ll(w),{color:'#2A3530',weight:2.5,opacity:1}))).addTo(map);
-  S.streetL.cov=L.layerGroup(cov.map(w=>L.polyline(ll(w),{color:'#00FF88',weight:3.5,opacity:0.95}))).addTo(map);
-}
+  setStatus('Calculando ponto de início ótimo...', 'yellow');
 
-function showResult(cov,mis,tot,pct){
-  document.getElementById('sec-result').style.display='';
-  document.getElementById('sv-cov').textContent=cov.toFixed(2);
-  document.getElementById('sv-mis').textContent=mis.toFixed(2);
-  document.getElementById('sv-tot').textContent=tot.toFixed(2);
-  document.getElementById('prog').style.width=pct.toFixed(1)+'%';
-  document.getElementById('pct').textContent=pct.toFixed(1)+'%';
-  step(3,true);
-  // Abrir gaveta para mostrar resultado
-  if(!S.drawerOpen) toggleDrawer();
-}
+  // 1. Âncoras de cobertura (espaçamento ~150m)
+  const anchors = coverageAnchors(perimPts, 150);
+  if (anchors.length < 2) { setStatus('Área muito pequena — aumente o perímetro', 'red'); return; }
 
-function clearResult(){
-  document.getElementById('sec-result').style.display='none';
-  if(S.streetL.cov){map.removeLayer(S.streetL.cov);S.streetL.cov=null;}
-  if(S.streetL.miss){map.removeLayer(S.streetL.miss);S.streetL.miss=null;}
-}
+  // 2. Ponto de início ótimo
+  const startPt = bestStartPoint(perimPts);
+  const allPts = [startPt, ...anchors];
 
-function checkCalc(){document.getElementById('btn-calc').disabled=!(S.areaOk&&S.rides.length>0);}
+  // 3. Mostrar âncoras no mapa (debug visual leve)
+  if (anchorsLayer) map.removeLayer(anchorsLayer);
+  // não mostramos âncoras pra não poluir
 
-function step(n,done){
-  [1,2,3].forEach(i=>{
-    const el=document.getElementById('s'+i);
-    el.classList.remove('on','done');
-    if(i<n)el.classList.add('done');
-    else if(i===n)el.classList.add('on');
-  });
-}
+  // 4. Mostrar ponto de início
+  if (startMarker) map.removeLayer(startMarker);
+  startMarker = L.circleMarker(startPt, {
+    radius: 8, color: '#F5C800', fillColor: '#F5C800', fillOpacity: 1, weight: 2
+  }).addTo(map).bindPopup(`<b>PONTO DE INÍCIO</b><br>${startPt[0].toFixed(5)}, ${startPt[1].toFixed(5)}`);
 
-function load(show,msg){
-  document.getElementById('loading').style.display=show?'flex':'none';
-  if(msg)document.getElementById('lmsg').textContent=msg;
-}
+  setStatus('Calculando rota via ruas reais (OSRM)...', 'yellow');
 
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),3000);
+  let distM, geom, viaRua = true;
+
+  try {
+    const result = await osrmTrip(allPts);
+    distM = result.distM;
+    geom  = result.geom;
+  } catch(e) {
+    console.warn('OSRM falhou, usando estimativa:', e);
+    viaRua = false;
+    distM = estimateDist(allPts);
+    geom = [...allPts, allPts[0]];
+  }
+
+  // 5. Desenhar rota
+  if (routeLayer) map.removeLayer(routeLayer);
+  routeLayer = L.polyline(geom, {
+    color: viaRua ? '#C084FC' : '#F5A623',
+    weight: 3,
+    opacity: 0.85
+  }).addTo(map);
+  map.fitBounds(routeLayer.getBounds(), {padding:[30,30]});
+
+  // 6. Calcular resultados
+  const voltaKm   = distM / 1000;
+  const voltaHr   = voltaKm / SPEED_KMH;
+  const voltas    = Math.floor(horas / voltaHr);
+  const totalKm   = voltas * voltaKm;
+
+  // 7. Mostrar painel
+  document.getElementById('r-volta-km').innerHTML = `${voltaKm.toFixed(1)}<span>km</span>`;
+  document.getElementById('r-volta-t').innerHTML  = fmtT(voltaHr);
+  document.getElementById('r-horas-label').textContent = `${horas}h de veiculação`;
+  document.getElementById('r-voltas').innerHTML   = `${voltas}<span>volta${voltas!==1?'s':''}</span>`;
+  document.getElementById('r-total-km').innerHTML = `${totalKm.toFixed(1)}<span>km total</span>`;
+
+  // Ponto de início em coordenadas
+  const startStr = `${startPt[0].toFixed(5)}, ${startPt[1].toFixed(5)}`;
+  document.getElementById('start-info').innerHTML =
+    `<strong>▶ INÍCIO:</strong> ${startStr} &nbsp;·&nbsp; ${cliente} / ${campanha}`;
+
+  document.getElementById('r-tag').innerHTML =
+    `<span class="result-tag ${viaRua?'real':'est'}">${viaRua?'🛣 VIA RUAS REAIS':'≈ ESTIMATIVA LINHA RETA'}</span>`;
+
+  document.getElementById('result-panel').classList.add('show');
+  setStatus(`Rota gerada — ${anchors.length} pontos de cobertura · ${viaRua?'OSRM real':'estimativa'}`, 'green');
 }
 </script>
 </body>
