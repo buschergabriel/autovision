@@ -44,11 +44,13 @@
   .rv{font-size:20px;font-weight:bold;color:var(--purple)}
   .rv span{font-size:10px;color:var(--muted);margin-left:3px}
   .rv.or{color:var(--orange)}
+  .rv.blue{color:#4A90FF}
   .ri{margin-top:7px;padding-top:7px;border-top:1px solid var(--border);font-size:10px;color:var(--muted)}
   .ri strong{color:var(--am)}
   .rtag{display:inline-block;margin-top:5px;font-size:9px;padding:3px 8px;border-radius:2px;letter-spacing:1px}
   .rtag.real{background:#0A1F0A;border:1px solid #1A4A1A;color:var(--green)}
   .rtag.est{background:#1A1200;border:1px solid #3A2A00;color:var(--orange)}
+  .rtag.warn{background:#1A1000;border:1px solid #4A3000;color:var(--orange)}
   .gps-dot{width:14px;height:14px;border-radius:50%;background:#4A90FF;border:2px solid white;box-shadow:0 0 8px #4A90FF}
   .vx{width:13px;height:13px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.6)}
   .vx.add-mode{background:var(--am);cursor:crosshair}
@@ -59,7 +61,8 @@
 <body>
 
 <div id="header">
-  <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v2.4</div></div>
+  <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v2.5</div></div>
+  <div id="area-badge" style="font-size:9px;color:var(--muted);letter-spacing:1px"></div>
 </div>
 
 <div id="row-inputs">
@@ -109,6 +112,21 @@
       <div class="rv or" id="rTotalKm" style="font-size:16px;margin-top:2px">—<span>km total</span></div>
     </div>
   </div>
+  <!-- Indicadores de sanidade -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+    <div>
+      <div class="rl">Área</div>
+      <div class="rv blue" id="rArea" style="font-size:14px">—<span>km²</span></div>
+    </div>
+    <div>
+      <div class="rl">Pts cobertura</div>
+      <div class="rv blue" id="rPts" style="font-size:14px">—</div>
+    </div>
+    <div>
+      <div class="rl">km/km²</div>
+      <div class="rv blue" id="rDensKm" style="font-size:14px">—</div>
+    </div>
+  </div>
   <div class="ri" id="rInfo"></div>
   <div id="rTag"></div>
 </div>
@@ -119,283 +137,300 @@ const map = L.map('map', {zoomControl:true, attributionControl:false});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
 map.setView([-30.0112, -51.0960], 15);
 
-let mode = 'add';
-let densityM = 150;
-let pts = [], polyLayer = null, vtxMarkers = [], routeLayer = null, startMkr = null, gpsMkr = null;
+let mode='add', densityM=150;
+let pts=[], polyLayer=null, vtxMarkers=[], routeLayer=null, startMkr=null, gpsMkr=null;
 
 // ── STATUS ────────────────────────────────────────────────────
-function st(msg, cls) {
-  document.getElementById('stxt').textContent = msg;
-  document.getElementById('dot').className = 'dot' + (cls ? ' '+cls : '');
+function st(msg,cls){
+  document.getElementById('stxt').textContent=msg;
+  document.getElementById('dot').className='dot'+(cls?' '+cls:'');
+}
+
+// ── ÁREA DO POLÍGONO (Shoelace em metros) ─────────────────────
+function polyAreaKm2(poly){
+  if(poly.length<3)return 0;
+  let area=0;
+  const R=6371000;
+  for(let i=0;i<poly.length;i++){
+    const[la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
+    const y1=la*Math.PI/180*R, x1=lo*Math.PI/180*R*Math.cos(la*Math.PI/180);
+    const y2=lb*Math.PI/180*R, x2=lp*Math.PI/180*R*Math.cos(lb*Math.PI/180);
+    area+=x1*y2-x2*y1;
+  }
+  return Math.abs(area/2)/1e6;
+}
+
+function updateAreaBadge(){
+  if(pts.length<3){document.getElementById('area-badge').textContent='';return;}
+  const a=polyAreaKm2(pts);
+  document.getElementById('area-badge').textContent=`▣ ${a.toFixed(2)} km²`;
 }
 
 // ── DENSITY ───────────────────────────────────────────────────
-function setDensity(d) {
-  [1,2,3].forEach(i => document.getElementById('d'+i).className = 'btn' + (i===d?' on':''));
-  densityM = d===1 ? 150 : d===2 ? 100 : 60;
-  const labels = {1:'Ruas principais (~150m)', 2:'Equilibrado (~100m)', 3:'Cobertura total (~60m)'};
-  st('Densidade: ' + labels[d] + ' — clique ▶ GERAR para aplicar', '');
+function setDensity(d){
+  [1,2,3].forEach(i=>document.getElementById('d'+i).className='btn'+(i===d?' on':''));
+  densityM=d===1?150:d===2?100:60;
+  const labels={1:'Principal (~150m)',2:'Equilibrado (~100m)',3:'Total (~60m)'};
+  st('Densidade: '+labels[d]+' — clique ▶ GERAR','');
 }
 
 // ── MODE ──────────────────────────────────────────────────────
-const modeConfig = {
-  add:  {btn:'btnAdd',  cls:'on',      hint:'Toque no mapa para adicionar pontos ao perímetro'},
-  move: {btn:'btnMove', cls:'on-move', hint:'Toque e arraste um ponto para movê-lo'},
-  del:  {btn:'btnDel',  cls:'on-del',  hint:'Toque num ponto para removê-lo'},
+const modeConfig={
+  add: {btn:'btnAdd', cls:'on',      hint:'Toque no mapa para adicionar pontos'},
+  move:{btn:'btnMove',cls:'on-move', hint:'Toque e arraste um ponto para movê-lo'},
+  del: {btn:'btnDel', cls:'on-del',  hint:'Toque num ponto para removê-lo'},
 };
-function setMode(m) {
-  mode = m;
-  Object.keys(modeConfig).forEach(k => {
-    document.getElementById(modeConfig[k].btn).className = 'btn' + (k===m?' '+modeConfig[k].cls:'');
+function setMode(m){
+  mode=m;
+  Object.keys(modeConfig).forEach(k=>{
+    document.getElementById(modeConfig[k].btn).className='btn'+(k===m?' '+modeConfig[k].cls:'');
   });
   redraw();
-  st(modeConfig[m].hint, '');
+  st(modeConfig[m].hint,'');
 }
 
 // ── DRAW ──────────────────────────────────────────────────────
-function redraw() {
-  if (polyLayer) map.removeLayer(polyLayer);
-  if (pts.length >= 3)
-    polyLayer = L.polygon(pts, {color:'#F5C800', weight:2, fillColor:'#F5C800', fillOpacity:0.07}).addTo(map);
-  else if (pts.length >= 2)
-    polyLayer = L.polyline(pts, {color:'#F5C800', weight:2, dashArray:'5,4'}).addTo(map);
-
-  vtxMarkers.forEach(m => map.removeLayer(m));
-  vtxMarkers = [];
-  pts.forEach((pt, i) => {
-    const draggable = (mode === 'move');
-    const vxClass = mode==='move' ? 'vx move-mode' : mode==='del' ? 'vx del-mode' : 'vx add-mode';
-    const mkr = L.marker(pt, {
-      draggable,
-      icon: L.divIcon({className:'', html:`<div class="${vxClass}"></div>`, iconSize:[13,13], iconAnchor:[6,6]})
-    }).addTo(map);
-    mkr.on('dragend', () => { pts[i] = [mkr.getLatLng().lat, mkr.getLatLng().lng]; redraw(); st(`Ponto ${i+1} movido`,'g'); });
-    mkr.on('click', e => {
-      if (mode==='del') { L.DomEvent.stopPropagation(e); pts.splice(i,1); redraw(); st(`Ponto removido — ${pts.length} restantes`,''); }
+function redraw(){
+  if(polyLayer)map.removeLayer(polyLayer);
+  if(pts.length>=3)
+    polyLayer=L.polygon(pts,{color:'#F5C800',weight:2,fillColor:'#F5C800',fillOpacity:0.07}).addTo(map);
+  else if(pts.length>=2)
+    polyLayer=L.polyline(pts,{color:'#F5C800',weight:2,dashArray:'5,4'}).addTo(map);
+  vtxMarkers.forEach(m=>map.removeLayer(m));
+  vtxMarkers=[];
+  pts.forEach((pt,i)=>{
+    const draggable=(mode==='move');
+    const vxClass=mode==='move'?'vx move-mode':mode==='del'?'vx del-mode':'vx add-mode';
+    const mkr=L.marker(pt,{draggable,icon:L.divIcon({className:'',html:`<div class="${vxClass}"></div>`,iconSize:[13,13],iconAnchor:[6,6]})}).addTo(map);
+    mkr.on('dragend',()=>{pts[i]=[mkr.getLatLng().lat,mkr.getLatLng().lng];redraw();updateAreaBadge();st(`Ponto ${i+1} movido`,'g');});
+    mkr.on('click',e=>{
+      if(mode==='del'){L.DomEvent.stopPropagation(e);pts.splice(i,1);redraw();updateAreaBadge();st(`Ponto removido — ${pts.length} restantes`,'');}
     });
     vtxMarkers.push(mkr);
   });
+  updateAreaBadge();
 }
 
-map.on('click', e => {
-  if (mode !== 'add') return;
-  pts.push([e.latlng.lat, e.latlng.lng]);
+map.on('click',e=>{
+  if(mode!=='add')return;
+  pts.push([e.latlng.lat,e.latlng.lng]);
   redraw();
-  st(`${pts.length} ponto${pts.length>1?'s':''} — continue ou clique ▶ GERAR`, '');
+  st(`${pts.length} ponto${pts.length>1?'s':''} — continue ou clique ▶ GERAR`,'');
 });
 
 // ── GPS ───────────────────────────────────────────────────────
-function irGPS() {
-  if (!navigator.geolocation) { st('GPS indisponível','r'); return; }
+function irGPS(){
+  if(!navigator.geolocation){st('GPS indisponível','r');return;}
   st('Obtendo localização...','y');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const {latitude:lat, longitude:lng} = pos.coords;
-    map.setView([lat,lng], 16);
-    if (gpsMkr) map.removeLayer(gpsMkr);
-    gpsMkr = L.marker([lat,lng], {icon:L.divIcon({className:'',html:'<div class="gps-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})})
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng}=pos.coords;
+    map.setView([lat,lng],16);
+    if(gpsMkr)map.removeLayer(gpsMkr);
+    gpsMkr=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="gps-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})})
       .addTo(map).bindPopup('📍 Você está aqui').openPopup();
     st('Localização encontrada','g');
-  }, () => st('Não foi possível obter GPS','r'), {enableHighAccuracy:true, timeout:10000});
+  },()=>st('Não foi possível obter GPS','r'),{enableHighAccuracy:true,timeout:10000});
 }
 
 // ── BUSCA BAIRRO ──────────────────────────────────────────────
-async function buscarBairro() {
-  const q = document.getElementById('bairro-input').value.trim();
-  if (!q) return;
+async function buscarBairro(){
+  const q=document.getElementById('bairro-input').value.trim();
+  if(!q)return;
   st('Buscando '+q+'...','y');
-  try {
-    const res = await fetch(
+  try{
+    const res=await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+', Porto Alegre, RS, Brasil')}&format=json&polygon_geojson=1&limit=3`,
-      {headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/2.4'}}
+      {headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/2.5'}}
     );
-    const data = await res.json();
-    const item = data.find(d=>['suburb','neighbourhood','quarter'].includes(d.type))||data[0];
-    if (!item) { st('Bairro não encontrado','r'); return; }
-    const bb = item.boundingbox;
-    map.fitBounds([[+bb[0],+bb[2]], [+bb[1],+bb[3]]], {padding:[20,20]});
-    if (item.geojson && (item.geojson.type==='Polygon'||item.geojson.type==='MultiPolygon')) {
-      let coords = item.geojson.type==='Polygon' ? item.geojson.coordinates[0] : item.geojson.coordinates[0][0];
-      const want = Math.min(28, Math.max(16, Math.floor(coords.length/4)));
-      const step = Math.max(1, Math.floor(coords.length/want));
-      pts = coords.filter((_,i)=>i%step===0).map(c=>[c[1],c[0]]);
-      if (pts.length>1) {
-        const [f,l]=[pts[0],pts[pts.length-1]];
-        if (Math.abs(f[0]-l[0])<0.00001&&Math.abs(f[1]-l[1])<0.00001) pts.pop();
-      }
+    const data=await res.json();
+    const item=data.find(d=>['suburb','neighbourhood','quarter'].includes(d.type))||data[0];
+    if(!item){st('Bairro não encontrado','r');return;}
+    const bb=item.boundingbox;
+    map.fitBounds([[+bb[0],+bb[2]],[+bb[1],+bb[3]]],{padding:[20,20]});
+    if(item.geojson&&(item.geojson.type==='Polygon'||item.geojson.type==='MultiPolygon')){
+      let coords=item.geojson.type==='Polygon'?item.geojson.coordinates[0]:item.geojson.coordinates[0][0];
+      const want=Math.min(28,Math.max(16,Math.floor(coords.length/4)));
+      const step=Math.max(1,Math.floor(coords.length/want));
+      pts=coords.filter((_,i)=>i%step===0).map(c=>[c[1],c[0]]);
+      if(pts.length>1){const[f,l]=[pts[0],pts[pts.length-1]];if(Math.abs(f[0]-l[0])<0.00001&&Math.abs(f[1]-l[1])<0.00001)pts.pop();}
       redraw();
-      st(`"${item.display_name.split(',')[0]}" — use ✎ Mover para ajustar, depois ▶ GERAR`, 'g');
-    } else { st('Encontrado — desenhe o perímetro manualmente','g'); }
-  } catch(e) { st('Erro na busca','r'); }
+      st(`"${item.display_name.split(',')[0]}" — use ✎ Mover para ajustar, depois ▶ GERAR`,'g');
+    }else{st('Encontrado — desenhe o perímetro manualmente','g');}
+  }catch(e){st('Erro na busca','r');}
 }
-document.getElementById('bairro-input').addEventListener('keydown', e => { if(e.key==='Enter') buscarBairro(); });
+document.getElementById('bairro-input').addEventListener('keydown',e=>{if(e.key==='Enter')buscarBairro();});
 
 // ── LIMPAR ────────────────────────────────────────────────────
-function limpar() {
-  pts = [];
+function limpar(){
+  pts=[];
   [polyLayer,routeLayer,startMkr].forEach(l=>{if(l)map.removeLayer(l);});
   vtxMarkers.forEach(m=>map.removeLayer(m));
-  polyLayer=routeLayer=startMkr=null; vtxMarkers=[];
+  polyLayer=routeLayer=startMkr=null;vtxMarkers=[];
   document.getElementById('result').classList.remove('show');
+  document.getElementById('area-badge').textContent='';
   st('Limpo — busque um bairro ou toque no mapa','');
   setMode('add');
 }
 
 // ── GEOMETRIA ─────────────────────────────────────────────────
-function scanLine(poly, lat) {
+function scanLine(poly,lat){
   const xs=[];
-  for (let i=0;i<poly.length;i++) {
-    const [la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
-    if((la<=lat&&lat<lb)||(lb<=lat&&lat<la)) xs.push(lo+(lat-la)/(lb-la)*(lp-lo));
+  for(let i=0;i<poly.length;i++){
+    const[la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
+    if((la<=lat&&lat<lb)||(lb<=lat&&lat<la))xs.push(lo+(lat-la)/(lb-la)*(lp-lo));
   }
   return xs.sort((a,b)=>a-b);
 }
 
-// Lawnmower com paridade forçada + orientação pelo quadrante do startPt
-// Plano A: paridade par garante que última faixa termina no mesmo lado
-function coverageLawnmower(poly, spcM, startPt) {
-  const lats = poly.map(p=>p[0]), lons = poly.map(p=>p[1]);
-  const [loLat,hiLat] = [Math.min(...lats), Math.max(...lats)];
-  const centerLat = (loLat+hiLat)/2;
-  const centerLon = (Math.min(...lons)+Math.max(...lons))/2;
-
-  // Número de faixas com paridade forçada para par
-  let numRows = Math.max(2, Math.round((hiLat-loLat)/(spcM/111320))+1);
-  if (numRows % 2 !== 0) numRows += 1; // força par
-
-  // Recalcula step real para cobrir toda a área com numRows pares
-  const stepLat = (hiLat-loLat) / (numRows-1);
-
-  // Orientação: quadrante do startPt determina direção de varredura
-  const goSouthToNorth = startPt ? (startPt[0] <= centerLat) : true;
-  const startLtr       = startPt ? (startPt[1] <= centerLon) : true; // W→E ou E→W
-
-  const startLatVal = goSouthToNorth ? loLat : hiLat;
-  const stepDir     = goSouthToNorth ? stepLat : -stepLat;
-
-  const out = [];
-  let ltr = startLtr;
-
-  for (let i=0; i<numRows; i++) {
-    const lat = startLatVal + i*stepDir;
-    const xs = scanLine(poly, lat);
-    const row = [];
-    for (let j=0; j<xs.length-1; j+=2) {
-      const stepLon = spcM/(111320*Math.cos(lat*Math.PI/180));
-      for (let lon=xs[j]; lon<=xs[j+1]; lon+=stepLon) row.push([lat,lon]);
+function coverageLawnmower(poly,spcM,startPt){
+  const lats=poly.map(p=>p[0]),lons=poly.map(p=>p[1]);
+  const[loLat,hiLat]=[Math.min(...lats),Math.max(...lats)];
+  const centerLat=(loLat+hiLat)/2,centerLon=(Math.min(...lons)+Math.max(...lons))/2;
+  let numRows=Math.max(2,Math.round((hiLat-loLat)/(spcM/111320))+1);
+  if(numRows%2!==0)numRows+=1;
+  const stepLat=(hiLat-loLat)/(numRows-1);
+  const goSN=startPt?(startPt[0]<=centerLat):true;
+  const startLtr=startPt?(startPt[1]<=centerLon):true;
+  const startLatVal=goSN?loLat:hiLat;
+  const stepDir=goSN?stepLat:-stepLat;
+  const out=[];
+  let ltr=startLtr;
+  for(let i=0;i<numRows;i++){
+    const lat=startLatVal+i*stepDir;
+    const xs=scanLine(poly,lat);
+    const row=[];
+    for(let j=0;j<xs.length-1;j+=2){
+      const stepLon=spcM/(111320*Math.cos(lat*Math.PI/180));
+      for(let lon=xs[j];lon<=xs[j+1];lon+=stepLon)row.push([lat,lon]);
     }
-    if (row.length) { if (!ltr) row.reverse(); out.push(...row); ltr=!ltr; }
+    if(row.length){if(!ltr)row.reverse();out.push(...row);ltr=!ltr;}
   }
   return out;
 }
 
-// Ponto de início ótimo na borda
-function bestStart(poly) {
+function bestStart(poly){
   const border=[];
-  for (let i=0;i<poly.length;i++) {
-    const [la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
-    for (let t=0;t<=1;t+=0.1) border.push([la+(lb-la)*t,lo+(lp-lo)*t]);
+  for(let i=0;i<poly.length;i++){
+    const[la,lo]=poly[i],[lb,lp]=poly[(i+1)%poly.length];
+    for(let t=0;t<=1;t+=0.1)border.push([la+(lb-la)*t,lo+(lp-lo)*t]);
   }
   const lats=poly.map(p=>p[0]),lons=poly.map(p=>p[1]);
   const corners=[[Math.min(...lats),Math.min(...lons)],[Math.min(...lats),Math.max(...lons)],
                  [Math.max(...lats),Math.min(...lons)],[Math.max(...lats),Math.max(...lons)]];
   let best=border[0],bScore=Infinity;
-  for (const p of border) {
+  for(const p of border){
     const s=Math.min(...corners.map(c=>Math.hypot(p[0]-c[0],p[1]-c[1])));
     if(s<bScore){bScore=s;best=p;}
   }
   return best;
 }
 
-function haversine(a,b) {
+function haversine(a,b){
   const R=6371000,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;
   const s=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(s));
 }
 
-function fmtT(h) {
+function fmtT(h){
   const hh=Math.floor(h),mm=Math.round((h-hh)*60);
   if(mm===60)return`${hh+1}h00`;
   return hh>0?`${hh}h${String(mm).padStart(2,'0')}`:`${mm}min`;
 }
 
-// OSRM /route chunked
-async function osrmRouteChunked(pts2) {
+// Distância estimada sem OSRM — soma haversine dos pontos em ordem
+function distHaversine(pts2){
+  let d=0;
+  for(let i=0;i<pts2.length-1;i++)d+=haversine(pts2[i],pts2[i+1]);
+  return d;
+}
+
+// OSRM /route chunked — SEM sobreposição de pontos entre chunks
+// Cada chunk começa no último ponto do chunk anterior (sem repetir na soma)
+async function osrmRouteChunked(pts2){
   const CHUNK=80;
-  let totalDist=0, fullGeom=[];
-  for (let i=0;i<pts2.length;i+=CHUNK-1) {
+  let totalDist=0,fullGeom=[];
+  for(let i=0;i<pts2.length;i+=CHUNK-1){
     const chunk=pts2.slice(i,i+CHUNK);
-    if(chunk.length<2) continue;
+    if(chunk.length<2)continue;
     const coords=chunk.map(p=>`${p[1].toFixed(6)},${p[0].toFixed(6)}`).join(';');
     const url=`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
     const r=await fetch(url,{signal:AbortSignal.timeout(25000)});
-    if(!r.ok) throw new Error('OSRM '+r.status);
+    if(!r.ok)throw new Error('OSRM '+r.status);
     const d=await r.json();
-    if(d.code!=='Ok') throw new Error(d.code);
+    if(d.code!=='Ok')throw new Error(d.code);
     totalDist+=d.routes[0].distance;
-    fullGeom.push(...d.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]));
+    // Evita duplicar o ponto de junção: pula o primeiro ponto da geometria nos chunks 2+
+    const geom=d.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+    if(fullGeom.length>0&&geom.length>0)fullGeom.push(...geom.slice(1));
+    else fullGeom.push(...geom);
   }
-  return {distM:totalDist, geom:fullGeom};
+  return{distM:totalDist,geom:fullGeom};
 }
 
 // ── GERAR ─────────────────────────────────────────────────────
-async function gerar() {
+async function gerar(){
   if(pts.length<3){st('Adicione pelo menos 3 pontos ao perímetro','r');return;}
-  const horas    = parseFloat(document.getElementById('iHoras').value)||3;
-  const cliente  = document.getElementById('iCliente').value||'—';
-  const campanha = document.getElementById('iCampanha').value||'—';
+  const horas=parseFloat(document.getElementById('iHoras').value)||3;
+  const cliente=document.getElementById('iCliente').value||'—';
+  const campanha=document.getElementById('iCampanha').value||'—';
 
-  st('Calculando grade com paridade forçada...','y');
+  const areaKm2=polyAreaKm2(pts);
+  st(`Área: ${areaKm2.toFixed(2)} km² — calculando grade...`,'y');
 
-  // 1. Ponto de referência na borda (orienta o U, não entra na rota)
-  const startRef = bestStart(pts);
-
-  // 2. Grade lawnmower orientada pelo quadrante do startRef, faixas pares
-  const anchors = coverageLawnmower(pts, densityM, startRef);
+  const startRef=bestStart(pts);
+  const anchors=coverageLawnmower(pts,densityM,startRef);
   if(anchors.length<3){st('Área muito pequena','r');return;}
 
-  // 3. Ponto de início = primeiro ponto da grade (borda real da cobertura)
-  const startPt = anchors[0];
+  const startPt=anchors[0];
+  const allPts=[...anchors,startPt]; // circuito fechado
 
-  // 4. CIRCUITO FECHADO: primeiro ponto repetido no final
-  // Com paridade par, anchors[last] já está no mesmo lado de anchors[0]
-  // O retorno é curto e natural
-  const allPts = [...anchors, startPt];
+  // Estimativa haversine ANTES do OSRM — sanity check
+  const estM=distHaversine(allPts);
+  const estKm=estM/1000;
 
-  if(startMkr) map.removeLayer(startMkr);
-  startMkr = L.circleMarker(startPt,{radius:9,color:'#F5C800',fillColor:'#F5C800',fillOpacity:1,weight:2})
+  if(startMkr)map.removeLayer(startMkr);
+  startMkr=L.circleMarker(startPt,{radius:9,color:'#F5C800',fillColor:'#F5C800',fillOpacity:1,weight:2})
     .addTo(map).bindPopup('<b>▶ INÍCIO / FIM DO CIRCUITO</b>').openPopup();
 
-  const nChunks = Math.ceil(allPts.length/79);
-  st(`Calculando circuito — ${allPts.length} pts · ${nChunks} blocos · paridade ${anchors.length%2===0?'par ✓':'ímpar'}...`,'y');
+  const nChunks=Math.ceil(allPts.length/79);
+  st(`Calculando circuito — ${allPts.length} pts · ${nChunks} blocos · estimativa ~${estKm.toFixed(1)}km...`,'y');
 
   let distM,geom,viaRua=true;
-  try {
+  try{
     const r=await osrmRouteChunked(allPts);
-    distM=r.distM; geom=r.geom;
-  } catch(e) {
+    distM=r.distM;geom=r.geom;
+  }catch(e){
     console.error(e);
     viaRua=false;
-    distM=0;
-    for(let i=0;i<allPts.length-1;i++) distM+=haversine(allPts[i],allPts[i+1]);
+    distM=estM;
     geom=allPts;
   }
 
-  if(routeLayer) map.removeLayer(routeLayer);
+  if(routeLayer)map.removeLayer(routeLayer);
   routeLayer=L.polyline(geom,{color:viaRua?'#C084FC':'#F5A623',weight:3,opacity:.85}).addTo(map);
 
   const voltaKm=distM/1000;
   const voltaHr=voltaKm/SPD;
   const voltas=Math.floor(horas/voltaHr);
+  const densKm=(areaKm2>0?(voltaKm/areaKm2):0).toFixed(1);
 
-  document.getElementById('rVoltaKm').innerHTML =`${voltaKm.toFixed(1)}<span>km</span>`;
-  document.getElementById('rVoltaT').innerHTML  =fmtT(voltaHr);
+  // Alerta se distância OSRM > 2x estimativa haversine (sinal de duplicação)
+  const ratio=distM/estM;
+  const warnDup=ratio>2.0;
+
+  document.getElementById('rVoltaKm').innerHTML=`${voltaKm.toFixed(1)}<span>km</span>`;
+  document.getElementById('rVoltaT').innerHTML=fmtT(voltaHr);
   document.getElementById('rHLabel').textContent=`${horas}h de veiculação`;
-  document.getElementById('rVoltas').innerHTML  =`${voltas}<span>volta${voltas!==1?'s':''}</span>`;
-  document.getElementById('rTotalKm').innerHTML =`${(voltas*voltaKm).toFixed(1)}<span>km total</span>`;
-  document.getElementById('rInfo').innerHTML    =`<strong>▶ INÍCIO/FIM:</strong> ${startPt[0].toFixed(5)}, ${startPt[1].toFixed(5)} &nbsp;·&nbsp; ${cliente} / ${campanha}`;
-  document.getElementById('rTag').innerHTML     =`<span class="rtag ${viaRua?'real':'est'}">${viaRua?'🛣 CIRCUITO VIA RUAS REAIS':'≈ ESTIMATIVA LINHA RETA'}</span>`;
+  document.getElementById('rVoltas').innerHTML=`${voltas}<span>volta${voltas!==1?'s':''}</span>`;
+  document.getElementById('rTotalKm').innerHTML=`${(voltas*voltaKm).toFixed(1)}<span>km total</span>`;
+  document.getElementById('rArea').innerHTML=`${areaKm2.toFixed(2)}<span>km²</span>`;
+  document.getElementById('rPts').innerHTML=`${anchors.length}<span>pts</span>`;
+  document.getElementById('rDensKm').innerHTML=`${densKm}<span>×</span>`;
+  document.getElementById('rInfo').innerHTML=`<strong>▶ INÍCIO/FIM:</strong> ${startPt[0].toFixed(5)}, ${startPt[1].toFixed(5)} &nbsp;·&nbsp; ${cliente} / ${campanha}<br><span style="color:#555">Estimativa linha reta: ${estKm.toFixed(1)}km · OSRM: ${voltaKm.toFixed(1)}km · ratio: ${ratio.toFixed(2)}x</span>`;
+  document.getElementById('rTag').innerHTML=`<span class="rtag ${viaRua?'real':'est'}">${viaRua?'🛣 CIRCUITO VIA RUAS REAIS':'≈ ESTIMATIVA LINHA RETA'}</span>`
+    +(warnDup?` <span class="rtag warn">⚠ ratio ${ratio.toFixed(1)}x — possível duplicação</span>`:'');
   document.getElementById('result').classList.add('show');
-  st(`Circuito gerado — ${allPts.length} pts · ${nChunks} blocos · ${viaRua?'OSRM real':'estimativa'}`,'g');
+  st(`Circuito: ${voltaKm.toFixed(1)}km · área: ${areaKm2.toFixed(2)}km² · ${densKm}km/km² · ${viaRua?'OSRM':'estimativa'}`,'g');
 }
 </script>
 </body>
