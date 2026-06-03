@@ -5,7 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AUTOVISION — Rota</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js">
+// ── EXPORT GPX ───────────────────────────────────────────────
+function exportGPX() {
+  if (!routeLayer) { st('Gere a rota primeiro','r'); return; }
+  const cliente  = document.getElementById('iCliente').value || 'rota';
+  const campanha = document.getElementById('iCampanha').value || 'campanha';
+  const name     = `${cliente} — ${campanha}`.replace(/[^a-zA-Z0-9\s\-]/g,'');
+  const now      = new Date().toISOString();
+
+  // Pega coordenadas da polyline desenhada no mapa
+  const latlngs  = routeLayer.getLatLngs();
+
+  let trkpts = '';
+  latlngs.forEach(pt => {
+    trkpts += `      <trkpt lat="${pt.lat.toFixed(6)}" lon="${pt.lng.toFixed(6)}">\n`;
+    trkpts += `        <time>${now}</time>\n`;
+    trkpts += `      </trkpt>\n`;
+  });
+
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="AUTOVISION Planejador de Rota"
+  xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${name}</name>
+    <time>${now}</time>
+  </metadata>
+  <trk>
+    <name>${name}</name>
+    <trkseg>
+${trkpts}    </trkseg>
+  </trk>
+</gpx>`;
+
+  const blob = new Blob([gpx], {type:'application/gpx+xml'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `autovision-${cliente}-${campanha}.gpx`.replace(/\s+/g,'-').toLowerCase();
+  a.click();
+  URL.revokeObjectURL(url);
+  st('GPX exportado — importe em strava.com/upload','g');
+}
+
+</script>
 <style>
   :root{--am:#F5C800;--bg:#0A0A0A;--panel:#111;--border:#2A2A2A;--text:#E0E0E0;--muted:#666;--green:#4CAF50;--orange:#F5A623;--purple:#C084FC;--red:#FF4444}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -61,7 +104,7 @@
 <body>
 
 <div id="header">
-  <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v2.5</div></div>
+  <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v2.6</div></div>
   <div id="area-badge" style="font-size:9px;color:var(--muted);letter-spacing:1px"></div>
 </div>
 
@@ -267,6 +310,7 @@ function limpar(){
   vtxMarkers.forEach(m=>map.removeLayer(m));
   polyLayer=routeLayer=startMkr=null;vtxMarkers=[];
   document.getElementById('result').classList.remove('show');
+  document.getElementById('row-export').style.display='none';
   document.getElementById('area-badge').textContent='';
   st('Limpo — busque um bairro ou toque no mapa','');
   setMode('add');
@@ -409,7 +453,7 @@ async function gerar(){
   if(routeLayer)map.removeLayer(routeLayer);
   routeLayer=L.polyline(geom,{color:viaRua?'#C084FC':'#F5A623',weight:3,opacity:.85}).addTo(map);
 
-  const voltaKm=distM/1000;
+  const voltaKm=estKm; // usa haversine, não soma OSRM
   const voltaHr=voltaKm/SPD;
   const voltas=Math.floor(horas/voltaHr);
   const densKm=(areaKm2>0?(voltaKm/areaKm2):0).toFixed(1);
@@ -430,8 +474,56 @@ async function gerar(){
   document.getElementById('rTag').innerHTML=`<span class="rtag ${viaRua?'real':'est'}">${viaRua?'🛣 CIRCUITO VIA RUAS REAIS':'≈ ESTIMATIVA LINHA RETA'}</span>`
     +(warnDup?` <span class="rtag warn">⚠ ratio ${ratio.toFixed(1)}x — possível duplicação</span>`:'');
   document.getElementById('result').classList.add('show');
+  document.getElementById('row-export').style.display='block';
   st(`Circuito: ${voltaKm.toFixed(1)}km · área: ${areaKm2.toFixed(2)}km² · ${densKm}km/km² · ${viaRua?'OSRM':'estimativa'}`,'g');
 }
+
+// ── EXPORT GPX ───────────────────────────────────────────────
+function exportGPX() {
+  if (!routeLayer) { st('Gere a rota primeiro','r'); return; }
+  const cliente  = document.getElementById('iCliente').value || 'rota';
+  const campanha = document.getElementById('iCampanha').value || 'campanha';
+  const name     = `${cliente} — ${campanha}`.replace(/[^a-zA-Z0-9\s\-]/g,'');
+  const now      = new Date().toISOString();
+
+  // Pega coordenadas da polyline desenhada no mapa
+  const latlngs  = routeLayer.getLatLngs();
+
+  let trkpts = '';
+  latlngs.forEach(pt => {
+    trkpts += `      <trkpt lat="${pt.lat.toFixed(6)}" lon="${pt.lng.toFixed(6)}">\n`;
+    trkpts += `        <time>${now}</time>\n`;
+    trkpts += `      </trkpt>\n`;
+  });
+
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="AUTOVISION Planejador de Rota"
+  xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${name}</name>
+    <time>${now}</time>
+  </metadata>
+  <trk>
+    <name>${name}</name>
+    <trkseg>
+${trkpts}    </trkseg>
+  </trk>
+</gpx>`;
+
+  const blob = new Blob([gpx], {type:'application/gpx+xml'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `autovision-${cliente}-${campanha}.gpx`.replace(/\s+/g,'-').toLowerCase();
+  a.click();
+  URL.revokeObjectURL(url);
+  st('GPX exportado — importe em strava.com/upload','g');
+}
+
 </script>
+
+<div id="row-export" style="display:none;background:var(--bg);border-top:1px solid var(--border);padding:8px 12px;flex-shrink:0">
+  <button class="btn primary" style="width:100%;font-size:11px" onclick="exportGPX()">⬇ EXPORTAR GPX — IMPORTAR NO STRAVA</button>
+</div>
 </body>
 </html>
