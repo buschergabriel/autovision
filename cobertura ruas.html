@@ -58,7 +58,7 @@
 <body>
 
 <div id="header">
-  <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v2.3</div></div>
+  <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v2.4</div></div>
 </div>
 
 <div id="row-inputs">
@@ -73,6 +73,12 @@
   <button class="btn sm" onclick="irGPS()">📍</button>
 </div>
 
+<div id="row-density" style="background:var(--panel);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:7px;align-items:center;flex-shrink:0">
+  <div style="font-size:8px;color:var(--muted);letter-spacing:2px;white-space:nowrap">DENSIDADE</div>
+  <button class="btn on" id="d1" onclick="setDensity(1)">🔵 Principal</button>
+  <button class="btn"    id="d2" onclick="setDensity(2)">🟡 Equilibrado</button>
+  <button class="btn"    id="d3" onclick="setDensity(3)">🔴 Total</button>
+</div>
 <div id="row-toolbar">
   <button class="btn on"  id="btnAdd"  onclick="setMode('add')">✚ Adicionar</button>
   <button class="btn"     id="btnMove" onclick="setMode('move')">✎ Mover</button>
@@ -318,6 +324,17 @@ async function osrmRouteChunked(pts2) {
   return {distM:totalDist, geom:fullGeom};
 }
 
+let densityM = 150; // default: Ruas Principais
+function setDensity(d) {
+  [1,2,3].forEach(i => {
+    const b = document.getElementById("d"+i);
+    b.className = "btn" + (i===d ? " on" : "");
+  });
+  densityM = d===1 ? 150 : d===2 ? 100 : 60;
+  const labels = {1:"Ruas principais (~150m)", 2:"Equilibrado (~100m)", 3:"Cobertura total (~60m)"};
+  st("Densidade: " + labels[d] + " — clique ▶ GERAR para aplicar", "");
+}
+
 // ── GERAR ─────────────────────────────────────────────────────
 async function gerar() {
   if(pts.length<3){st('Adicione pelo menos 3 pontos ao perímetro','r');return;}
@@ -326,7 +343,7 @@ async function gerar() {
   const campanha = document.getElementById('iCampanha').value||'—';
 
   st('Calculando grade de cobertura (60m)...','y');
-  const anchors = coverageLawnmower(pts, 60);
+  const anchors = coverageLawnmower(pts, densityM);
   if(anchors.length<3){st('Área muito pequena','r');return;}
 
   const startPt = bestStart(pts);
