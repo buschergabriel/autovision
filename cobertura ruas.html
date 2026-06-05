@@ -99,7 +99,7 @@ input:focus{border-color:var(--am)}
 
 <div id="hdr">
   <div id="hdr-top">
-    <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v3.5</div></div>
+    <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v3.6</div></div>
     <div style="display:flex;align-items:center;gap:8px">
       <div id="area-badge"></div>
       <button class="btn sm" onclick="irGPS()">📍</button>
@@ -151,6 +151,7 @@ input:focus{border-color:var(--am)}
 <div id="tab-circuito" class="tab-panel">
   <div class="trow">
     <button class="btn on"     id="cBtnAdd"   onclick="setCMode('add')">✚ Ponto</button>
+    <button class="btn"        id="cBtnAuto"  onclick="gerarAuto()">⊞ Auto</button>
     <button class="btn"        id="cBtnStart" onclick="setCMode('start')">⊙ Início</button>
     <button class="btn"        id="cBtnDel"   onclick="setCMode('del')">✕ Remover</button>
     <button class="btn primary" style="margin-left:auto" onclick="gerarRota()">▶ GERAR</button>
@@ -588,6 +589,198 @@ function populaDados(d){
     `Cada volta: <strong>${d.voltaKm.toFixed(1)}km</strong> em <strong>${fmtT(d.voltaHr)}</strong>.`;
   document.getElementById('dSub').innerHTML=
     `Área: ${d.areaKm2.toFixed(2)} km² · Cobertura est.: ~${d.pct}% · ${d.nPts} waypoints · ${d.viaRua?'OSRM real':'estimativa'}`;
+}
+
+
+// ── AUTO: CPP simplificado via Overpass ──────────────────────
+async function gerarAuto(){
+  if(bPts.length<3){cSt('Defina o bairro primeiro','r');return;}
+  document.getElementById('cBtnAuto').className='btn on-node';
+  document.getElementById('cBtnAuto').textContent='⊞ Carregando...';
+  cSt('Buscando ruas no bairro...','y');
+
+  // Bbox + poly string
+  const lats=bPts.map(p=>p[0]),lons=bPts.map(p=>p[1]);
+  const polyStr=bPts.map(p=>`${p[0].toFixed(6)} ${p[1].toFixed(6)}`).join(' ');
+
+  // Overpass: busca todas as vias dentro do polígono
+  const q=`[out:json][timeout:25];(way(poly:"${polyStr}")[highway][highway!~"^(motorway|trunk|motorway_link|trunk_link|footway|path|steps|cycleway|pedestrian|proposed|construction)$"];);out geom;`;
+
+  let elements=[];
+  try{
+    const res=await fetch('https://overpass-api.de/api/interpreter',{
+      method:'POST',body:'data='+encodeURIComponent(q),
+      signal:AbortSignal.timeout(25000)
+    });
+    const data=await res.json();
+    elements=data.elements||[];
+  }catch(e){
+    cSt('Erro Overpass — tente novamente','r');
+    resetAutoBtn();return;
+  }
+
+  if(!elements.length){cSt('Nenhuma rua encontrada no bairro','r');resetAutoBtn();return;}
+  cSt(`${elements.length} ruas encontradas — calculando rota...`,'y');
+
+  // Constrói grafo de interseções
+  // Nó = ponto de interseção (onde 2+ vias se encontram) ou extremidade de via
+  const nodeMap={}; // "lat,lng" -> {lat,lng,ways:[]}
+  const edges=[];   // {from, to, pts}
+
+  function nodeKey(lat,lng){return `${lat.toFixed(5)},${lng.toFixed(5)}`;}
+  function getOrCreate(lat,lng){
+    const k=nodeKey(lat,lng);
+    if(!nodeMap[k])nodeMap[k]={lat,lng,count:0};
+    nodeMap[k].count++;
+    return k;
+  }
+
+  // Registra todos os nós (primeiro e último de cada via = interseção candidata)
+  elements.forEach(way=>{
+    if(!way.geometry||way.geometry.length<2)return;
+    const g=way.geometry;
+    getOrCreate(g[0].lat,g[0].lon);
+    getOrCreate(g[g.length-1].lat,g[g.length-1].lon);
+    // Nós intermediários também são candidatos a interseção
+    g.slice(1,-1).forEach(pt=>getOrCreate(pt.lat,pt.lon));
+  });
+
+  // Interseções reais = nós que aparecem em 2+ vias
+  // Simplificação: usa apenas início, fim, e nós com count>1
+  const interNodes=Object.values(nodeMap).filter(n=>n.count>1);
+
+  // Para cada via, cria segmentos entre seus nós de interseção
+  elements.forEach(way=>{
+    if(!way.geometry||way.geometry.length<2)return;
+    const g=way.geometry;
+    let segStart=0;
+    for(let i=1;i<g.length;i++){
+      const k=nodeKey(g[i].lat,g[i].lon);
+      const isNode=(nodeMap[k]&&nodeMap[k].count>1)||i===g.length-1;
+      if(isNode){
+        // Segmento de segStart até i
+        const pts=g.slice(segStart,i+1);
+        // Filtra segmentos muito curtos (<30m)
+        let d=0;
+        for(let j=0;j<pts.length-1;j++){
+          const dLat=(pts[j+1].lat-pts[j].lat)*111320;
+          const dLon=(pts[j+1].lon-pts[j].lon)*111320*Math.cos(pts[j].lat*Math.PI/180);
+          d+=Math.sqrt(dLat*dLat+dLon*dLon);
+        }
+        if(d>15){
+          edges.push({
+            from:nodeKey(pts[0].lat,pts[0].lon),
+            to:nodeKey(pts[pts.length-1].lat,pts[pts.length-1].lon),
+            pts,dist:d
+          });
+        }
+        segStart=i;
+      }
+    }
+  });
+
+  if(!edges.length){cSt('Não foi possível extrair segmentos','r');resetAutoBtn();return;}
+
+  // CPP simplificado: Greedy nearest-neighbor começando do canto SW
+  // 1. Encontra nó mais próximo do canto SW do bbox (=ponto de entrada natural)
+  const minLat=Math.min(...lats),minLon=Math.min(...lons);
+  const allNodeKeys=Object.keys(nodeMap);
+  let startKey=allNodeKeys[0];
+  let bestDist=Infinity;
+  allNodeKeys.forEach(k=>{
+    const n=nodeMap[k];
+    if(!ptInPoly([n.lat,n.lng],bPts))return;
+    const d=Math.hypot(n.lat-minLat,n.lng-minLon);
+    if(d<bestDist){bestDist=d;startKey=k;}
+  });
+
+  // Nearest-neighbor sobre arestas não visitadas
+  const visited=new Set();
+  const orderedPts=[];
+  let cur=startKey;
+  let safetyLimit=edges.length*3;
+  let iter=0;
+
+  while(visited.size<edges.length&&iter<safetyLimit){
+    iter++;
+    // Arestas adjacentes não visitadas
+    const adj=edges.filter((e,i)=>!visited.has(i)&&(e.from===cur||e.to===cur));
+    if(!adj.length){
+      // Não há adjacente — pula para aresta mais próxima não visitada
+      const remaining=edges.filter((_,i)=>!visited.has(i));
+      if(!remaining.length)break;
+      const curNode=nodeMap[cur];
+      let closest=remaining[0],closestIdx=edges.indexOf(remaining[0]),closestD=Infinity;
+      remaining.forEach(e=>{
+        const idx=edges.indexOf(e);
+        const fn=nodeMap[e.from],tn=nodeMap[e.to];
+        const d=Math.min(
+          Math.hypot((fn?fn.lat:0)-curNode.lat,(fn?fn.lng||fn.lon:0)-curNode.lng),
+          Math.hypot((tn?tn.lat:0)-curNode.lat,(tn?tn.lng||tn.lon:0)-curNode.lng)
+        );
+        if(d<closestD){closestD=d;closest=e;closestIdx=idx;}
+      });
+      // Adiciona ponto de transição
+      const fn=nodeMap[closest.from];
+      if(fn)orderedPts.push({lat:fn.lat,lng:fn.lng||fn.lon});
+      cur=closest.from;
+      continue;
+    }
+
+    // Escolhe aresta mais curta entre adjacentes (minimiza repetição)
+    adj.sort((a,b)=>a.dist-b.dist);
+    const e=adj[0];
+    const eIdx=edges.indexOf(e);
+    visited.add(eIdx);
+
+    // Adiciona pontos da aresta na direção correta
+    let pts=e.pts;
+    if(e.to===cur)pts=[...pts].reverse();
+    // Usa só início, meio e fim de cada segmento (simplifica)
+    const mid=pts[Math.floor(pts.length/2)];
+    const last=pts[pts.length-1];
+    if(orderedPts.length===0){
+      const first=pts[0];
+      orderedPts.push({lat:first.lat,lng:first.lon});
+    }
+    if(pts.length>3)orderedPts.push({lat:mid.lat,lng:mid.lon});
+    orderedPts.push({lat:last.lat,lng:last.lon});
+    cur=e.from===cur?e.to:e.from;
+  }
+
+  // Filtra pontos fora do polígono e duplicatas
+  const filtered=orderedPts.filter((p,i)=>{
+    if(!ptInPoly([p.lat,p.lng],bPts))return false;
+    if(i===0)return true;
+    const prev=orderedPts[i-1];
+    const d=Math.hypot(p.lat-prev.lat,p.lng-prev.lng)*111320;
+    return d>20; // Remove pontos muito próximos (<20m)
+  });
+
+  // Limita a 80 pontos máximo por subsample
+  let final=filtered;
+  if(filtered.length>80){
+    const step=Math.floor(filtered.length/80);
+    final=filtered.filter((_,i)=>i%step===0).slice(0,80);
+  }
+
+  if(!final.length){cSt('Não foi possível gerar rota automática','r');resetAutoBtn();return;}
+
+  // Define início como primeiro ponto
+  startPt=final[0];
+  if(startMkr)mapC.removeLayer(startMkr);
+  startMkr=L.circleMarker([startPt.lat,startPt.lng],{radius:9,color:'#4CAF50',fillColor:'#4CAF50',fillOpacity:1,weight:2}).addTo(mapC).bindPopup('▶ INÍCIO');
+  startMkr._av=true;
+
+  waypoints=final.slice(1);
+  renderWaypoints();
+  resetAutoBtn();
+  cSt(`${final.length} pontos gerados automaticamente — edite se necessário, depois ▶ GERAR`,'g');
+}
+
+function resetAutoBtn(){
+  document.getElementById('cBtnAuto').className='btn';
+  document.getElementById('cBtnAuto').textContent='⊞ Auto';
 }
 
 // ── GPX ───────────────────────────────────────────────────────
