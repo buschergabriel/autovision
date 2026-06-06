@@ -3,546 +3,479 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AUTOVISION — Rota</title>
+<title>AUTOVISION</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root{--am:#F5C800;--bg:#0A0A0A;--panel:#111;--panel2:#161616;--border:#2A2A2A;--text:#E0E0E0;--muted:#555;--green:#4CAF50;--orange:#F5A623;--purple:#C084FC;--red:#FF4444;--cyan:#00CCCC}
+:root{
+  --am:#F5C800;--bg:#080808;--panel:#0E0E0E;--panel2:#141414;
+  --border:#1E1E1E;--text:#E8E8E8;--muted:#444;--muted2:#666;
+  --green:#3DBA6F;--orange:#F5A623;--purple:#9B6DFF;--red:#E8384F;--cyan:#00C8C8;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
-#hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:7px 12px;flex-shrink:0}
-#hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.logo{font-size:11px;letter-spacing:4px;color:var(--am);font-weight:bold}
-.sub{font-size:8px;color:var(--muted);letter-spacing:2px}
-#hdr-fields{display:flex;gap:7px}
-.ig{display:flex;flex-direction:column;gap:2px;flex:1;min-width:55px}
-.il{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-input{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:5px 7px;border-radius:2px;width:100%;outline:none}
-input:focus{border-color:var(--am)}
-#tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:9px 0;text-align:center;font-size:10px;letter-spacing:2px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase}
-.tab.active{color:var(--am);border-bottom-color:var(--am);background:#0F0E00}
-.tab.ready{color:var(--purple)}
-.tab.ready.active{color:var(--am)}
-.tab-panel{display:none;flex-direction:column;flex:1;overflow:hidden}
-.tab-panel.show{display:flex}
-.trow{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;gap:6px;align-items:center;flex-shrink:0;overflow-x:auto}
-#search-row{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;gap:6px;flex-shrink:0}
-#bairro-input,#cidade-input{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:6px 8px;border-radius:2px;outline:none}
-#bairro-input{flex:1}#bairro-input:focus,#cidade-input:focus{border-color:var(--am)}
-#cidade-input{width:120px}
-.banner{display:none;border-bottom:1px solid;padding:8px 12px;flex-shrink:0;gap:8px;align-items:center}
-.banner.show{display:flex}
-#confirm-banner{background:#1A1500;border-color:#3A2A00}
-#confirm-name{font-size:11px;color:var(--am);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#pronto-banner{background:#001A00;border-color:#1A4A00}
-#pronto-info{font-size:11px;color:var(--green);flex:1}
-.btn{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;padding:6px 10px;border-radius:2px;cursor:pointer;white-space:nowrap;transition:all .15s;text-transform:uppercase}
-.btn.on{background:#1A1500;border-color:var(--am);color:var(--am)}
-.btn.on-move{background:#001A1A;border-color:var(--cyan);color:var(--cyan)}
-.btn.on-del{background:#1A0000;border-color:var(--red);color:var(--red)}
-.btn.on-start{background:#001A1A;border-color:var(--green);color:var(--green)}
-.btn.on-node{background:#0D0020;border-color:var(--purple);color:var(--purple)}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;display:flex;flex-direction:column;height:100dvh}
+
+/* ── HEADER ── */
+#hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:12px;letter-spacing:5px;color:var(--am);font-weight:bold}
+.version{font-size:8px;color:var(--muted);letter-spacing:2px}
+#area-badge{font-size:9px;color:var(--muted2);letter-spacing:1px}
+
+/* ── TABS ── */
+#tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--panel)}
+.tab{flex:1;padding:10px 0;text-align:center;font-size:9px;letter-spacing:2px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;user-select:none}
+.tab.active{color:var(--am);border-bottom-color:var(--am);background:rgba(245,200,0,.04)}
+.tab.done{color:var(--green)}
+.tab.done.active{color:var(--am)}
+
+/* ── PANELS ── */
+.panel{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+.panel.show{display:flex}
+
+/* ── ROWS ── */
+.row{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:6px;align-items:center;flex-shrink:0;overflow-x:auto}
+.row-label{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+
+/* ── BUTTONS ── */
+.btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;padding:7px 11px;border-radius:2px;cursor:pointer;white-space:nowrap;transition:all .15s;text-transform:uppercase;-webkit-tap-highlight-color:transparent}
+.btn:active{opacity:.7}
+.btn.on{background:rgba(245,200,0,.08);border-color:var(--am);color:var(--am)}
+.btn.on-move{background:rgba(0,200,200,.08);border-color:var(--cyan);color:var(--cyan)}
+.btn.on-del{background:rgba(232,56,79,.08);border-color:var(--red);color:var(--red)}
+.btn.on-start{background:rgba(61,186,111,.08);border-color:var(--green);color:var(--green)}
 .btn.primary{background:var(--am);border-color:var(--am);color:#000;font-weight:bold}
-.btn.green{background:#001A00;border-color:var(--green);color:var(--green);font-weight:bold}
-.btn.confirm{background:#1A3A00;border-color:var(--green);color:var(--green)}
-.btn.cancel{background:#1A0000;border-color:var(--red);color:var(--red)}
-.btn.danger{border-color:#3A1010;color:#884444}
+.btn.green{background:rgba(61,186,111,.12);border-color:var(--green);color:var(--green);font-weight:bold}
+.btn.danger{border-color:#2A1010;color:#663333}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn.full{width:100%;padding:11px;font-size:11px;letter-spacing:2px;text-align:center;display:block}
 .btn.sm{padding:5px 8px;font-size:12px}
-.btn.full{width:100%;font-size:11px;padding:10px;letter-spacing:2px}
-.map-wrap{flex:1;min-height:0;overflow:hidden}
-.map-wrap>div{height:100%;width:100%}
-.statusbar{background:var(--panel);border-top:1px solid var(--border);padding:5px 10px;font-size:10px;color:var(--muted);letter-spacing:1px;flex-shrink:0;min-height:26px;display:flex;align-items:center;gap:6px}
+.btn.outline{background:transparent;border-color:var(--border);color:var(--muted2)}
+
+/* ── INPUTS ── */
+input,select{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:7px 9px;border-radius:2px;outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--am)}
+input[type=date]{color-scheme:dark}
+
+/* ── MAP ── */
+.map-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.map-wrap>div{height:100%!important;width:100%!important}
+
+/* ── STATUS ── */
+.status{background:var(--panel);border-top:1px solid var(--border);padding:5px 12px;font-size:10px;color:var(--muted2);letter-spacing:1px;flex-shrink:0;min-height:26px;display:flex;align-items:center;gap:7px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.dot.g{background:var(--green);box-shadow:0 0 5px var(--green)}
-.dot.y{background:var(--am);box-shadow:0 0 5px var(--am);animation:pulse 1s infinite}
+.dot.g{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot.y{background:var(--am);box-shadow:0 0 6px var(--am);animation:pulse 1s infinite}
 .dot.r{background:var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-/* DADOS */
-#tab-dados-content{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:12px}
-.dados-empty{color:var(--muted);font-size:11px;text-align:center;margin-top:40px;letter-spacing:1px}
-.d-section{background:var(--panel2);border:1px solid var(--border);border-radius:3px;overflow:hidden}
-.d-title{font-size:8px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--panel)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── PROJETO PANEL ── */
+#proj-content{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:8px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase}
+.field-row{display:flex;gap:8px}
+.field-row input,.field-row select{flex:1}
+
+/* VEICULAÇÕES */
+.veic-header{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.veic-title{font-size:8px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase}
+#veics-list{display:flex;flex-direction:column;gap:8px}
+.veic-card{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:10px;position:relative}
+.veic-card-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+.veic-card-row:last-child{margin-bottom:0}
+.veic-card input,.veic-card select{flex:1;min-width:80px;font-size:11px;padding:5px 7px}
+.veic-remove{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 5px}
+.veic-remove:hover{color:var(--red)}
+
+/* TOTALIZADORES */
+.totals-box{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.total-item .lbl{font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.total-item .val{font-size:18px;font-weight:bold;color:var(--purple)}
+.total-item .val span{font-size:10px;color:var(--muted2);margin-left:2px}
+.total-item .val.ok{color:var(--green)}
+.total-item .val.warn{color:var(--orange)}
+
+/* IMPORT/EXPORT row */
+.io-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── BAIRRO BANNERS ── */
+.banner{display:none;padding:8px 12px;flex-shrink:0;gap:8px;align-items:center;border-bottom:1px solid}
+.banner.show{display:flex}
+#confirm-banner{background:rgba(245,200,0,.06);border-color:rgba(245,200,0,.3)}
+#confirm-name{font-size:11px;color:var(--am);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pronto-banner{background:rgba(61,186,111,.06);border-color:rgba(61,186,111,.3)}
+#pronto-info{font-size:11px;color:var(--green);flex:1}
+
+/* ── DADOS PANEL ── */
+#dados-content{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:12px}
+.d-empty{color:var(--muted);font-size:11px;text-align:center;margin-top:40px;letter-spacing:1px}
+.d-section{background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden}
+.d-title{font-size:8px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--panel)}
 .d-grid{display:grid;grid-template-columns:1fr 1fr}
 .d-cell{padding:11px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
 .d-cell:nth-child(even){border-right:none}
 .d-cell:nth-last-child(-n+2){border-bottom:none}
-.d-lbl{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.d-lbl{font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
 .d-val{font-size:19px;font-weight:bold;color:var(--purple)}
-.d-val span{font-size:10px;color:var(--muted);margin-left:2px}
-.d-val.or{color:var(--orange)}.d-val.gr{color:var(--green)}.d-val.bl{color:#4A90FF}
-.verdict-box{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:13px}
-.verdict-box p{font-size:12px;line-height:1.8;color:var(--text)}
+.d-val span{font-size:10px;color:var(--muted2);margin-left:2px}
+.d-val.or{color:var(--orange)}.d-val.gr{color:var(--green)}.d-val.bl{color:#4A9EFF}
+.verdict-box{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:13px}
+.verdict-box p{font-size:12px;line-height:1.8}
 .verdict-box strong{color:var(--am)}
-.verdict-box .sub{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;border-top:1px solid var(--border);padding-top:8px}
-/* WAYPOINT markers */
-.wp-num{background:var(--purple);color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.7);cursor:pointer}
-.wp-num.start{background:var(--green)}
-.wp-num.odd{background:var(--orange);border-color:#fff}
-.wp-num.del-mode{background:var(--red);cursor:pointer}
-/* node dots */
-.node-dot{width:8px;height:8px;border-radius:50%;background:rgba(192,132,252,0.5);border:1px solid var(--purple);cursor:pointer}
-.node-dot:hover{background:var(--purple)}
-/* bairro vx */
-.vx{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.6)}
-.vx.am{background:var(--am)}.vx.cy{background:var(--cyan);cursor:grab}.vx.rd{background:var(--red);cursor:pointer}
-.gps-dot{width:13px;height:13px;border-radius:50%;background:#4A90FF;border:2px solid #fff;box-shadow:0 0 7px #4A90FF}
-#area-badge{font-size:9px;color:var(--muted);letter-spacing:1px}
-/* reorder popup */
-#reorder-popup{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px;z-index:9999}
-#reorder-popup.show{display:block}
-#reorder-popup .rp-title{font-size:10px;color:var(--am);letter-spacing:2px;margin-bottom:10px}
-#reorder-popup .rp-input{display:flex;gap:8px;align-items:center}
-#reorder-popup input{width:60px;text-align:center;font-size:16px}
+.verdict-box .sub{font-size:10px;color:var(--muted2);margin-top:8px;line-height:1.6;border-top:1px solid var(--border);padding-top:8px}
+.export-grid{display:flex;flex-direction:column;gap:8px}
+
+/* ── VERTEX MARKERS ── */
+.vx{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#fff;border:2px solid rgba(255,255,255,.8);box-shadow:0 1px 6px rgba(0,0,0,.8);font-family:'Courier New',monospace}
+.vx.wp{background:var(--purple)}
+.vx.wp.odd{background:var(--orange)}
+.vx.wp.first{background:var(--green)}
+.vx.wp.del{background:var(--red);cursor:pointer}
+.vx.bairro{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.7)}
+.vx.b-add{background:var(--am)}.vx.b-move{background:var(--cyan);cursor:grab}.vx.b-del{background:var(--red);cursor:pointer}
+.gps-dot{width:14px;height:14px;border-radius:50%;background:#4A90FF;border:2px solid #fff;box-shadow:0 0 8px #4A90FF}
 </style>
 </head>
 <body>
 
 <div id="hdr">
-  <div id="hdr-top">
-    <div><div class="logo">AUTOVISION</div><div class="sub">PLANEJADOR DE ROTA v4.5</div></div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div id="area-badge"></div>
-      <button class="btn sm" onclick="irGPS()">📍</button>
-    </div>
+  <div>
+    <div class="logo">AUTOVISION</div>
+    <div class="version">PLANEJADOR v5.0</div>
   </div>
-  <div id="hdr-fields">
-    <div class="ig"><div class="il">Cliente</div><input type="text" id="iCliente" placeholder="Cliente"/></div>
-    <div class="ig"><div class="il">Campanha</div><input type="text" id="iCampanha" placeholder="Campanha"/></div>
-    <div class="ig" style="max-width:58px"><div class="il">Horas</div><input type="number" id="iHoras" value="3" min="0.5" max="12" step="0.5"/></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div id="area-badge"></div>
+    <button class="btn sm" onclick="irGPS()">📍</button>
   </div>
 </div>
 
 <div id="tabs">
-  <div class="tab active" id="tab-btn-bairro"   onclick="showTab('bairro')">▣ BAIRRO</div>
-  <div class="tab"        id="tab-btn-ruas"     onclick="showTab('ruas')">⊟ RUAS</div>
-  <div class="tab"        id="tab-btn-circuito" onclick="showTab('circuito')">⟳ CIRCUITO</div>
-  <div class="tab"        id="tab-btn-dados"    onclick="showTab('dados')">≡ DADOS</div>
+  <div class="tab active" id="t-proj"    onclick="goTab('proj')">① PROJETO</div>
+  <div class="tab"        id="t-bairro"  onclick="goTab('bairro')">② BAIRRO</div>
+  <div class="tab"        id="t-circ"    onclick="goTab('circ')">③ CIRCUITO</div>
+  <div class="tab"        id="t-dados"   onclick="goTab('dados')">④ DADOS</div>
 </div>
 
-<!-- ABA BAIRRO -->
-<div id="tab-bairro" class="tab-panel show">
-  <div id="search-row">
-    <input id="bairro-input" placeholder="Nome do bairro"/>
-    <input id="cidade-input" placeholder="Cidade, UF" value="Porto Alegre, RS"/>
+<!-- ════════════════════════════════════════════
+     ① PROJETO
+═════════════════════════════════════════════ -->
+<div id="p-proj" class="panel show">
+  <div id="proj-content">
+
+    <!-- Import -->
+    <div class="io-row">
+      <button class="btn outline" onclick="importProjClick()">⬆ Carregar projeto</button>
+      <input type="file" id="importProjFile" accept=".json" style="display:none" onchange="importProj(event)"/>
+    </div>
+
+    <!-- Cliente / Campanha -->
+    <div class="field-group">
+      <div class="field-label">Cliente</div>
+      <input type="text" id="pCliente" placeholder="Nome do cliente"/>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Campanha</div>
+      <input type="text" id="pCampanha" placeholder="Nome da campanha"/>
+    </div>
+
+    <!-- Período -->
+    <div class="field-group">
+      <div class="field-label">Período do projeto</div>
+      <div class="field-row">
+        <input type="date" id="pDataInicio"/>
+        <input type="date" id="pDataFim"/>
+      </div>
+    </div>
+
+    <!-- Veiculações -->
+    <div>
+      <div class="veic-header">
+        <div class="veic-title">Veiculações</div>
+        <button class="btn sm" onclick="addVeic()">+ Adicionar dia</button>
+      </div>
+      <div style="height:8px"></div>
+      <div id="veics-list"></div>
+    </div>
+
+    <!-- Totalizadores -->
+    <div class="totals-box" id="totals-box">
+      <div class="total-item"><div class="lbl">Total de dias</div><div class="val" id="t-dias">0</div></div>
+      <div class="total-item"><div class="lbl">Total de horas</div><div class="val" id="t-horas">0<span>h</span></div></div>
+      <div class="total-item"><div class="lbl">Hora início</div><div class="val" id="t-hi">—</div></div>
+      <div class="total-item"><div class="lbl">Hora fim</div><div class="val" id="t-hf">—</div></div>
+    </div>
+
+    <button class="btn primary full" onclick="goTab('bairro')">▶ DEFINIR BAIRRO</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     ② BAIRRO
+═════════════════════════════════════════════ -->
+<div id="p-bairro" class="panel">
+  <div class="row">
+    <input id="bairro-input" placeholder="Nome do bairro" style="flex:1;font-size:12px"/>
+    <input id="cidade-input" placeholder="Cidade, UF" value="Porto Alegre, RS" style="width:120px;font-size:11px"/>
     <button class="btn" onclick="buscarBairro()">BUSCAR</button>
   </div>
+
   <div id="confirm-banner" class="banner">
     <div id="confirm-name"></div>
-    <button class="btn confirm" onclick="confirmarBairro()">✓ USAR</button>
-    <button class="btn cancel"  onclick="rejeitarBairro()">✕</button>
+    <button class="btn" style="border-color:var(--green);color:var(--green)" onclick="confirmarBairro()">✓ USAR</button>
+    <button class="btn" style="border-color:var(--red);color:var(--red)" onclick="rejeitarBairro()">✕</button>
   </div>
-  <div class="trow">
+
+  <div class="row">
     <button class="btn on" id="bBtnAdd"  onclick="setBMode('add')">✚ Adicionar</button>
     <button class="btn"    id="bBtnMove" onclick="setBMode('move')">✎ Mover</button>
     <button class="btn"    id="bBtnDel"  onclick="setBMode('del')">✕ Remover</button>
-    <button class="btn sm" onclick="exportBairro()" title="Exportar perímetro">⬇ GeoJSON</button>
-    <button class="btn sm" onclick="importBairroClick()" title="Importar perímetro">⬆ GeoJSON</button>
-    <input type="file" id="importFile" accept=".geojson,.json" style="display:none" onchange="importBairro(event)"/>
+    <button class="btn outline" onclick="exportBairro()" title="Salvar bairro">⬇ GeoJSON</button>
+    <button class="btn outline" onclick="importBairroClick()" title="Carregar bairro">⬆ GeoJSON</button>
+    <input type="file" id="importBairroFile" accept=".geojson,.json" style="display:none" onchange="importBairro(event)"/>
     <button class="btn danger" style="margin-left:auto" onclick="limparBairro()">🗑</button>
-  </div>
-  <div id="tipo-row" style="display:none;background:var(--panel2);border-bottom:1px solid var(--border);padding:8px 10px;flex-shrink:0">
-    <div style="font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:6px">TIPO DO BAIRRO</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn on" id="tp1" onclick="setTipo(1)">🏘 Popular denso</button>
-      <button class="btn"    id="tp2" onclick="setTipo(2)">🏠 Residencial</button>
-      <button class="btn"    id="tp3" onclick="setTipo(3)">🌿 Espaçado</button>
-    </div>
-    <div style="font-size:8px;color:var(--muted);letter-spacing:2px;margin-top:10px;margin-bottom:6px">TURNO DA VEICULAÇÃO</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn"    id="tr1" onclick="setTurno(1)">🌅 Manhã</button>
-      <button class="btn"    id="tr2" onclick="setTurno(2)">☀️ Tarde</button>
-      <button class="btn on" id="tr3" onclick="setTurno(3)">🌆 Final tarde</button>
-      <button class="btn"    id="tr4" onclick="setTurno(4)">📅 Fim de semana</button>
-    </div>
-    <div id="oth-preview" style="font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:1px"></div>
   </div>
 
   <div class="map-wrap"><div id="map-bairro"></div></div>
+
   <div id="pronto-banner" class="banner">
     <div id="pronto-info"></div>
-    <button class="btn green" onclick="showTab('ruas')">▶ IR PARA RUAS</button>
+    <button class="btn green" onclick="goTab('circ')">▶ CIRCUITO</button>
   </div>
-  <div class="statusbar"><div class="dot" id="bDot"></div><span id="bSt">Busque um bairro para começar</span></div>
+
+  <div class="status"><div class="dot" id="bDot"></div><span id="bSt">Busque um bairro ou desenhe o perímetro</span></div>
 </div>
 
+<!-- ════════════════════════════════════════════
+     ③ CIRCUITO
+═════════════════════════════════════════════ -->
+<div id="p-circ" class="panel">
+  <div class="row">
+    <button class="btn on-start" id="cBtnStart" onclick="setCMode('start')">⊙ Início</button>
+    <button class="btn"          id="cBtnAdd"   onclick="setCMode('add')">✚ Ponto</button>
+    <button class="btn"          id="cBtnMove"  onclick="setCMode('move')">✎ Mover</button>
+    <button class="btn"          id="cBtnDel"   onclick="setCMode('del')">✕ Remover</button>
+    <button class="btn primary"  style="margin-left:auto" onclick="gerarRota()">▶ GERAR</button>
+    <button class="btn outline"  onclick="exportCircuito()" title="Salvar circuito">⬇</button>
+    <button class="btn outline"  onclick="importCircuitoClick()" title="Carregar circuito">⬆</button>
+    <input type="file" id="importCircFile" accept=".json" style="display:none" onchange="importCircuito(event)"/>
+    <button class="btn danger"   onclick="limparCircuito()">🗑</button>
+  </div>
 
-<!-- ABA RUAS -->
-<div id="tab-ruas" class="tab-panel">
-  <div class="trow">
-    <button class="btn primary" onclick="carregarRuas()">⟳ CARREGAR RUAS</button>
-    <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-left:8px" id="ruas-legend" style="display:none">
-      <span style="color:#FF4444">■</span> Principal &nbsp;
-      <span style="color:#F5A623">■</span> Coletora &nbsp;
-      <span style="color:#F5C800">■</span> Local &nbsp;
-      <span style="color:#888">■</span> Viela
-    </div>
-    <button class="btn danger" style="margin-left:auto" onclick="limparRuas()">🗑</button>
-  </div>
-  <div class="trow" id="ruas-filter-row" style="display:none">
-    <div style="font-size:8px;color:var(--muted);letter-spacing:2px;white-space:nowrap">TOQUE:</div>
-    <div style="font-size:9px;background:#0A2A00;border:1px solid var(--green);color:var(--green);padding:4px 8px;border-radius:2px">Verde = Obrigatória</div>
-    <div style="font-size:9px;background:#1A0000;border:1px solid var(--red);color:var(--red);padding:4px 8px;border-radius:2px">Vermelho = Excluída</div>
-    <div style="font-size:9px;background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:2px">Toque novamente = Normal</div>
-  </div>
-  <div class="map-wrap"><div id="map-ruas"></div></div>
-  <div id="ruas-pronto-banner" style="display:none;background:#001A00;border-top:1px solid var(--green);padding:8px 12px;flex-shrink:0;gap:8px;align-items:center">
-    <div id="ruas-pronto-info" style="font-size:11px;color:var(--green);flex:1"></div>
-    <button class="btn green" onclick="showTab('circuito')">▶ IR PARA CIRCUITO</button>
-  </div>
-  <div class="statusbar"><div class="dot" id="rDot"></div><span id="rSt">Carregue o bairro primeiro, depois clique ⟳ CARREGAR RUAS</span></div>
+  <div class="map-wrap"><div id="map-circ"></div></div>
+
+  <div class="status"><div class="dot" id="cDot"></div><span id="cSt">Marque o início e adicione waypoints</span></div>
 </div>
 
-<!-- ABA CIRCUITO -->
-<div id="tab-circuito" class="tab-panel">
-  <div class="trow">
-    <button class="btn on"     id="cBtnStart" onclick="setCMode('start')">⊙ Início</button>
-    <button class="btn"        id="cBtnAdd"   onclick="setCMode('add')">✚ Adicionar</button>
-    <button class="btn"        id="cBtnMove"  onclick="setCMode('move')">✎ Mover</button>
-    <button class="btn"        id="cBtnDel"   onclick="setCMode('del')">✕ Remover</button>
-    <button class="btn primary" style="margin-left:auto" onclick="gerarRota()">▶ GERAR</button>
-    <button class="btn danger"  onclick="limparCircuito()">🗑</button>
-  </div>
-  <div class="map-wrap"><div id="map-circuito"></div></div>
-  <div class="statusbar"><div class="dot" id="cDot"></div><span id="cSt">Defina waypoints e clique ▶ GERAR</span></div>
-</div>
+<!-- ════════════════════════════════════════════
+     ④ DADOS
+═════════════════════════════════════════════ -->
+<div id="p-dados" class="panel">
+  <div id="dados-content">
+    <div class="d-empty" id="d-empty">Gere um circuito para ver os dados</div>
 
-<!-- ABA DADOS -->
-<div id="tab-dados" class="tab-panel">
-  <div id="tab-dados-content">
-    <div class="dados-empty" id="dados-empty">Gere um circuito para ver os dados</div>
-    <div class="d-section" id="d-metricas" style="display:none">
-      <div class="d-title">Métricas do Circuito</div>
+    <div class="d-section" id="d-circ-info" style="display:none">
+      <div class="d-title">Circuito</div>
       <div class="d-grid">
         <div class="d-cell"><div class="d-lbl">1 volta</div><div class="d-val" id="dKm">—<span>km</span></div></div>
         <div class="d-cell"><div class="d-lbl">Tempo/volta</div><div class="d-val" id="dT">—</div></div>
-        <div class="d-cell"><div class="d-lbl">Voltas disponíveis</div><div class="d-val or" id="dVoltas">—</div></div>
+        <div class="d-cell"><div class="d-lbl">Voltas</div><div class="d-val or" id="dVoltas">—</div></div>
         <div class="d-cell"><div class="d-lbl">km cobertos</div><div class="d-val or" id="dTKm">—<span>km</span></div></div>
-        <div class="d-cell"><div class="d-lbl">Área bairro</div><div class="d-val bl" id="dArea">—<span>km²</span></div></div>
-        <div class="d-cell"><div class="d-lbl">Cobertura est.</div><div class="d-val gr" id="dCob">—<span>%</span></div></div>
+        <div class="d-cell"><div class="d-lbl">Área</div><div class="d-val bl" id="dArea">—<span>km²</span></div></div>
+        <div class="d-cell"><div class="d-lbl">Cobertura</div><div class="d-val gr" id="dCob">—<span>%</span></div></div>
       </div>
     </div>
+
+    <div class="d-section" id="d-oth-box" style="display:none">
+      <div class="d-title">OTH — Oportunidade de Ouvir</div>
+      <div class="d-grid">
+        <div class="d-cell"><div class="d-lbl">Potencial bairro</div><div class="d-val bl" id="dPotencial">—<span>pessoas</span></div></div>
+        <div class="d-cell"><div class="d-lbl">OTH por volta</div><div class="d-val gr" id="dOthVolta">—<span>pessoas</span></div></div>
+        <div class="d-cell"><div class="d-lbl">OTH total</div><div class="d-val or" id="dOthTotal" style="font-size:22px">—<span>pessoas</span></div></div>
+        <div class="d-cell"><div class="d-lbl">Alcance</div><div class="d-val gr" id="dAlcance">—<span>%</span></div></div>
+      </div>
+      <div style="padding:7px 12px;font-size:9px;color:var(--muted2);border-top:1px solid var(--border)" id="dOthMeta"></div>
+    </div>
+
     <div class="verdict-box" id="d-verdict" style="display:none">
       <p id="dVerdictText"></p>
       <div class="sub" id="dSub"></div>
     </div>
-    <div id="d-export" style="display:none">
+
+    <div class="export-grid" id="d-exports" style="display:none">
       <button class="btn full primary" onclick="exportGPX()">⬇ EXPORTAR GPX — STRAVA</button>
+      <button class="btn full outline"  onclick="exportCircuito()">⬇ SALVAR CIRCUITO (.json)</button>
+      <button class="btn full outline"  onclick="exportProjeto()">⬇ SALVAR PROJETO COMPLETO (.json)</button>
     </div>
   </div>
 </div>
 
-<!-- REORDER POPUP -->
-<div id="reorder-popup">
-  <div class="rp-title">MOVER PONTO <span id="rp-from"></span> PARA POSIÇÃO:</div>
-  <div class="rp-input">
-    <input type="number" id="rp-pos" min="1"/>
-    <button class="btn primary" onclick="confirmarReorder()">OK</button>
-    <button class="btn cancel"  onclick="fecharReorder()">✕</button>
-  </div>
-</div>
-
 <script>
-const SPD=15;
-const mapB=L.map('map-bairro',  {zoomControl:true,attributionControl:false});
-const TILES='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const SPD = 11; // velocidade real medida em campo
+const TILES = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+// ── MAPS (lazy init) ─────────────────────────────────────────
+const mapB = L.map('map-bairro',{zoomControl:true,attributionControl:false});
 L.tileLayer(TILES,{maxZoom:19}).addTo(mapB);
 mapB.setView([-30.05,-51.17],13);
 
-// mapC and mapR initialized lazily when their tabs are first opened
-let mapC=null,mapR=null;
+let mapC = null;
 function initMapC(){
-  if(mapC)return;
-  mapC=L.map('map-circuito',{zoomControl:true,attributionControl:false});
+  if(mapC) return;
+  mapC = L.map('map-circ',{zoomControl:true,attributionControl:false});
   L.tileLayer(TILES,{maxZoom:19}).addTo(mapC);
   mapC.setView([-30.05,-51.17],13);
-  setupMapCClick();
-}
-function initMapR(){
-  if(mapR)return;
-  mapR=L.map('map-ruas',{zoomControl:true,attributionControl:false});
-  L.tileLayer(TILES,{maxZoom:19}).addTo(mapR);
-  mapR.setView([-30.05,-51.17],14);
+  mapC.on('click', onMapCClick);
 }
 
-// STATE
-let bPts=[],bMode='add',bPolyL=null,bVtx=[],gpsMkr=null;
-let pendingGeo=null,pendingName='';
-let cMode='add',startPt=null,startMkr=null;
-let waypoints=[]; // [{lat,lng}] in order
-let wpMarkers=[];
-let nodeMarkers=[];
-let routeLayer=null;
-let lastGeom=null,lastData=null;
-let reorderIdx=null;
-let perimRefL=null;
+// ── STATE ────────────────────────────────────────────────────
+let bPts=[], bMode='add', bPolyL=null, bVtx=[], gpsMkr=null;
+let pendingGeo=null, pendingName='';
+let cMode='start', startPt=null, startMkr=null;
+let waypoints=[], wpMarkers=[], routeLayer=null, streetsLayer=null, perimCircL=null;
+let lastGeom=null, lastData=null;
+let veics=[], veicIdx=0;
+const TIPOS={1:{label:'Popular denso',dens:8000},2:{label:'Residencial',dens:4000},3:{label:'Espaçado',dens:1500}};
+const TURNOS={1:{label:'Manhã',fator:.40},2:{label:'Tarde',fator:.35},3:{label:'Final tarde',fator:.65},4:{label:'Fim de semana',fator:.80}};
+let tipoIdx=1, turnoIdx=3;
 
-
-// ── MAP RUAS ──────────────────────────────────────────────────
-let ruasLayers={}; // id -> {layer, status: 'normal'|'obrig'|'excluida', data}
-let perimRuasL=null;
-
-const COR_CLASSE = {
-  primary:   '#FF4444',
-  secondary: '#F5A623',
-  tertiary:  '#F5C800',
-  residential:'#AAAAAA',
-  service:   '#555555',
-  other:     '#444444'
-};
-const PESO_CLASSE = {
-  primary:4, secondary:3, tertiary:2.5, residential:2, service:1.5, other:1.5
-};
-
-function rSt(m,c){document.getElementById('rSt').textContent=m;document.getElementById('rDot').className='dot'+(c?' '+c:'');}
-
-async function carregarRuas(){
-  if(bPts.length<3){rSt('Defina o bairro primeiro na aba BAIRRO','r');return;}
-  rSt('Buscando ruas via OpenStreetMap...','y');
-
-  // Sync perimeter
-  if(perimRuasL){mapR.removeLayer(perimRuasL);}
-  perimRuasL=L.polygon(bPts,{color:'#F5C800',weight:1.5,fillColor:'#F5C800',fillOpacity:0.04,dashArray:'4,4'}).addTo(mapR);
-  mapR.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]});
-
-  const polyStr=bPts.map(p=>p[0].toFixed(6)+' '+p[1].toFixed(6)).join(' ');
-  const q=`[out:json][timeout:30];way(poly:"${polyStr}")[highway][highway!~"^(footway|path|steps|cycleway|pedestrian|proposed|construction|track)$"];out geom;`;
-
-  const SERVERS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
-  let elements=[];
-  for(const srv of SERVERS){
-    try{
-      const res=await fetch(srv,{method:'POST',body:'data='+encodeURIComponent(q),signal:AbortSignal.timeout(30000)});
-      if(!res.ok)continue;
-      const d=await res.json();
-      elements=d.elements||[];
-      if(elements.length)break;
-    }catch(e){continue;}
-  }
-
-  if(!elements.length){rSt('Nenhuma rua encontrada — verifique conexão','r');return;}
-
-  // Clear existing
-  Object.values(ruasLayers).forEach(r=>mapR.removeLayer(r.layer));
-  ruasLayers={};
-
-  let nPrimary=0,nSecondary=0,nLocal=0;
-
-  elements.forEach(way=>{
-    if(!way.geometry||way.geometry.length<2)return;
-    const hw=way.tags&&way.tags.highway;
-    let classe='other';
-    if(['motorway','trunk','primary'].includes(hw)) classe='primary';
-    else if(['secondary'].includes(hw)) classe='secondary';
-    else if(['tertiary','unclassified'].includes(hw)) classe='tertiary';
-    else if(['residential','living_street','road'].includes(hw)) classe='residential';
-    else if(['service'].includes(hw)) classe='service';
-
-    if(classe==='primary'||classe==='secondary') nPrimary++;
-    else if(classe==='tertiary') nSecondary++;
-    else nLocal++;
-
-    const pts=way.geometry.map(pt=>[pt.lat,pt.lon]);
-    const nome=(way.tags&&(way.tags.name||way.tags['addr:street']))||'';
-    const layer=L.polyline(pts,{
-      color:COR_CLASSE[classe],
-      weight:PESO_CLASSE[classe],
-      opacity:0.85
-    }).addTo(mapR);
-
-    const wayId=way.id;
-    ruasLayers[wayId]={layer,status:'normal',classe,nome,pts};
-
-    layer.on('click',()=>toggleRua(wayId));
-    if(nome){
-      layer.bindTooltip(nome,{sticky:true,className:'',opacity:0.9,direction:'auto'});
-    }
-  });
-
-  document.getElementById('ruas-filter-row').style.display='flex';
-  document.getElementById('ruas-legend').style.display='block';
-  atualizarRuasBanner();
-  rSt(elements.length+' ruas carregadas · toque para marcar obrigatória (verde) ou excluída (vermelho)','g');
-}
-
-function toggleRua(id){
-  const r=ruasLayers[id];
-  if(!r)return;
-  if(r.status==='normal') r.status='obrig';
-  else if(r.status==='obrig') r.status='excluida';
-  else r.status='normal';
-
-  const cor={normal:COR_CLASSE[r.classe],obrig:'#4CAF50',excluida:'#FF4444'};
-  const peso={normal:PESO_CLASSE[r.classe],obrig:5,excluida:3};
-  const opac={normal:0.85,obrig:1,excluida:0.5};
-  r.layer.setStyle({color:cor[r.status],weight:peso[r.status],opacity:opac[r.status],dashArray:r.status==='excluida'?'6,4':null});
-
-  atualizarRuasBanner();
-}
-
-function atualizarRuasBanner(){
-  const obrig=Object.values(ruasLayers).filter(r=>r.status==='obrig');
-  const excl=Object.values(ruasLayers).filter(r=>r.status==='excluida');
-  const banner=document.getElementById('ruas-pronto-banner');
-  const info=document.getElementById('ruas-pronto-info');
-  if(obrig.length>0||excl.length>0){
-    banner.style.display='flex';
-    info.textContent=(obrig.length>0?obrig.length+' obrigatória'+(obrig.length>1?'s':''):'')+
-      (excl.length>0?(obrig.length>0?' · ':'')+excl.length+' excluída'+(excl.length>1?'s':''):'');
-  } else {
-    banner.style.display='none';
-  }
-}
-
-function limparRuas(){
-  Object.values(ruasLayers).forEach(r=>mapR.removeLayer(r.layer));
-  ruasLayers={};
-  if(perimRuasL){mapR.removeLayer(perimRuasL);perimRuasL=null;}
-  document.getElementById('ruas-filter-row').style.display='none';
-  document.getElementById('ruas-pronto-banner').style.display='none';
-  rSt('Limpo','');
-}
-
-// Export obrigatorias as reference lines to circuito map
-function getRuasObrigatorias(){
-  return Object.values(ruasLayers).filter(r=>r.status==='obrig');
-}
-function getRuasExcluidas(){
-  return Object.values(ruasLayers).filter(r=>r.status==='excluida');
-}
-
-// ── TABS ──────────────────────────────────────────────────────
-// ── TIPO BAIRRO + TURNO ───────────────────────────────────────
-let tipoDensidade = 8000; // default: popular denso
-let turnoFator    = 0.65; // default: final tarde
-let tipoIdx       = 1;
-let turnoIdx      = 3;
-
-const TIPOS = {
-  1: {label:'Popular denso',   dens:8000},
-  2: {label:'Residencial',     dens:4000},
-  3: {label:'Espaçado',        dens:1500},
-};
-const TURNOS = {
-  1: {label:'Manhã (08h–11h30)',      fator:0.40},
-  2: {label:'Tarde (13h–17h)',         fator:0.35},
-  3: {label:'Final tarde (17h–20h)',   fator:0.65},
-  4: {label:'Fim de semana',           fator:0.80},
-};
-
-function setTipo(n){
-  tipoIdx=n; tipoDensidade=TIPOS[n].dens;
-  [1,2,3].forEach(i=>document.getElementById('tp'+i).className='btn'+(i===n?' on':''));
-  atualizarOthPreview();
-}
-function setTurno(n){
-  turnoIdx=n; turnoFator=TURNOS[n].fator;
-  [1,2,3,4].forEach(i=>document.getElementById('tr'+i).className='btn'+(i===n?' on':''));
-  atualizarOthPreview();
-}
-function atualizarOthPreview(){
-  const a=bPts.length>=3?polyAreaKm2(bPts):0;
-  if(a<=0){document.getElementById('oth-preview').textContent='';return;}
-  const potencial=Math.round(a*tipoDensidade);
-  document.getElementById('oth-preview').textContent=
-    `Potencial: ~${potencial.toLocaleString('pt-BR')} pessoas · ${TIPOS[tipoIdx].label} · ${TURNOS[turnoIdx].label}`;
-}
-
-function showTab(t){
-  ['bairro','ruas','circuito','dados'].forEach(n=>{
-    const p=document.getElementById('tab-'+n);
-    const b=document.getElementById('tab-btn-'+n);
-    if(p) p.classList.toggle('show',n===t);
-    if(b) b.classList.toggle('active',n===t);
+// ── TABS ─────────────────────────────────────────────────────
+function goTab(t){
+  ['proj','bairro','circ','dados'].forEach(n=>{
+    document.getElementById('p-'+n).classList.toggle('show',n===t);
+    document.getElementById('t-'+n).classList.toggle('active',n===t);
   });
   if(t==='bairro') setTimeout(()=>mapB.invalidateSize(),80);
-  if(t==='ruas') setTimeout(()=>{
-    initMapR();
-    mapR.invalidateSize();
-    if(bPts.length>=3&&!perimRuasL){
-      mapR.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]});
-    }
-  },80);
-  if(t==='circuito') setTimeout(()=>{
-    initMapC();
-    mapC.invalidateSize();
-    sincronizarPerimetro();
-  },80);
+  if(t==='circ')   setTimeout(()=>{initMapC();mapC.invalidateSize();syncCirc();},80);
+  if(t==='dados')  populaDados();
 }
 
-function sincronizarPerimetro(){
-  initMapC();
-  if(perimRefL){mapC.removeLayer(perimRefL);perimRefL=null;}
-  if(bPts.length<3) return;
-  perimRefL=L.polygon(bPts,{color:'#F5C800',weight:1.5,fillColor:'#F5C800',fillOpacity:0.05,dashArray:'4,4'}).addTo(mapC);
-  const bounds=L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1])));
-  mapC.fitBounds(bounds,{padding:[20,20]});
-
-  // Draw obrigatorias as green reference lines
-  mapC.eachLayer(l=>{if(l._ruaRef)mapC.removeLayer(l);});
-  getRuasObrigatorias().forEach(r=>{
-    const l=L.polyline(r.pts,{color:'#4CAF50',weight:3,opacity:0.6,dashArray:'8,4'}).addTo(mapC);
-    l._ruaRef=true;
-    if(r.nome)l.bindTooltip(r.nome+' (obrigatória)',{sticky:true,opacity:0.9});
-  });
-}
-
-// ── STATUS ────────────────────────────────────────────────────
+// ── STATUS ───────────────────────────────────────────────────
 function bSt(m,c){document.getElementById('bSt').textContent=m;document.getElementById('bDot').className='dot'+(c?' '+c:'');}
 function cSt(m,c){document.getElementById('cSt').textContent=m;document.getElementById('cDot').className='dot'+(c?' '+c:'');}
 
-// ── AREA ──────────────────────────────────────────────────────
-function polyAreaKm2(p){
-  if(p.length<3)return 0;let a=0;const R=6371000;
-  for(let i=0;i<p.length;i++){const[la,lo]=p[i],[lb,lp]=p[(i+1)%p.length];
-    a+=(lo*Math.PI/180*R*Math.cos(la*Math.PI/180))*(lb*Math.PI/180*R)-(lp*Math.PI/180*R*Math.cos(lb*Math.PI/180))*(la*Math.PI/180*R);}
-  return Math.abs(a/2)/1e6;
-}
-function updateBadge(){
-  const a=bPts.length>=3?polyAreaKm2(bPts):0;
-  document.getElementById('area-badge').textContent=a>0?`▣ ${a.toFixed(2)} km²`:'';
-  if(a>0){
-    document.getElementById('pronto-info').textContent=`${a.toFixed(2)} km² — pronto`;
-    document.getElementById('pronto-banner').classList.add('show');
-    document.getElementById('tipo-row').style.display='block';
-    atualizarOthPreview();
-  } else {
-    document.getElementById('pronto-banner').classList.remove('show');
-    document.getElementById('tipo-row').style.display='none';
-    document.getElementById('oth-preview').textContent='';
-  }
-}
-
-// ── GPS ───────────────────────────────────────────────────────
+// ── GPS ──────────────────────────────────────────────────────
 function irGPS(){
   if(!navigator.geolocation){bSt('GPS indisponível','r');return;}
-  bSt('Obtendo...','y');
-  navigator.geolocation.getCurrentPosition(p=>{
-    const{latitude:lat,longitude:lng}=p.coords;
-    mapB.setView([lat,lng],15);mapC.setView([lat,lng],15);
-    if(gpsMkr)mapB.removeLayer(gpsMkr);
-    gpsMkr=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="gps-dot"></div>',iconSize:[13,13],iconAnchor:[6,6]})}).addTo(mapB).bindPopup('📍 Você está aqui').openPopup();
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng}=pos.coords;
+    mapB.setView([lat,lng],15);
+    if(mapC) mapC.setView([lat,lng],15);
+    if(gpsMkr) mapB.removeLayer(gpsMkr);
+    gpsMkr=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="gps-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(mapB).bindPopup('📍 Você está aqui').openPopup();
     bSt('Localização encontrada','g');
   },()=>bSt('GPS indisponível','r'),{enableHighAccuracy:true,timeout:10000});
 }
 
-// ── BAIRRO ────────────────────────────────────────────────────
+// ── PROJETO ──────────────────────────────────────────────────
+function addVeic(data){
+  const id = veicIdx++;
+  const v = data || {id,data:'',hi:'08:00',hf:'12:00',bairro:'',tipo:1,turno:1};
+  if(!data) v.id=id;
+  veics.push(v);
+  renderVeics();
+}
+function removeVeic(id){
+  veics=veics.filter(v=>v.id!==id);
+  renderVeics();
+}
+function renderVeics(){
+  const el=document.getElementById('veics-list');
+  el.innerHTML='';
+  veics.forEach(v=>{
+    const div=document.createElement('div');
+    div.className='veic-card';
+    div.innerHTML=`
+      <button class="veic-remove" onclick="removeVeic(${v.id})">✕</button>
+      <div class="veic-card-row">
+        <input type="date" value="${v.data}" oninput="updateVeic(${v.id},'data',this.value)" style="flex:1.5"/>
+        <input type="time" value="${v.hi}"   oninput="updateVeic(${v.id},'hi',this.value)" style="flex:1"/>
+        <input type="time" value="${v.hf}"   oninput="updateVeic(${v.id},'hf',this.value)" style="flex:1"/>
+      </div>
+      <div class="veic-card-row">
+        <input type="text" value="${v.bairro}" placeholder="Bairro" oninput="updateVeic(${v.id},'bairro',this.value)" style="flex:2"/>
+        <select oninput="updateVeic(${v.id},'tipo',+this.value)" style="flex:1">
+          ${[1,2,3].map(i=>`<option value="${i}"${v.tipo===i?' selected':''}>${TIPOS[i].label}</option>`).join('')}
+        </select>
+        <select oninput="updateVeic(${v.id},'turno',+this.value)" style="flex:1">
+          ${[1,2,3,4].map(i=>`<option value="${i}"${v.turno===i?' selected':''}>${TURNOS[i].label.split(' ')[0]}</option>`).join('')}
+        </select>
+      </div>`;
+    el.appendChild(div);
+  });
+  calcTotals();
+}
+function updateVeic(id,field,val){
+  const v=veics.find(v=>v.id===id);
+  if(v){v[field]=val;calcTotals();}
+}
+function calcTotals(){
+  const dias=veics.filter(v=>v.data).length;
+  let totalH=0, allHi=[], allHf=[];
+  veics.forEach(v=>{
+    if(v.hi&&v.hf){
+      const [hhi,mhi]=v.hi.split(':').map(Number);
+      const [hhf,mhf]=v.hf.split(':').map(Number);
+      const h=(hhf*60+mhf-hhi*60-mhi)/60;
+      if(h>0){totalH+=h;allHi.push(v.hi);allHf.push(v.hf);}
+    }
+  });
+  document.getElementById('t-dias').textContent=dias;
+  document.getElementById('t-horas').innerHTML=totalH.toFixed(1)+'<span>h</span>';
+  document.getElementById('t-hi').textContent=allHi.length?allHi.sort()[0]:'—';
+  document.getElementById('t-hf').textContent=allHf.length?allHf.sort().reverse()[0]:'—';
+  // Update tipoIdx/turnoIdx from last veic
+  if(veics.length){const last=veics[veics.length-1];tipoIdx=last.tipo||1;turnoIdx=last.turno||3;}
+}
+function getTotalHoras(){
+  let t=0;
+  veics.forEach(v=>{
+    if(v.hi&&v.hf){
+      const[hhi,mhi]=v.hi.split(':').map(Number),[hhf,mhf]=v.hf.split(':').map(Number);
+      const h=(hhf*60+mhf-hhi*60-mhi)/60;if(h>0)t+=h;
+    }
+  });
+  return t||parseFloat(document.getElementById('t-horas').textContent)||3;
+}
+
+// ── AREA ─────────────────────────────────────────────────────
+function polyAreaKm2(p){
+  if(p.length<3)return 0;let a=0;const R=6371000;
+  for(let i=0;i<p.length;i++){
+    const[la,lo]=p[i],[lb,lp]=p[(i+1)%p.length];
+    const y1=la*Math.PI/180*R,x1=lo*Math.PI/180*R*Math.cos(la*Math.PI/180);
+    const y2=lb*Math.PI/180*R,x2=lp*Math.PI/180*R*Math.cos(lb*Math.PI/180);
+    a+=x1*y2-x2*y1;
+  }
+  return Math.abs(a/2)/1e6;
+}
+function updateBadge(){
+  const a=bPts.length>=3?polyAreaKm2(bPts):0;
+  document.getElementById('area-badge').textContent=a>0?'▣ '+a.toFixed(2)+' km²':'';
+  if(a>0){
+    document.getElementById('pronto-info').textContent=a.toFixed(2)+' km² — pronto';
+    document.getElementById('pronto-banner').classList.add('show');
+  } else {
+    document.getElementById('pronto-banner').classList.remove('show');
+  }
+}
+
+// ── BAIRRO ───────────────────────────────────────────────────
 function setBMode(m){
   bMode=m;
   ['bBtnAdd','bBtnMove','bBtnDel'].forEach(id=>document.getElementById(id).className='btn');
   document.getElementById({add:'bBtnAdd',move:'bBtnMove',del:'bBtnDel'}[m]).className='btn '+{add:'on',move:'on-move',del:'on-del'}[m];
   bRedraw();
-  bSt({add:'Toque no mapa para adicionar pontos',move:'Arraste um ponto para movê-lo',del:'Toque num ponto para removê-lo'}[m],'');
+  bSt({add:'Toque no mapa para adicionar pontos',move:'Arraste um ponto',del:'Toque num ponto para remover'}[m],'');
 }
 function bRedraw(){
   if(bPolyL)mapB.removeLayer(bPolyL);
-  if(bPts.length>=3)bPolyL=L.polygon(bPts,{color:'#F5C800',weight:2,fillColor:'#F5C800',fillOpacity:0.07}).addTo(mapB);
+  if(bPts.length>=3)bPolyL=L.polygon(bPts,{color:'#F5C800',weight:2,fillColor:'#F5C800',fillOpacity:0.06}).addTo(mapB);
   else if(bPts.length>=2)bPolyL=L.polyline(bPts,{color:'#F5C800',weight:2,dashArray:'5,4'}).addTo(mapB);
   else bPolyL=null;
   bVtx.forEach(m=>mapB.removeLayer(m));bVtx=[];
   bPts.forEach((pt,i)=>{
-    const cls=bMode==='move'?'vx cy':bMode==='del'?'vx rd':'vx am';
-    const mkr=L.marker(pt,{draggable:bMode==='move',icon:L.divIcon({className:'',html:`<div class="${cls}"></div>`,iconSize:[12,12],iconAnchor:[6,6]})}).addTo(mapB);
+    const cls='vx bairro '+{add:'b-add',move:'b-move',del:'b-del'}[bMode];
+    const mkr=L.marker(pt,{draggable:bMode==='move',icon:L.divIcon({className:'',html:'<div class="'+cls+'"></div>',iconSize:[12,12],iconAnchor:[6,6]})}).addTo(mapB);
     mkr.on('dragend',()=>{bPts[i]=[mkr.getLatLng().lat,mkr.getLatLng().lng];bRedraw();updateBadge();});
     mkr.on('click',e=>{if(bMode==='del'){L.DomEvent.stopPropagation(e);bPts.splice(i,1);bRedraw();updateBadge();}});
     bVtx.push(mkr);
@@ -552,7 +485,7 @@ function bRedraw(){
 mapB.on('click',e=>{
   if(bMode!=='add')return;
   bPts.push([e.latlng.lat,e.latlng.lng]);bRedraw();
-  bSt(`${bPts.length} pontos`,'');
+  bSt(bPts.length+' pontos','');
 });
 function limparBairro(){
   bPts=[];if(bPolyL)mapB.removeLayer(bPolyL);bPolyL=null;
@@ -560,48 +493,14 @@ function limparBairro(){
   document.getElementById('confirm-banner').classList.remove('show');
   updateBadge();bSt('Limpo','');setBMode('add');
 }
-
-// ── EXPORT / IMPORT BAIRRO ────────────────────────────────────
-function exportBairro(){
-  if(bPts.length<3){bSt('Desenhe o perímetro primeiro','r');return;}
-  const geo={type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Polygon',coordinates:[[...bPts.map(p=>[p[1],p[0]]),[bPts[0][1],bPts[0][0]]]]},properties:{cliente:document.getElementById('iCliente').value,campanha:document.getElementById('iCampanha').value}}]};
-  const blob=new Blob([JSON.stringify(geo,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`bairro-${document.getElementById('iCliente').value||'rota'}.geojson`;
-  a.click();URL.revokeObjectURL(url);
-  bSt('GeoJSON exportado','g');
-}
-function importBairroClick(){document.getElementById('importFile').click();}
-function importBairro(ev){
-  const file=ev.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const geo=JSON.parse(e.target.result);
-      let coords=null;
-      if(geo.type==='FeatureCollection')coords=geo.features[0].geometry.coordinates[0];
-      else if(geo.type==='Feature')coords=geo.geometry.coordinates[0];
-      else if(geo.type==='Polygon')coords=geo.coordinates[0];
-      if(!coords)throw new Error('formato inválido');
-      bPts=coords.slice(0,-1).map(c=>[c[1],c[0]]);
-      bRedraw();
-      mapB.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]});
-      bSt('GeoJSON importado','g');
-    }catch(err){bSt('Erro ao importar: formato inválido','r');}
-  };
-  reader.readAsText(file);
-  ev.target.value='';
-}
-
-// ── BUSCA BAIRRO ──────────────────────────────────────────────
 async function buscarBairro(){
   const q=document.getElementById('bairro-input').value.trim();
   const c=document.getElementById('cidade-input').value.trim()||'Brasil';
   if(!q)return;
-  bSt(`Buscando "${q}"...`,'y');
+  bSt('Buscando '+q+'...','y');
   document.getElementById('confirm-banner').classList.remove('show');
   try{
-    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+', '+c)}&format=json&polygon_geojson=1&limit=5`,{headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/3.3'}});
+    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q+', '+c)+'&format=json&polygon_geojson=1&limit=5',{headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/5.0'}});
     const data=await res.json();
     const item=data.find(d=>['suburb','neighbourhood','quarter','residential'].includes(d.type))||data[0];
     if(!item){bSt('Não encontrado','r');return;}
@@ -610,10 +509,10 @@ async function buscarBairro(){
     pendingName=item.display_name.split(',').slice(0,2).join(',').trim();
     if(item.geojson&&(item.geojson.type==='Polygon'||item.geojson.type==='MultiPolygon')){
       pendingGeo=item.geojson;
-      document.getElementById('confirm-name').textContent=`"${pendingName}" — é esse?`;
+      document.getElementById('confirm-name').textContent='"'+pendingName+'" — é esse?';
       document.getElementById('confirm-banner').classList.add('show');
       bSt('Confirme o bairro','y');
-    }else bSt('Sem polígono — desenhe manualmente','');
+    } else bSt('Encontrado sem polígono — desenhe manualmente','');
   }catch(e){bSt('Erro na busca','r');}
 }
 document.getElementById('bairro-input').addEventListener('keydown',e=>{if(e.key==='Enter')buscarBairro();});
@@ -627,337 +526,319 @@ function confirmarBairro(){
   if(bPts.length>1){const[f,l]=[bPts[0],bPts[bPts.length-1]];if(Math.abs(f[0]-l[0])<0.00001&&Math.abs(f[1]-l[1])<0.00001)bPts.pop();}
   bRedraw();
   document.getElementById('confirm-banner').classList.remove('show');
-  bSt(`"${pendingName}" aplicado`,'g');pendingGeo=null;
+  bSt('"'+pendingName+'" aplicado','g');pendingGeo=null;
 }
 function rejeitarBairro(){
   document.getElementById('confirm-banner').classList.remove('show');
-  bSt('Rejeitado — tente outro nome','');pendingGeo=null;
+  bSt('Rejeitado','');pendingGeo=null;
+}
+function exportBairro(){
+  if(bPts.length<3){bSt('Desenhe o perímetro primeiro','r');return;}
+  const geo={type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Polygon',coordinates:[[...bPts.map(p=>[p[1],p[0]]),[bPts[0][1],bPts[0][0]]]]},properties:{cliente:document.getElementById('pCliente').value}}]};
+  dl(JSON.stringify(geo,null,2),'application/json','bairro-'+(document.getElementById('pCliente').value||'rota')+'.geojson');
+  bSt('GeoJSON exportado','g');
+}
+function importBairroClick(){document.getElementById('importBairroFile').click();}
+function importBairro(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const geo=JSON.parse(e.target.result);
+      let coords=null;
+      if(geo.type==='FeatureCollection')coords=geo.features[0].geometry.coordinates[0];
+      else if(geo.type==='Feature')coords=geo.geometry.coordinates[0];
+      else if(geo.type==='Polygon')coords=geo.coordinates[0];
+      if(!coords)throw new Error('formato inválido');
+      bPts=coords.slice(0,-1).map(c=>[c[1],c[0]]);
+      bRedraw();
+      mapB.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]});
+      bSt('GeoJSON importado','g');
+    }catch(err){bSt('Erro ao importar','r');}
+  };
+  r.readAsText(file);ev.target.value='';
 }
 
-// ── CIRCUITO MODE ─────────────────────────────────────────────
+// ── SYNC CIRC ────────────────────────────────────────────────
+// Colors for streets by length
+const STREET_COLORS = [
+  {min:400, color:'#FF4444', weight:4},
+  {min:150, color:'#F5A623', weight:2.5},
+  {min:0,   color:'#888888', weight:1.5},
+];
+async function syncCirc(){
+  if(!mapC)return;
+  // Perímetro
+  if(perimCircL){mapC.removeLayer(perimCircL);perimCircL=null;}
+  if(bPts.length>=3){
+    perimCircL=L.polygon(bPts,{color:'#F5C800',weight:1.5,fillColor:'#F5C800',fillOpacity:0.04,dashArray:'4,4'}).addTo(mapC);
+    mapC.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]});
+    // Load streets colored by length
+    if(!streetsLayer) await loadStreets();
+  }
+  renderWaypoints();
+}
+async function loadStreets(){
+  if(!bPts.length||!mapC)return;
+  const polyStr=bPts.map(p=>p[0].toFixed(5)+' '+p[1].toFixed(5)).join(' ');
+  const q='[out:json][timeout:30];way(poly:"'+polyStr+'")[highway][highway!~"^(footway|path|steps|cycleway|pedestrian|proposed|construction|track)$"];out geom;';
+  const SERVERS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+  let elements=[];
+  for(const srv of SERVERS){
+    try{
+      const res=await fetch(srv,{method:'POST',body:'data='+encodeURIComponent(q),signal:AbortSignal.timeout(30000)});
+      if(!res.ok)continue;
+      const d=await res.json();
+      elements=d.elements||[];if(elements.length)break;
+    }catch(e){continue;}
+  }
+  if(!elements.length)return;
+  if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}
+  const group=L.layerGroup();
+  elements.forEach(way=>{
+    if(!way.geometry||way.geometry.length<2)return;
+    const pts=way.geometry.map(pt=>[pt.lat,pt.lon]);
+    // Calc length in meters
+    let len=0;
+    for(let i=0;i<pts.length-1;i++){
+      const[la,lo]=pts[i],[lb,lp]=pts[i+1];
+      const dLat=(lb-la)*111320,dLon=(lp-lo)*111320*Math.cos(la*Math.PI/180);
+      len+=Math.sqrt(dLat*dLat+dLon*dLon);
+    }
+    const style=STREET_COLORS.find(s=>len>=s.min)||STREET_COLORS[STREET_COLORS.length-1];
+    L.polyline(pts,{color:style.color,weight:style.weight,opacity:0.7}).addTo(group);
+  });
+  streetsLayer=group;
+  group.addTo(mapC);
+  cSt('Ruas carregadas — 🔴 longas · 🟠 médias · ⚫ curtas','g');
+}
+
+// ── CIRCUITO MODE ────────────────────────────────────────────
 function setCMode(m){
   cMode=m;
   ['cBtnStart','cBtnAdd','cBtnMove','cBtnDel'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.className='btn';
   });
-  const clsMap={start:'on-start',add:'on',move:'on-move',del:'on-del'};
-  const btnMap={start:'cBtnStart',add:'cBtnAdd',move:'cBtnMove',del:'cBtnDel'};
-  const el=document.getElementById(btnMap[m]);
-  if(el)el.className='btn '+clsMap[m];
-  const hints={
-    start:'Toque no mapa para marcar o ponto de início (verde)',
-    add:'Toque no mapa para adicionar waypoint à rota',
-    move:'Toque e arraste um ponto numerado para movê-lo',
-    del:'Toque num ponto numerado para removê-lo'
-  };
-  cSt(hints[m]||'','');
+  const map2={'start':'cBtnStart','add':'cBtnAdd','move':'cBtnMove','del':'cBtnDel'};
+  const cls2={'start':'on-start','add':'on','move':'on-move','del':'on-del'};
+  document.getElementById(map2[m]).className='btn '+cls2[m];
   renderWaypoints();
+  cSt({'start':'Toque no mapa para marcar o ponto de início (verde)','add':'Toque no mapa para adicionar waypoint','move':'Arraste um ponto para movê-lo','del':'Toque num ponto para removê-lo'}[m],'');
 }
-
-// ── NÓS OSM via Overpass ──────────────────────────────────────
-async function carregarNos(){
-  if(bPts.length<3){cSt('Defina o bairro primeiro','r');setCMode('start');return;}
-  cSt('Carregando interseções OSM...','y');
-  const lats=bPts.map(p=>p[0]),lons=bPts.map(p=>p[1]);
-  const bbox=`${Math.min(...lats)},${Math.min(...lons)},${Math.max(...lats)},${Math.max(...lons)}`;
-  const poly=bPts.map(p=>`${p[0]} ${p[1]}`).join(' ');
-  const q=`[out:json][timeout:20];(node(poly:"${poly}")[highway~"^(motorway_junction|crossing|traffic_signals|stop|give_way)$"];way(poly:"${poly}")[highway][highway!~"^(footway|path|steps|cycleway|pedestrian|service)$"];);out center 200;`;
-  try{
-    const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q),signal:AbortSignal.timeout(20000)});
-    const data=await res.json();
-    nodeMarkers.forEach(mk=>mapC.removeLayer(mk));nodeMarkers=[];
-    // Filtra nós dentro do polígono
-    const nodes=data.elements.filter(el=>{
-      const lat=el.lat||(el.center&&el.center.lat);
-      const lon=el.lon||(el.center&&el.center.lon);
-      return lat&&lon&&ptInPoly([lat,lon],bPts);
-    }).slice(0,300);
-    nodes.forEach(el=>{
-      const lat=el.lat||(el.center.lat),lon=el.lon||(el.center.lon);
-      const mk=L.marker([lat,lon],{icon:L.divIcon({className:'',html:'<div class="node-dot"></div>',iconSize:[8,8],iconAnchor:[4,4]})}).addTo(mapC);
-      mk.on('click',e=>{L.DomEvent.stopPropagation(e);adicionarWaypoint(lat,lon);});
-      nodeMarkers.push(mk);
-    });
-    cSt(`${nodes.length} nós OSM carregados — toque para adicionar à rota`,'g');
-  }catch(e){cSt('Erro ao carregar nós OSM — use modo ✚ Ponto','r');}
-}
-
-function ptInPoly(pt,poly){
-  let inside=false;const[px,py]=pt;
-  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-    const[xi,yi]=poly[i],[xj,yj]=poly[j];
-    if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))inside=!inside;
+function onMapCClick(e){
+  if(cMode==='start'){
+    startPt={lat:e.latlng.lat,lng:e.latlng.lng};
+    if(startMkr)mapC.removeLayer(startMkr);
+    startMkr=L.circleMarker([startPt.lat,startPt.lng],{radius:9,color:'#3DBA6F',fillColor:'#3DBA6F',fillOpacity:1,weight:2}).addTo(mapC).bindPopup('⊙ INÍCIO');
+    cSt('Início definido — adicione waypoints e ▶ GERAR','g');
+    setCMode('add');
+  } else if(cMode==='add'){
+    waypoints.push({lat:e.latlng.lat,lng:e.latlng.lng});
+    renderWaypoints();
+    cSt(waypoints.length+' pts — ▶ GERAR para calcular rota','');
   }
-  return inside;
 }
-
-// ── WAYPOINTS ─────────────────────────────────────────────────
-// mapC click setup deferred
-function setupMapCClick(){
-  if(!mapC||mapC._clickSetup)return;
-  mapC._clickSetup=true;
-  mapC.on('click',e=>{
-    if(cMode==='add'){adicionarWaypoint(e.latlng.lat,e.latlng.lng);}
-    else if(cMode==='start'){definirInicio(e.latlng.lat,e.latlng.lng);}
-  });
-  
-  
-}function adicionarWaypoint(lat,lng){
-  waypoints.push({lat,lng});
-  renderWaypoints();
-  cSt(`${waypoints.length} waypoints — ▶ GERAR para calcular rota`,'');
-}
-
-function definirInicio(lat,lng){
-  startPt={lat,lng};
-  if(startMkr)mapC.removeLayer(startMkr);
-  startMkr=L.circleMarker([lat,lng],{radius:9,color:var_green,fillColor:var_green,fillOpacity:1,weight:2}).addTo(mapC).bindPopup('⊙ PONTO DE INÍCIO');
-  startMkr._av=true;
-  cSt('Início definido — adicione waypoints e ▶ GERAR','g');
-  setCMode('start');
-}
-// workaround for CSS var in JS
-const var_green='#4CAF50';
-
 function renderWaypoints(){
-  // Clear existing markers
-  wpMarkers.forEach(m=>mapC.removeLayer(m)); wpMarkers=[];
-
+  if(!mapC)return;
+  wpMarkers.forEach(m=>mapC.removeLayer(m));wpMarkers=[];
   // Preview line
-  if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}
+  if(routeLayer&&routeLayer._isPreview){mapC.removeLayer(routeLayer);routeLayer=null;}
   const allPts=startPt?[startPt,...waypoints]:waypoints;
-  if(allPts.length>1){
-    routeLayer=L.polyline(allPts.map(p=>[p.lat,p.lng]),{color:'#C084FC',weight:2,opacity:.5,dashArray:'4,4'}).addTo(mapC);
-    routeLayer._av=true;
+  if(allPts.length>1&&!routeLayer){
+    const pl=L.polyline(allPts.map(p=>[p.lat,p.lng]),{color:'#9B6DFF',weight:2,opacity:.4,dashArray:'4,4'}).addTo(mapC);
+    pl._isPreview=true;routeLayer=pl;
   }
-
-  // Odd-node degree map
+  // Degree map for odd detection
   function dKey(p){return p.lat.toFixed(5)+','+p.lng.toFixed(5);}
-  const degMap={};
+  const deg={};
   allPts.forEach((pt,i)=>{
-    const k=dKey(pt);
-    if(!degMap[k])degMap[k]=0;
-    if(i>0)degMap[k]++;
-    if(i<allPts.length-1)degMap[k]++;
+    const k=dKey(pt);if(!deg[k])deg[k]=0;
+    if(i>0)deg[k]++;if(i<allPts.length-1)deg[k]++;
   });
-
-  // Draw numbered markers — one pass, uses waypoints array
   waypoints.forEach((wp,i)=>{
-    const isDel=(cMode==='del');
     const isDraggable=(cMode==='move');
-    const k=dKey(wp);
-    const deg=degMap[k]||0;
-    const isOdd=(deg>0&&deg%2!==0);
+    const k=dKey(wp);const d=deg[k]||0;
+    const isOdd=(d>0&&d%2!==0);
     const isFirst=(i===0&&!startPt);
-    let cls='wp-num';
-    if(isDel)       cls+=' del-mode';
-    else if(isFirst) cls+=' start';
-    else if(isOdd)  cls+=' odd';
-
+    let cls='vx wp';
+    if(cMode==='del') cls+=' del';
+    else if(isFirst) cls+=' first';
+    else if(isOdd)   cls+=' odd';
     const mkr=L.marker([wp.lat,wp.lng],{
       draggable:isDraggable,
       icon:L.divIcon({className:'',html:'<div class="'+cls+'">'+(i+1)+'</div>',iconSize:[20,20],iconAnchor:[10,10]})
     }).addTo(mapC);
-
-    mkr.on('dragend',()=>{
-      waypoints[i]={lat:mkr.getLatLng().lat,lng:mkr.getLatLng().lng};
-      renderWaypoints();
-      cSt('Ponto '+(i+1)+' movido','g');
-    });
+    mkr.on('dragend',()=>{waypoints[i]={lat:mkr.getLatLng().lat,lng:mkr.getLatLng().lng};renderWaypoints();cSt('Ponto '+(i+1)+' movido','g');});
     mkr.on('click',e=>{
       L.DomEvent.stopPropagation(e);
-      if(cMode==='del'){
-        waypoints.splice(i,1);
-        renderWaypoints();
-        cSt('Ponto '+(i+1)+' removido — '+waypoints.length+' restantes','');
-      } else if(cMode!=='move'){
-        abrirReorder(i);
-      }
+      if(cMode==='del'){waypoints.splice(i,1);renderWaypoints();cSt('Ponto '+(i+1)+' removido — '+waypoints.length+' restantes','');}
     });
     wpMarkers.push(mkr);
   });
-
-  // Status bar
-  const oddCount=Object.values(degMap).filter(d=>d>0&&d%2!==0).length;
+  const oddCount=Object.values(deg).filter(d=>d>0&&d%2!==0).length;
   if(waypoints.length>0){
-    if(oddCount>0){
-      const est=Math.round((oddCount/Math.max(allPts.length,1))*15);
-      cSt(waypoints.length+' pts · '+oddCount+' nó'+(oddCount>1?'s ímpares':' ímpar')+' (laranja) — retrabalho ~'+est+'% · ► GERAR','y');
-    } else {
-      cSt(waypoints.length+' pts — sem nós ímpares ✔ · ► GERAR','g');
-    }
+    if(oddCount>0)cSt(waypoints.length+' pts · '+oddCount+' nó'+(oddCount>1?'s ímpares':' ímpar')+' (laranja) — retrabalho ~'+Math.round(oddCount/Math.max(allPts.length,1)*15)+'%','y');
+    else cSt(waypoints.length+' pts — sem nós ímpares ✔ · ▶ GERAR','g');
   }
 }
 
-
-// ── REORDER ───────────────────────────────────────────────────
-function abrirReorder(i){
-  reorderIdx=i;
-  document.getElementById('rp-from').textContent=i+1;
-  document.getElementById('rp-pos').value=i+1;
-  document.getElementById('rp-pos').max=waypoints.length;
-  document.getElementById('reorder-popup').classList.add('show');
-}
-function confirmarReorder(){
-  const newPos=parseInt(document.getElementById('rp-pos').value)-1;
-  if(reorderIdx===null||newPos<0||newPos>=waypoints.length){fecharReorder();return;}
-  const[item]=waypoints.splice(reorderIdx,1);
-  waypoints.splice(newPos,0,item);
-  renderWaypoints();fecharReorder();
-  cSt(`Ponto movido para posição ${newPos+1}`,'g');
-}
-function fecharReorder(){reorderIdx=null;document.getElementById('reorder-popup').classList.remove('show');}
-
-// ── GERAR ROTA ────────────────────────────────────────────────
+// ── GERAR ROTA ───────────────────────────────────────────────
 async function gerarRota(){
-  initMapC();
   const allPts=startPt?[startPt,...waypoints]:waypoints;
   if(allPts.length<2){cSt('Adicione pelo menos 2 waypoints','r');return;}
-  const horas=parseFloat(document.getElementById('iHoras').value)||3;
-  const cliente=document.getElementById('iCliente').value||'—';
-  const campanha=document.getElementById('iCampanha').value||'—';
-  const areaKm2=bPts.length>=3?polyAreaKm2(bPts):0;
-
-  // Perímetro referência
-  if(perimRefL)mapC.removeLayer(perimRefL);
-  if(bPts.length>=3){perimRefL=L.polygon(bPts,{color:'#F5C800',weight:1.5,fillColor:'#F5C800',fillOpacity:0.04,dashArray:'4,4'}).addTo(mapC);}
-
-  cSt(`Calculando rota (${allPts.length} pts)...`,'y');
-
+  cSt('Calculando rota via OSRM...','y');
+  // Remove preview
+  if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}
   let geomLL,viaRua=true,distM;
   try{
-    const coords=allPts.map(p=>`${p.lng.toFixed(6)},${p.lat.toFixed(6)}`).join(';');
-    const url=`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
-    const r=await fetch(url,{signal:AbortSignal.timeout(30000)});
-    if(!r.ok)throw new Error(r.status);
-    const d=await r.json();
-    if(d.code!=='Ok')throw new Error(d.code);
+    const coords=allPts.map(p=>p.lng.toFixed(6)+','+p.lat.toFixed(6)).join(';');
+    const res=await fetch('https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson',{signal:AbortSignal.timeout(30000)});
+    if(!res.ok)throw new Error(res.status);
+    const d=await res.json();if(d.code!=='Ok')throw new Error(d.code);
     distM=d.routes[0].distance;
     geomLL=d.routes[0].geometry.coordinates.map(c=>L.latLng(c[1],c[0]));
   }catch(e){
-    console.error(e);viaRua=false;
-    distM=0;for(let i=0;i<allPts.length-1;i++)distM+=haversine([allPts[i].lat,allPts[i].lng],[allPts[i+1].lat,allPts[i+1].lng]);
+    viaRua=false;
+    distM=0;for(let i=0;i<allPts.length-1;i++){const a=[allPts[i].lat,allPts[i].lng],b=[allPts[i+1].lat,allPts[i+1].lng];const R=6371000,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;const s=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;distM+=2*R*Math.asin(Math.sqrt(s));}
     geomLL=allPts.map(p=>L.latLng(p.lat,p.lng));
   }
-
-  // Desenha rota
-  if(routeLayer)mapC.removeLayer(routeLayer);
-  routeLayer=L.polyline(geomLL,{color:'#C084FC',weight:3,opacity:.9}).addTo(mapC);
-  routeLayer._av=true;
+  routeLayer=L.polyline(geomLL,{color:'#9B6DFF',weight:3,opacity:.9}).addTo(mapC);
   lastGeom=geomLL;
-
   const voltaKm=distM/1000;
   const voltaHr=voltaKm/SPD;
+  const horas=getTotalHoras();
   const voltas=Math.floor(horas/voltaHr);
-  const totalKm=voltas*voltaKm;
-  const pct=areaKm2>0?Math.min(100,Math.round((voltaKm/(areaKm2*12))*100)):0;
-
-  lastData={voltaKm,voltaHr,voltas,totalKm,areaKm2,pct,horas,cliente,campanha,viaRua,nPts:allPts.length};
-  populaDados(lastData);
-  document.getElementById('tab-btn-dados').classList.add('ready');
-  cSt(`${voltaKm.toFixed(1)}km · ${fmtT(voltaHr)}/volta · ${voltas} volta${voltas!==1?'s':''} em ${horas}h`,'g');
+  const areaKm2=bPts.length>=3?polyAreaKm2(bPts):0;
+  const pct=areaKm2>0?Math.min(100,Math.ceil((voltaKm/(areaKm2*12))*100)):0;
+  const areaCob=voltaKm*0.08;
+  const tipoDens=TIPOS[tipoIdx].dens;
+  const turnoFator=TURNOS[turnoIdx].fator;
+  const othVolta=Math.ceil(areaCob*tipoDens*turnoFator/100)*100;
+  const othTotal=othVolta*voltas;
+  const potencial=Math.ceil(areaKm2*tipoDens/100)*100;
+  lastData={voltaKm,voltaHr,voltas,horas,areaKm2,pct,othVolta,othTotal,potencial,viaRua,nPts:allPts.length,tipoIdx,turnoIdx};
+  document.getElementById('t-dados').classList.add('done');
+  cSt(voltaKm.toFixed(1)+'km · '+fmtT(voltaHr)+'/volta · '+voltas+' volta'+(voltas!==1?'s':'')+' em '+horas+'h','g');
 }
-
-function haversine(a,b){
-  const R=6371000,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;
-  const s=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;
-  return 2*R*Math.asin(Math.sqrt(s));
-}
-function fmtT(h){const hh=Math.floor(h),mm=Math.round((h-hh)*60);if(mm===60)return`${hh+1}h00`;return hh>0?`${hh}h${String(mm).padStart(2,'0')}`:`${mm}min`;}
 
 function limparCircuito(){
-  initMapC();
+  if(!mapC)return;
   waypoints=[];startPt=null;
-  if(startMkr)mapC.removeLayer(startMkr);startMkr=null;
-  if(routeLayer)mapC.removeLayer(routeLayer);routeLayer=null;
-  if(perimRefL)mapC.removeLayer(perimRefL);perimRefL=null;
+  if(startMkr){mapC.removeLayer(startMkr);startMkr=null;}
+  if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}
   wpMarkers.forEach(m=>mapC.removeLayer(m));wpMarkers=[];
-  nodeMarkers.forEach(m=>mapC.removeLayer(m));nodeMarkers=[];
   lastGeom=null;lastData=null;
-  document.getElementById('dados-empty').style.display='block';
-  document.getElementById('d-metricas').style.display='none';
-  document.getElementById('d-verdict').style.display='none';
-  document.getElementById('d-export').style.display='none';
-  document.getElementById('tab-btn-dados').classList.remove('ready');
+  document.getElementById('t-dados').classList.remove('done');
   cSt('Limpo','');setCMode('start');
 }
 
-// ── DADOS ─────────────────────────────────────────────────────
-function populaDados(d){
-  document.getElementById('dados-empty').style.display='none';
-  document.getElementById('d-metricas').style.display='block';
-  document.getElementById('d-verdict').style.display='block';
-  document.getElementById('d-export').style.display='block';
-  document.getElementById('dKm').innerHTML=`${d.voltaKm.toFixed(1)}<span>km</span>`;
+// ── DADOS ────────────────────────────────────────────────────
+function fmtT(h){const hh=Math.floor(h),mm=Math.round((h-hh)*60);if(mm===60)return(hh+1)+'h00';return hh>0?hh+'h'+String(mm).padStart(2,'0'):mm+'min';}
+
+function populaDados(){
+  if(!lastData){return;}
+  const d=lastData;
+  document.getElementById('d-empty').style.display='none';
+  ['d-circ-info','d-oth-box','d-verdict','d-exports'].forEach(id=>document.getElementById(id).style.display='block');
+  document.getElementById('dKm').innerHTML=d.voltaKm.toFixed(1)+'<span>km</span>';
   document.getElementById('dT').innerHTML=fmtT(d.voltaHr);
-  document.getElementById('dVoltas').innerHTML=`${d.voltas}<span>x</span>`;
-  document.getElementById('dTKm').innerHTML=`${d.totalKm.toFixed(1)}<span>km</span>`;
-  document.getElementById('dArea').innerHTML=`${d.areaKm2.toFixed(2)}<span>km²</span>`;
-  document.getElementById('dCob').innerHTML=`~${d.pct}<span>%</span>`;
-  const c=d.cliente!=='—'?d.cliente:'Campanha';
-  const camp=d.campanha!=='—'?` · ${d.campanha}`:'';
-  document.getElementById('dVerdictText').innerHTML=
-    `<strong>${c}${camp}</strong><br>`+
-    `Em <strong>${d.horas}h</strong> você consegue dar <strong>${d.voltas} volta${d.voltas!==1?'s':''}</strong> pelo circuito definido.<br>`+
-    `Cada volta: <strong>${d.voltaKm.toFixed(1)}km</strong> em <strong>${fmtT(d.voltaHr)}</strong>.`;
-  // OTH calculation
-  const areaCoberta = d.voltaKm * 0.08;
-  const othPorVolta = Math.round(areaCoberta * tipoDensidade * turnoFator);
-  const othTotal    = Math.round(othPorVolta * d.voltas);
-  const potencial   = Math.round(d.areaKm2 * tipoDensidade);
-  const alcancePct  = Math.round((othTotal/potencial)*100);
-
-  let othSection = document.getElementById('d-oth');
-  if(!othSection){
-    othSection = document.createElement('div');
-    othSection.id = 'd-oth';
-    othSection.className = 'd-section';
-    document.getElementById('d-verdict').before(othSection);
-  }
-
-  othSection.innerHTML =
-    '<div class="d-title">OTH — Oportunidade de Ouvir</div>' +
-    '<div class="d-grid">' +
-      '<div class="d-cell"><div class="d-lbl">Potencial bairro</div>' +
-        '<div class="d-val bl">~' + potencial.toLocaleString('pt-BR') + '<span>pessoas</span></div></div>' +
-      '<div class="d-cell"><div class="d-lbl">OTH por volta</div>' +
-        '<div class="d-val gr">~' + othPorVolta.toLocaleString('pt-BR') + '<span>pessoas</span></div></div>' +
-      '<div class="d-cell"><div class="d-lbl">OTH total (' + d.voltas + ' voltas)</div>' +
-        '<div class="d-val or" style="font-size:22px">~' + othTotal.toLocaleString('pt-BR') + '<span>pessoas</span></div></div>' +
-      '<div class="d-cell"><div class="d-lbl">Alcance/potencial</div>' +
-        '<div class="d-val gr">' + alcancePct + '<span>%</span></div></div>' +
-    '</div>' +
-    '<div style="padding:8px 12px;font-size:9px;color:var(--muted);border-top:1px solid var(--border)">' +
-      'Tipo: ' + TIPOS[tipoIdx].label + ' (' + tipoDensidade.toLocaleString('pt-BR') + ' hab/km²) · ' +
-      'Turno: ' + TURNOS[turnoIdx].label + ' (fator ' + turnoFator + ') · Raio sonoro: 40m' +
-    '</div>';
-
-    document.getElementById('dSub').innerHTML =
-    'Área: ' + d.areaKm2.toFixed(2) + ' km² · ' + d.nPts + ' waypoints · ' +
-    (d.viaRua ? 'OSRM real' : 'estimativa') + ' · Metodologia OTH baseada em dados IBGE Censo 2022';
+  document.getElementById('dVoltas').innerHTML=d.voltas+'<span>x</span>';
+  document.getElementById('dTKm').innerHTML=(d.voltas*d.voltaKm).toFixed(1)+'<span>km</span>';
+  document.getElementById('dArea').innerHTML=d.areaKm2.toFixed(2)+'<span>km²</span>';
+  document.getElementById('dCob').innerHTML='~'+d.pct+'<span>%</span>';
+  document.getElementById('dPotencial').innerHTML='~'+d.potencial.toLocaleString('pt-BR')+'<span>pessoas</span>';
+  document.getElementById('dOthVolta').innerHTML='~'+d.othVolta.toLocaleString('pt-BR')+'<span>pessoas</span>';
+  document.getElementById('dOthTotal').innerHTML='~'+d.othTotal.toLocaleString('pt-BR')+'<span>pessoas</span>';
+  document.getElementById('dAlcance').innerHTML=Math.ceil((d.othTotal/d.potencial)*100)+'<span>%</span>';
+  document.getElementById('dOthMeta').textContent=TIPOS[d.tipoIdx].label+' ('+TIPOS[d.tipoIdx].dens.toLocaleString('pt-BR')+' hab/km²) · '+TURNOS[d.turnoIdx].label+' (fator '+TURNOS[d.turnoIdx].fator+') · Raio sonoro 40m · Metodologia OTH';
+  const cli=document.getElementById('pCliente').value||'Campanha';
+  const camp=document.getElementById('pCampanha').value;
+  document.getElementById('dVerdictText').innerHTML='<strong>'+cli+(camp?' · '+camp:'')+'</strong><br>Em <strong>'+d.horas+'h</strong> você consegue dar <strong>'+d.voltas+' volta'+(d.voltas!==1?'s':'')+' completa'+(d.voltas!==1?'s':'')+'</strong>.<br>Cada volta: <strong>'+d.voltaKm.toFixed(1)+'km</strong> em <strong>'+fmtT(d.voltaHr)+'</strong>.';
+  document.getElementById('dSub').textContent='Área: '+d.areaKm2.toFixed(2)+' km² · '+d.nPts+' waypoints · '+(d.viaRua?'OSRM real':'estimativa');
 }
 
-
-
-// ── GPX ───────────────────────────────────────────────────────
+// ── EXPORT/IMPORT ────────────────────────────────────────────
+function dl(content,type,name){
+  const blob=new Blob([content],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);
+}
+function exportCircuito(){
+  const data={waypoints,startPt,lastData};
+  dl(JSON.stringify(data,null,2),'application/json','circuito-'+(document.getElementById('pCliente').value||'rota')+'.json');
+  cSt('Circuito exportado','g');
+}
+function importCircuitoClick(){document.getElementById('importCircFile').click();}
+function importCircuito(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      waypoints=d.waypoints||[];startPt=d.startPt||null;lastData=d.lastData||null;
+      initMapC();
+      if(startPt){
+        if(startMkr)mapC.removeLayer(startMkr);
+        startMkr=L.circleMarker([startPt.lat,startPt.lng],{radius:9,color:'#3DBA6F',fillColor:'#3DBA6F',fillOpacity:1,weight:2}).addTo(mapC);
+      }
+      renderWaypoints();
+      if(lastData)document.getElementById('t-dados').classList.add('done');
+      cSt('Circuito importado — '+waypoints.length+' waypoints','g');
+    }catch(err){cSt('Erro ao importar circuito','r');}
+  };
+  r.readAsText(file);ev.target.value='';
+}
+function exportProjeto(){
+  const proj={
+    cliente:document.getElementById('pCliente').value,
+    campanha:document.getElementById('pCampanha').value,
+    dataInicio:document.getElementById('pDataInicio').value,
+    dataFim:document.getElementById('pDataFim').value,
+    veics,bPts,waypoints,startPt,lastData
+  };
+  const name=(proj.cliente||'projeto')+'-'+(proj.campanha||'campanha')+'.json';
+  dl(JSON.stringify(proj,null,2),'application/json',name.replace(/\s+/g,'-').toLowerCase());
+}
+function importProjClick(){document.getElementById('importProjFile').click();}
+function importProj(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const p=JSON.parse(e.target.result);
+      document.getElementById('pCliente').value=p.cliente||'';
+      document.getElementById('pCampanha').value=p.campanha||'';
+      document.getElementById('pDataInicio').value=p.dataInicio||'';
+      document.getElementById('pDataFim').value=p.dataFim||'';
+      veics=p.veics||[];veicIdx=veics.length;renderVeics();
+      if(p.bPts&&p.bPts.length){bPts=p.bPts;bRedraw();mapB.fitBounds(L.latLngBounds(bPts.map(pt=>L.latLng(pt[0],pt[1]))),{padding:[20,20]});}
+      if(p.waypoints){waypoints=p.waypoints;startPt=p.startPt||null;}
+      if(p.lastData){lastData=p.lastData;document.getElementById('t-dados').classList.add('done');}
+      goTab('proj');
+    }catch(err){alert('Erro ao importar projeto');}
+  };
+  r.readAsText(file);ev.target.value='';
+}
 function exportGPX(){
   if(!lastGeom||!lastGeom.length){cSt('Gere a rota primeiro','r');return;}
-  const cliente=document.getElementById('iCliente').value||'rota';
-  const campanha=document.getElementById('iCampanha').value||'campanha';
-  const name=`${cliente} — ${campanha}`;
+  const cli=document.getElementById('pCliente').value||'rota';
+  const camp=document.getElementById('pCampanha').value||'campanha';
+  const name=cli+' — '+camp;
   const startMs=Date.now();
   const pts=lastGeom.map(p=>[p.lat,p.lng]);
-  let dist=0;for(let i=0;i<pts.length-1;i++)dist+=haversine(pts[i],pts[i+1]);
+  let dist=0;
+  for(let i=0;i<pts.length-1;i++){const[la,lo]=pts[i],[lb,lp]=pts[i+1];const R=6371000,dLat=(lb-la)*Math.PI/180,dLon=(lp-lo)*Math.PI/180;const s=Math.sin(dLat/2)**2+Math.cos(la*Math.PI/180)*Math.cos(lb*Math.PI/180)*Math.sin(dLon/2)**2;dist+=2*R*Math.asin(Math.sqrt(s));}
   const msPerPt=(dist/SPD/1000)*3600000/pts.length;
   let trkpts='';
-  pts.forEach((pt,i)=>{const t=new Date(startMs+i*msPerPt).toISOString();trkpts+=`      <trkpt lat="${pt[0].toFixed(6)}" lon="${pt[1].toFixed(6)}">\n        <time>${t}</time>\n      </trkpt>\n`;});
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="AUTOVISION" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${name}</name><time>${new Date(startMs).toISOString()}</time></metadata>\n  <trk><name>${name}</name><trkseg>\n${trkpts}  </trkseg></trk>\n</gpx>`;
-  const blob=new Blob([gpx],{type:'application/gpx+xml'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`autovision-${cliente}-${campanha}.gpx`.replace(/\s+/g,'-').toLowerCase();
-  a.click();URL.revokeObjectURL(url);
-  cSt('GPX exportado','g');
+  pts.forEach((pt,i)=>{const t=new Date(startMs+i*msPerPt).toISOString();trkpts+='      <trkpt lat="'+pt[0].toFixed(6)+'" lon="'+pt[1].toFixed(6)+'">\n        <time>'+t+'</time>\n      </trkpt>\n';});
+  const gpx='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="AUTOVISION" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>'+name+'</name><time>'+new Date(startMs).toISOString()+'</time></metadata>\n  <trk><name>'+name+'</name><trkseg>\n'+trkpts+'  </trkseg></trk>\n</gpx>';
+  dl(gpx,'application/gpx+xml',(cli+'-'+camp+'.gpx').replace(/\s+/g,'-').toLowerCase());
+  cSt('GPX exportado com timestamps a '+SPD+'km/h — pronto para Strava','g');
 }
+
+// ── INIT ─────────────────────────────────────────────────────
+// Add one default veiculação
+addVeic();
 </script>
 </body>
 </html>
