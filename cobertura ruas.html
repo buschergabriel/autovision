@@ -5,7 +5,87 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AUTOVISION</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js">
+// ── LOCALSTORAGE ─────────────────────────────────────────────
+const LS_KEY = 'autovision_v5';
+
+function salvarEstado(){
+  try{
+    const state = {
+      cliente: document.getElementById('pCliente').value,
+      campanha: document.getElementById('pCampanha').value,
+      dataInicio: document.getElementById('pDataInicio').value,
+      dataFim: document.getElementById('pDataFim').value,
+      diasConfig,
+      bPts,
+      waypoints,
+      startPt,
+      lastData,
+      tipoIdx, turnoIdx
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+function restaurarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s.cliente)   document.getElementById('pCliente').value   = s.cliente;
+    if(s.campanha)  document.getElementById('pCampanha').value  = s.campanha;
+    if(s.dataInicio)document.getElementById('pDataInicio').value = s.dataInicio;
+    if(s.dataFim)   document.getElementById('pDataFim').value   = s.dataFim;
+    if(s.diasConfig){ diasConfig=s.diasConfig; renderDiasTurnos(); }
+    if(s.bPts&&s.bPts.length){ bPts=s.bPts; bRedraw(); mapB.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]}); }
+    if(s.waypoints) waypoints=s.waypoints;
+    if(s.startPt)   startPt=s.startPt;
+    if(s.lastData)  { lastData=s.lastData; document.getElementById('t-dados').classList.add('done'); }
+    if(s.tipoIdx)   tipoIdx=s.tipoIdx;
+    if(s.turnoIdx)  turnoIdx=s.turnoIdx;
+  }catch(e){}
+}
+
+// Auto-save on any input change
+function setupAutoSave(){
+  // Save on input changes in proj panel
+  ['pCliente','pCampanha','pDataInicio','pDataFim'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', salvarEstado);
+  });
+  // Save every 5s as backup
+  setInterval(salvarEstado, 5000);
+}
+
+// Patch key functions to also save state
+const _origAddVeic = addVeic;
+// Override renderWaypoints to also save
+const _origRenderWaypoints = renderWaypoints;
+function renderWaypoints(){
+  _origRenderWaypoints();
+  salvarEstado();
+}
+// Override bRedraw to also save
+const _origBRedraw = bRedraw;
+function bRedraw(){
+  _origBRedraw();
+  salvarEstado();
+}
+
+// Restore on load
+window.addEventListener('load', ()=>{
+  restaurarEstado();
+  setupAutoSave();
+});
+
+// Also save when gerarRota finishes - patch via storing after route generated
+const _origGerarRota = gerarRota;
+async function gerarRota(){
+  await _origGerarRota();
+  salvarEstado();
+}
+
+</script>
 <style>
 :root{
   --am:#F5C800;--bg:#080808;--panel:#0E0E0E;--panel2:#141414;
@@ -135,13 +215,18 @@ input[type=date]{color-scheme:dark}
 .vx.b-add{background:var(--am)}.vx.b-move{background:var(--cyan);cursor:grab}.vx.b-del{background:var(--red);cursor:pointer}
 .gps-dot{width:14px;height:14px;border-radius:50%;background:#4A90FF;border:2px solid #fff;box-shadow:0 0 8px #4A90FF}
 </style>
+<meta name="theme-color" content="#080808">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AUTOVISION">
 </head>
 <body>
 
 <div id="hdr">
   <div>
     <div class="logo">AUTOVISION</div>
-    <div class="version">PLANEJADOR v5.0</div>
+    <div class="version">PLANEJADOR v5.2</div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <div id="area-badge"></div>
@@ -168,41 +253,42 @@ input[type=date]{color-scheme:dark}
       <input type="file" id="importProjFile" accept=".json" style="display:none" onchange="importProj(event)"/>
     </div>
 
-    <!-- Cliente / Campanha -->
+    <!-- Cliente -->
     <div class="field-group">
       <div class="field-label">Cliente</div>
-      <input type="text" id="pCliente" placeholder="Nome do cliente"/>
-    </div>
-    <div class="field-group">
-      <div class="field-label">Campanha</div>
-      <input type="text" id="pCampanha" placeholder="Nome da campanha"/>
+      <input type="text" id="pCliente" placeholder="Nome do cliente" oninput="salvarEstado()"/>
     </div>
 
     <!-- Período -->
     <div class="field-group">
-      <div class="field-label">Período do projeto</div>
+      <div class="field-label">Período do contrato</div>
       <div class="field-row">
-        <input type="date" id="pDataInicio"/>
-        <input type="date" id="pDataFim"/>
+        <input type="date" id="pDataInicio" oninput="calcTotals()"/>
+        <input type="date" id="pDataFim" oninput="calcTotals()"/>
       </div>
     </div>
 
-    <!-- Veiculações -->
-    <div>
-      <div class="veic-header">
-        <div class="veic-title">Veiculações</div>
-        <button class="btn sm" onclick="addVeic()">+ Adicionar dia</button>
+    <!-- Horas por saída -->
+    <div class="field-group">
+      <div class="field-label">Horas por veiculação</div>
+      <div class="field-row" style="align-items:center">
+        <input type="number" id="pHoras" value="3" min="0.5" max="12" step="0.5" style="max-width:80px" oninput="calcTotals()"/>
+        <span style="font-size:10px;color:var(--muted2);letter-spacing:1px">horas/saída</span>
       </div>
-      <div style="height:8px"></div>
-      <div id="veics-list"></div>
+    </div>
+
+    <!-- Dias e Turnos -->
+    <div class="field-group">
+      <div class="field-label">Dias e Turnos</div>
+      <div id="dias-turnos" style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
     </div>
 
     <!-- Totalizadores -->
     <div class="totals-box" id="totals-box">
-      <div class="total-item"><div class="lbl">Total de dias</div><div class="val" id="t-dias">0</div></div>
-      <div class="total-item"><div class="lbl">Total de horas</div><div class="val" id="t-horas">0<span>h</span></div></div>
-      <div class="total-item"><div class="lbl">Hora início</div><div class="val" id="t-hi">—</div></div>
-      <div class="total-item"><div class="lbl">Hora fim</div><div class="val" id="t-hf">—</div></div>
+      <div class="total-item"><div class="lbl">Saídas/semana</div><div class="val" id="t-dias">0</div></div>
+      <div class="total-item"><div class="lbl">Horas/semana</div><div class="val" id="t-horas">0<span>h</span></div></div>
+      <div class="total-item"><div class="lbl">Saídas totais</div><div class="val" id="t-saidas">—</div></div>
+      <div class="total-item"><div class="lbl">Horas totais</div><div class="val" id="t-htotal">—<span>h</span></div></div>
     </div>
 
     <button class="btn primary full" onclick="goTab('bairro')">▶ DEFINIR BAIRRO</button>
@@ -336,6 +422,25 @@ let lastGeom=null, lastData=null;
 let veics=[], veicIdx=0;
 const TIPOS={1:{label:'Popular denso',dens:8000},2:{label:'Residencial',dens:4000},3:{label:'Espaçado',dens:1500}};
 const TURNOS={1:{label:'Manhã',fator:.40},2:{label:'Tarde',fator:.35},3:{label:'Final tarde',fator:.65},4:{label:'Fim de semana',fator:.80}};
+const DIAS_SEMANA=[
+  {id:'seg',label:'Seg'},{id:'ter',label:'Ter'},{id:'qua',label:'Qua'},
+  {id:'qui',label:'Qui'},{id:'sex',label:'Sex'},{id:'sab',label:'Sáb'},{id:'dom',label:'Dom'}
+];
+let diasConfig={};
+DIAS_SEMANA.forEach(function(d){diasConfig[d.id]={ativo:false,turno:3};});
+
+function toggleDia(id){
+  diasConfig[id].ativo=!diasConfig[id].ativo;
+  renderDiasTurnos();
+  salvarEstado();
+}
+function setDiaTurno(id,val){
+  diasConfig[id].turno=val;
+  calcTotals();
+  salvarEstado();
+}
+
+
 let tipoIdx=1, turnoIdx=3;
 
 // ── TABS ─────────────────────────────────────────────────────
@@ -408,33 +513,84 @@ function updateVeic(id,field,val){
   const v=veics.find(v=>v.id===id);
   if(v){v[field]=val;calcTotals();}
 }
-function calcTotals(){
-  const dias=veics.filter(v=>v.data).length;
-  let totalH=0, allHi=[], allHf=[];
-  veics.forEach(v=>{
-    if(v.hi&&v.hf){
-      const [hhi,mhi]=v.hi.split(':').map(Number);
-      const [hhf,mhf]=v.hf.split(':').map(Number);
-      const h=(hhf*60+mhf-hhi*60-mhi)/60;
-      if(h>0){totalH+=h;allHi.push(v.hi);allHf.push(v.hf);}
+function renderDiasTurnos(){
+  var el=document.getElementById('dias-turnos');
+  if(!el)return;
+  el.innerHTML='';
+  var hv=document.getElementById('pHoras');
+  var hPS=hv?parseFloat(hv.value)||3:3;
+  DIAS_SEMANA.forEach(function(d){
+    var cfg=diasConfig[d.id];
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)';
+    var ck=document.createElement('input');
+    ck.type='checkbox';ck.checked=!!cfg.ativo;
+    ck.style.cssText='width:16px;height:16px;flex-shrink:0;cursor:pointer';
+    ck.addEventListener('change',function(){toggleDia(d.id);});
+    var lbl=document.createElement('label');
+    lbl.textContent=d.label;
+    lbl.style.cssText='font-size:12px;min-width:34px;cursor:pointer;color:'+(cfg.ativo?'var(--text)':'var(--muted2)');
+    lbl.addEventListener('click',function(){toggleDia(d.id);});
+    row.appendChild(ck);row.appendChild(lbl);
+    if(cfg.ativo){
+      var sel=document.createElement('select');
+      sel.style.cssText='flex:1;font-size:11px;padding:5px 7px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px';
+      for(var ii=1;ii<=4;ii++){
+        var opt=document.createElement('option');
+        opt.value=ii;opt.textContent=TURNOS[ii].label;
+        if(cfg.turno===ii)opt.selected=true;
+        sel.appendChild(opt);
+      }
+      (function(sx,did){sx.addEventListener('change',function(){setDiaTurno(did,+sx.value);});})(sel,d.id);
+      var badge=document.createElement('span');
+      badge.textContent=hPS+'h';
+      badge.style.cssText='font-size:10px;color:var(--muted2);white-space:nowrap';
+      row.appendChild(sel);row.appendChild(badge);
+    } else {
+      var dash=document.createElement('span');
+      dash.textContent='--';
+      dash.style.cssText='font-size:11px;color:var(--muted)';
+      row.appendChild(dash);
     }
+    el.appendChild(row);
   });
-  document.getElementById('t-dias').textContent=dias;
-  document.getElementById('t-horas').innerHTML=totalH.toFixed(1)+'<span>h</span>';
-  document.getElementById('t-hi').textContent=allHi.length?allHi.sort()[0]:'—';
-  document.getElementById('t-hf').textContent=allHf.length?allHf.sort().reverse()[0]:'—';
-  // Update tipoIdx/turnoIdx from last veic
-  if(veics.length){const last=veics[veics.length-1];tipoIdx=last.tipo||1;turnoIdx=last.turno||3;}
+  calcTotals();
+}
+
+function calcTotals(){
+  var ativos=DIAS_SEMANA.filter(function(d){return diasConfig[d.id].ativo;});
+  var saidasSemana=ativos.length;
+  var phEl=document.getElementById('pHoras');
+  var hPS=phEl?parseFloat(phEl.value)||3:3;
+  var horasSemana=saidasSemana*hPS;
+  var di=document.getElementById('pDataInicio');
+  var df=document.getElementById('pDataFim');
+  var saidasTotal='--', horasTotal='--';
+  if(di&&df&&di.value&&df.value){
+    var d1=new Date(di.value),d2=new Date(df.value);
+    var dias=(d2-d1)/(1000*60*60*24);
+    if(dias>0){
+      var semanas=dias/7;
+      var st=Math.round(saidasSemana*semanas);
+      saidasTotal=st;
+      horasTotal=(st*hPS).toFixed(1);
+    }
+  }
+  var tdi=document.getElementById('t-dias');
+  var th=document.getElementById('t-horas');
+  var ts=document.getElementById('t-saidas');
+  var tht=document.getElementById('t-htotal');
+  if(tdi)tdi.textContent=saidasSemana;
+  if(th)th.innerHTML=horasSemana.toFixed(1)+'<span>h</span>';
+  if(ts)ts.textContent=saidasTotal;
+  if(tht)tht.innerHTML=(horasTotal!='--'?horasTotal:'--')+'<span>h</span>';
+  var firstAtivo=ativos[0];
+  if(firstAtivo)turnoIdx=diasConfig[firstAtivo.id].turno;
+  salvarEstado();
 }
 function getTotalHoras(){
-  let t=0;
-  veics.forEach(v=>{
-    if(v.hi&&v.hf){
-      const[hhi,mhi]=v.hi.split(':').map(Number),[hhf,mhf]=v.hf.split(':').map(Number);
-      const h=(hhf*60+mhf-hhi*60-mhi)/60;if(h>0)t+=h;
-    }
-  });
-  return t||parseFloat(document.getElementById('t-horas').textContent)||3;
+  var phEl=document.getElementById('pHoras');
+  return phEl?parseFloat(phEl.value)||3:3;
 }
 
 // ── AREA ─────────────────────────────────────────────────────
@@ -794,7 +950,7 @@ function exportProjeto(){
     campanha:document.getElementById('pCampanha').value,
     dataInicio:document.getElementById('pDataInicio').value,
     dataFim:document.getElementById('pDataFim').value,
-    veics,bPts,waypoints,startPt,lastData
+    diasConfig,bPts,waypoints,startPt,lastData
   };
   const name=(proj.cliente||'projeto')+'-'+(proj.campanha||'campanha')+'.json';
   dl(JSON.stringify(proj,null,2),'application/json',name.replace(/\s+/g,'-').toLowerCase());
@@ -837,8 +993,88 @@ function exportGPX(){
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-// Add one default veiculação
-addVeic();
+renderDiasTurnos();
+
+// ── LOCALSTORAGE ─────────────────────────────────────────────
+const LS_KEY = 'autovision_v5';
+
+function salvarEstado(){
+  try{
+    const state = {
+      cliente: document.getElementById('pCliente').value,
+      campanha: document.getElementById('pCampanha').value,
+      dataInicio: document.getElementById('pDataInicio').value,
+      dataFim: document.getElementById('pDataFim').value,
+      diasConfig,
+      bPts,
+      waypoints,
+      startPt,
+      lastData,
+      tipoIdx, turnoIdx
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+function restaurarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s.cliente)   document.getElementById('pCliente').value   = s.cliente;
+    if(s.campanha)  document.getElementById('pCampanha').value  = s.campanha;
+    if(s.dataInicio)document.getElementById('pDataInicio').value = s.dataInicio;
+    if(s.dataFim)   document.getElementById('pDataFim').value   = s.dataFim;
+    if(s.diasConfig){ diasConfig=s.diasConfig; renderDiasTurnos(); }
+    if(s.bPts&&s.bPts.length){ bPts=s.bPts; bRedraw(); mapB.fitBounds(L.latLngBounds(bPts.map(p=>L.latLng(p[0],p[1]))),{padding:[20,20]}); }
+    if(s.waypoints) waypoints=s.waypoints;
+    if(s.startPt)   startPt=s.startPt;
+    if(s.lastData)  { lastData=s.lastData; document.getElementById('t-dados').classList.add('done'); }
+    if(s.tipoIdx)   tipoIdx=s.tipoIdx;
+    if(s.turnoIdx)  turnoIdx=s.turnoIdx;
+  }catch(e){}
+}
+
+// Auto-save on any input change
+function setupAutoSave(){
+  // Save on input changes in proj panel
+  ['pCliente','pCampanha','pDataInicio','pDataFim'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', salvarEstado);
+  });
+  // Save every 5s as backup
+  setInterval(salvarEstado, 5000);
+}
+
+// Patch key functions to also save state
+const _origAddVeic = addVeic;
+// Override renderWaypoints to also save
+const _origRenderWaypoints = renderWaypoints;
+function renderWaypoints(){
+  _origRenderWaypoints();
+  salvarEstado();
+}
+// Override bRedraw to also save
+const _origBRedraw = bRedraw;
+function bRedraw(){
+  _origBRedraw();
+  salvarEstado();
+}
+
+// Restore on load
+window.addEventListener('load', ()=>{
+  restaurarEstado();
+  setupAutoSave();
+});
+
+// Also save when gerarRota finishes - patch via storing after route generated
+const _origGerarRota = gerarRota;
+async function gerarRota(){
+  await _origGerarRota();
+  salvarEstado();
+}
+
+
 </script>
 </body>
 </html>
