@@ -1096,13 +1096,46 @@ function renderCrono(){
     v.blocos.forEach(function(b,i){
       var circ=b.circuitoId?circuitosBib.find(function(c){return c.id===b.circuitoId;}):null;
       var bdiv=document.createElement('div');bdiv.className='bloco-card';
-      bdiv.innerHTML='<div class="bloco-row">'
-        +'<span style="font-size:9px;color:var(--muted2);min-width:50px">Bloco '+(i+1)+'</span>'
+
+      // linha horário
+      var rowH=document.createElement('div');rowH.className='bloco-row';
+      rowH.innerHTML='<span style="font-size:9px;color:var(--muted2);min-width:50px">Bloco '+(i+1)+'</span>'
         +'<span style="font-size:12px;color:var(--text)">'+b.hi+' → '+b.hf+'</span>'
-        +'<span style="font-size:11px;color:var(--green);margin-left:auto">'+calcHorasDia(b.hi,b.hf)+'h</span>'
-        +'</div>'
-        +(b.bairros?'<div style="font-size:10px;color:var(--muted2)">📍 '+b.bairros+'</div>':'')
-        +(circ?'<div style="font-size:10px;color:var(--purple)">🗺 '+circ.nome+'</div>':'');
+        +'<span style="font-size:11px;color:var(--green);margin-left:auto">'+calcHorasDia(b.hi,b.hf)+'h</span>';
+      bdiv.appendChild(rowH);
+
+      // linha bairro (se tiver)
+      if(b.bairros){
+        var rowBairro=document.createElement('div');
+        rowBairro.style.cssText='font-size:10px;color:var(--muted2);margin-top:4px';
+        rowBairro.textContent='📍 '+b.bairros;
+        bdiv.appendChild(rowBairro);
+      }
+
+      // seletor de circuito
+      var rowC=document.createElement('div');
+      rowC.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
+      var lbl=document.createElement('span');
+      lbl.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap';
+      lbl.textContent='🗺 Circuito:';
+      var sel=document.createElement('select');
+      sel.style.cssText='flex:1;font-size:10px;padding:4px 6px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px';
+      var optN=document.createElement('option');optN.value='';optN.textContent='— nenhum —';sel.appendChild(optN);
+      circuitosBib.forEach(function(c){
+        var opt=document.createElement('option');opt.value=c.id;
+        opt.textContent=c.nome+(c.lastData?' ('+c.lastData.voltaKm.toFixed(1)+'km)':'');
+        if(b.circuitoId===c.id)opt.selected=true;
+        sel.appendChild(opt);
+      });
+      (function(bloco){
+        sel.addEventListener('change',function(){
+          bloco.circuitoId=sel.value||null;
+          salvarEstado();
+        });
+      })(b);
+      rowC.appendChild(lbl);rowC.appendChild(sel);
+      bdiv.appendChild(rowC);
+
       body.appendChild(bdiv);
     });
     // editar
