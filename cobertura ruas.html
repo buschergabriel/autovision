@@ -11,166 +11,140 @@
   --am:#F5C800;--bg:#080808;--panel:#0E0E0E;--panel2:#141414;
   --border:#1E1E1E;--text:#E8E8E8;--muted:#444;--muted2:#666;
   --green:#3DBA6F;--orange:#F5A623;--purple:#9B6DFF;--red:#E8384F;--cyan:#00C8C8;
+  --touch:48px;--touch-sm:44px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;display:flex;flex-direction:column;height:100dvh}
-
-#hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:12px;letter-spacing:5px;color:var(--am);font-weight:bold}
-.version{font-size:8px;color:var(--muted);letter-spacing:2px}
-
-#tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--panel);overflow-x:auto}
-.tab{flex:1;min-width:52px;padding:10px 4px;text-align:center;font-size:8px;letter-spacing:1px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;user-select:none;white-space:nowrap}
-.tab.active{color:var(--am);border-bottom-color:var(--am);background:rgba(245,200,0,.04)}
-.tab.done{color:var(--green)}
-.tab.done.active{color:var(--am)}
-
+html{height:100%;height:-webkit-fill-available}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;-webkit-text-size-adjust:100%}
+#hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 14px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;min-height:50px}
+.logo{font-size:13px;letter-spacing:4px;color:var(--am);font-weight:bold}
+.version{font-size:9px;color:var(--muted);letter-spacing:2px}
+#tabs{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:var(--panel);overflow-x:auto;order:99;-webkit-overflow-scrolling:touch}
+.tab{flex:1;min-width:56px;min-height:var(--touch-sm);padding:8px 2px;text-align:center;font-size:9px;letter-spacing:1px;color:var(--muted);cursor:pointer;border-top:2px solid transparent;transition:all .2s;text-transform:uppercase;user-select:none;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tab.active{color:var(--am);border-top-color:var(--am);background:rgba(245,200,0,.06)}
+.tab.done{color:var(--green)}.tab.done.active{color:var(--am)}
 .panel{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
 .panel.show{display:flex}
-
-.row{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;gap:6px;align-items:center;flex-shrink:0;overflow-x:auto}
-.scroll-content{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px}
-
-.btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;padding:7px 11px;border-radius:2px;cursor:pointer;white-space:nowrap;transition:all .15s;text-transform:uppercase;-webkit-tap-highlight-color:transparent}
-.btn:active{opacity:.7}
-.btn.on{background:rgba(245,200,0,.08);border-color:var(--am);color:var(--am)}
-.btn.on-move{background:rgba(0,200,200,.08);border-color:var(--cyan);color:var(--cyan)}
-.btn.on-del{background:rgba(232,56,79,.08);border-color:var(--red);color:var(--red)}
-.btn.on-start{background:rgba(61,186,111,.08);border-color:var(--green);color:var(--green)}
+.row{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;gap:8px;align-items:center;flex-shrink:0;overflow-x:auto;min-height:var(--touch-sm);-webkit-overflow-scrolling:touch}
+.scroll-content{flex:1;min-height:0;overflow-y:auto;padding:12px 12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch}
+.btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;padding:0 14px;height:var(--touch-sm);min-height:var(--touch-sm);border-radius:3px;cursor:pointer;white-space:nowrap;transition:all .15s;text-transform:uppercase;-webkit-tap-highlight-color:transparent;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.btn:active{opacity:.6;transform:scale(.97)}
+.btn.on{background:rgba(245,200,0,.10);border-color:var(--am);color:var(--am)}
+.btn.on-move{background:rgba(0,200,200,.10);border-color:var(--cyan);color:var(--cyan)}
+.btn.on-del{background:rgba(232,56,79,.10);border-color:var(--red);color:var(--red)}
+.btn.on-start{background:rgba(61,186,111,.10);border-color:var(--green);color:var(--green)}
 .btn.primary{background:var(--am);border-color:var(--am);color:#000;font-weight:bold}
-.btn.green{background:rgba(61,186,111,.12);border-color:var(--green);color:var(--green);font-weight:bold}
-.btn.danger{border-color:#2A1010;color:#663333}
-.btn.full{width:100%;padding:11px;font-size:11px;letter-spacing:2px;text-align:center;display:block}
-.btn.sm{padding:5px 8px;font-size:11px}
+.btn.green{background:rgba(61,186,111,.14);border-color:var(--green);color:var(--green);font-weight:bold}
+.btn.danger{border-color:#3A1010;color:#774444}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn.full{width:100%;height:48px;font-size:13px;letter-spacing:2px;text-align:center;display:flex;border-radius:3px}
+.btn.sm{height:var(--touch-sm);padding:0 12px;font-size:11px}
 .btn.outline{background:transparent;border-color:var(--border);color:var(--muted2)}
-.btn.nivel-on{background:rgba(245,200,0,.15);border-color:var(--am);color:var(--am);font-weight:bold}
-
-input,select,textarea{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:7px 9px;border-radius:2px;outline:none;-webkit-appearance:none}
+input,select,textarea{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:16px;padding:8px 10px;border-radius:3px;outline:none;-webkit-appearance:none;min-height:44px}
 input:focus,select:focus,textarea:focus{border-color:var(--am)}
-input[type=date],input[type=time]{color-scheme:dark}
-
+input[type=date],input[type=time]{color-scheme:dark;font-size:15px}
+textarea{min-height:auto;resize:none}
 .field-group{display:flex;flex-direction:column;gap:4px}
-.field-label{font-size:8px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase}
-.field-row{display:flex;gap:8px}
-.field-row input,.field-row select{flex:1}
-
+.field-label{font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase}
+.field-row{display:flex;gap:8px}.field-row input,.field-row select{flex:1}
 .map-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
 .map-wrap>div{height:100%!important;width:100%!important}
-
-.status{background:var(--panel);border-top:1px solid var(--border);padding:5px 12px;font-size:10px;color:var(--muted2);letter-spacing:1px;flex-shrink:0;min-height:26px;display:flex;align-items:center;gap:7px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.status{background:var(--panel);border-top:1px solid var(--border);padding:7px 14px;font-size:11px;color:var(--muted2);letter-spacing:1px;flex-shrink:0;min-height:32px;display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .dot.g{background:var(--green);box-shadow:0 0 6px var(--green)}
 .dot.y{background:var(--am);box-shadow:0 0 6px var(--am);animation:pulse 1s infinite}
 .dot.r{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-.banner{display:none;padding:8px 12px;flex-shrink:0;gap:8px;align-items:center;border-bottom:1px solid}
+.banner{display:none;padding:10px 14px;flex-shrink:0;gap:8px;align-items:center;border-bottom:1px solid;min-height:var(--touch-sm)}
 .banner.show{display:flex}
-
-/* CARD genérico */
-.card{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:10px 12px}
-.card-title{font-size:8px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;margin-bottom:8px}
-.card-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-
+.card{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:14px}
+.card-title{font-size:9px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;margin-bottom:10px}
 /* CALENDÁRIO */
-.cal-wrap{background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden}
-.cal-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)}
-.cal-nav{background:none;border:none;color:var(--muted2);font-size:16px;cursor:pointer;padding:4px 8px}
-.cal-nav:hover{color:var(--am)}
-.cal-month-label{font-size:11px;letter-spacing:2px;color:var(--text);text-transform:uppercase}
+.cal-wrap{background:var(--panel2);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid var(--border)}
+.cal-nav{background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer;padding:4px 8px;min-height:36px;min-width:36px;display:flex;align-items:center;justify-content:center}
+.cal-nav:active{color:var(--am)}
+.cal-month-label{font-size:12px;letter-spacing:2px;color:var(--text);text-transform:uppercase}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
-.cal-day-head{background:var(--panel);text-align:center;font-size:8px;color:var(--muted2);letter-spacing:1px;padding:5px 0;text-transform:uppercase}
-.cal-day{background:var(--panel2);text-align:center;font-size:12px;padding:8px 0;cursor:pointer;user-select:none;position:relative;transition:background .1s}
-.cal-day:active{opacity:.6}
+.cal-day-head{background:var(--panel);text-align:center;font-size:10px;color:var(--muted2);letter-spacing:1px;padding:5px 0;text-transform:uppercase}
+.cal-day{background:var(--panel2);text-align:center;font-size:14px;padding:0;cursor:pointer;user-select:none;position:relative;transition:background .1s;min-height:38px;display:flex;align-items:center;justify-content:center}
+.cal-day:active{background:rgba(245,200,0,.08)}
 .cal-day.empty{background:var(--bg);cursor:default}
-.cal-day.today{color:var(--am)}
-.cal-day.selected{background:rgba(245,200,0,.15);color:var(--am);font-weight:bold}
-.cal-day.selected::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--am)}
+.cal-day.today{color:var(--am);font-weight:bold}
+.cal-day.selected{background:rgba(245,200,0,.18);color:var(--am);font-weight:bold}
+.cal-day.selected::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--am)}
 .cal-day.past{color:var(--muted);cursor:default}
-.cal-day.has-veic{border-bottom:2px solid var(--green)}
-
-/* VEICULAÇÕES lista */
-.veic-item{background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px}
-.veic-item-header{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--border)}
-.veic-data{font-size:12px;font-weight:bold;color:var(--am);min-width:72px}
-.veic-dia{font-size:10px;color:var(--muted2);min-width:30px}
-.veic-blocos-count{font-size:10px;color:var(--muted2);flex:1}
-.veic-total-h{font-size:12px;color:var(--green);margin-left:auto}
-.veic-remove{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 6px;flex-shrink:0}
-.veic-body{padding:8px 10px;display:flex;flex-direction:column;gap:6px}
-
-.bloco-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:8px;display:flex;flex-direction:column;gap:6px}
-.bloco-row{display:flex;gap:6px;align-items:center}
-.bloco-row input[type=time]{flex:1;font-size:11px;padding:5px 7px}
-.bloco-row .sep{font-size:10px;color:var(--muted2)}
-.bloco-horas{font-size:10px;color:var(--green);min-width:28px;text-align:right}
-.bloco-bairros{font-size:11px;color:var(--muted2);flex:1;padding:5px 7px;border:1px solid var(--border);background:var(--panel2);border-radius:2px}
-.bloco-circ{font-size:10px;color:var(--purple)}
-.bloco-remove{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 5px}
-
-/* BAIRROS lista */
-.bairro-item{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:8px 10px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.bairro-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.bairro-nome{font-size:11px;flex:1}
-.bairro-area{font-size:9px;color:var(--muted2)}
-
-/* CIRCUITO biblioteca */
-.circ-item{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:8px 10px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.circ-nome{font-size:11px;flex:1;color:var(--text)}
-.circ-meta{font-size:9px;color:var(--muted2)}
-
+.cal-day.has-veic{border-bottom:3px solid var(--green)}
+/* VEICULAÇÕES */
+.veic-item{background:var(--panel2);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.veic-item-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);min-height:var(--touch)}
+.veic-data{font-size:14px;font-weight:bold;color:var(--am);min-width:76px}
+.veic-dia{font-size:11px;color:var(--muted2);min-width:32px}
+.veic-blocos-count{font-size:11px;color:var(--muted2);flex:1}
+.veic-total-h{font-size:14px;color:var(--green);margin-left:auto}
+.veic-remove{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;min-height:var(--touch-sm);min-width:var(--touch-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.veic-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.bloco-card{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:10px;display:flex;flex-direction:column;gap:6px}
+/* BAIRROS */
+.bairro-item{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;min-height:var(--touch)}
+.bairro-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.bairro-nome{font-size:13px;flex:1}
+.bairro-area{font-size:10px;color:var(--muted2)}
+/* CIRCUITO */
+.circ-item{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;min-height:var(--touch)}
+.circ-nome{font-size:13px;flex:1;color:var(--text)}
+.circ-meta{font-size:10px;color:var(--muted2)}
 /* CRONOGRAMA */
-.crono-item{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:8px 10px;margin-bottom:4px}
-.crono-header{display:flex;gap:8px;align-items:center;margin-bottom:4px}
-.crono-data{font-size:11px;font-weight:bold;color:var(--am);min-width:72px}
-.crono-dia{font-size:10px;color:var(--muted2)}
-.crono-blocos{display:flex;flex-direction:column;gap:3px;padding-left:12px;border-left:2px solid var(--border)}
-.crono-bloco{font-size:10px;color:var(--muted2)}
+.crono-item{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;margin-bottom:6px}
+.crono-header{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.crono-data{font-size:13px;font-weight:bold;color:var(--am);min-width:76px}
+.crono-dia{font-size:11px;color:var(--muted2)}
+.crono-blocos{display:flex;flex-direction:column;gap:4px;padding-left:14px;border-left:2px solid var(--border)}
+.crono-bloco{font-size:11px;color:var(--muted2)}
 .crono-bloco span{color:var(--text)}
-
-/* TOTALS */
-.totals-box{background:var(--panel2);border:1px solid var(--border);border-radius:2px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.total-item .lbl{font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+/* TOTAIS */
+.totals-box{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.total-item .lbl{font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
 .total-item .val{font-size:18px;font-weight:bold;color:var(--purple)}
 .total-item .val span{font-size:10px;color:var(--muted2);margin-left:2px}
-
 /* PROPOSTA */
-.nivel-row{display:flex;gap:6px;margin-bottom:10px}
-.nivel-btn{flex:1;padding:10px 4px;text-align:center;font-size:9px;letter-spacing:1px;border:1px solid var(--border);background:var(--panel2);color:var(--muted2);cursor:pointer;border-radius:2px;font-family:'Courier New',monospace;text-transform:uppercase;transition:all .15s}
-.nivel-btn.active{background:rgba(245,200,0,.12);border-color:var(--am);color:var(--am)}
-.nivel-btn .preco{display:block;font-size:15px;font-weight:bold;margin-top:3px}
-.prop-valor-grande{font-size:28px;font-weight:bold;color:var(--am)}
-.prop-line{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border)}
+.nivel-row{display:flex;gap:8px;margin-bottom:12px}
+.nivel-btn{flex:1;padding:12px 4px;text-align:center;font-size:9px;letter-spacing:1px;border:1px solid var(--border);background:var(--panel2);color:var(--muted2);cursor:pointer;border-radius:3px;font-family:'Courier New',monospace;text-transform:uppercase;transition:all .15s;min-height:var(--touch)}
+.nivel-btn.active{background:rgba(245,200,0,.14);border-color:var(--am);color:var(--am)}
+.nivel-btn .preco{display:block;font-size:17px;font-weight:bold;margin-top:4px}
+.prop-line{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)}
 .prop-line:last-child{border-bottom:none}
-.prop-line.destaque{font-size:13px;font-weight:bold;color:var(--am)}
-
+.prop-line.destaque{font-size:15px;font-weight:bold;color:var(--am)}
+.extra-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.extra-row input[type=text]{flex:2;font-size:12px;padding:7px 8px}
+.extra-row input[type=number]{width:80px;font-size:12px;padding:7px 8px;text-align:right}
 /* DADOS */
-.d-section{background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden}
-.d-title{font-size:8px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--panel)}
+.d-section{background:var(--panel2);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.d-title{font-size:9px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--panel)}
 .d-grid{display:grid;grid-template-columns:1fr 1fr}
-.d-cell{padding:11px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.d-cell{padding:14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
 .d-cell:nth-child(even){border-right:none}
 .d-cell:nth-last-child(-n+2){border-bottom:none}
-.d-lbl{font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
-.d-val{font-size:19px;font-weight:bold;color:var(--purple)}
-.d-val span{font-size:10px;color:var(--muted2);margin-left:2px}
+.d-lbl{font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.d-val{font-size:22px;font-weight:bold;color:var(--purple)}
+.d-val span{font-size:11px;color:var(--muted2);margin-left:2px}
 .d-val.or{color:var(--orange)}.d-val.gr{color:var(--green)}.d-val.bl{color:#4A9EFF}
-
 /* VERTEX MARKERS */
-.vx{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#fff;border:2px solid rgba(255,255,255,.8);box-shadow:0 1px 6px rgba(0,0,0,.8);font-family:'Courier New',monospace}
+.vx{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;border:2px solid rgba(255,255,255,.8);box-shadow:0 1px 6px rgba(0,0,0,.8);font-family:'Courier New',monospace}
 .vx.wp{background:var(--purple)}.vx.wp.odd{background:var(--orange)}.vx.wp.first{background:var(--green)}.vx.wp.del{background:var(--red);cursor:pointer}
-.vx.bairro{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.7)}
+.vx.bairro{width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.7)}
 .vx.b-add{background:var(--am)}.vx.b-move{background:var(--cyan)}.vx.b-del{background:var(--red)}
-.gps-dot{width:14px;height:14px;border-radius:50%;background:#4A90FF;border:2px solid #fff;box-shadow:0 0 8px #4A90FF}
-
+.gps-dot{width:16px;height:16px;border-radius:50%;background:#4A90FF;border:2px solid #fff;box-shadow:0 0 8px #4A90FF}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
 .modal-overlay.hidden{display:none}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:4px 4px 0 0;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;padding:16px}
-.modal-title{font-size:12px;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:14px}
-.modal-actions{display:flex;gap:8px;margin-top:14px}
-
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:8px 8px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:20px 16px 32px;-webkit-overflow-scrolling:touch}
+.modal-title{font-size:13px;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.modal-actions .btn{height:52px;font-size:13px}
+/* d-exports inicial oculto */
+#d-exports{display:none;flex-direction:column;gap:8px}
 /* PRINT */
 @media print{body>*{display:none!important}#print-area{display:block!important}}
 #print-area{display:none;font-family:'Times New Roman',serif;color:#000;max-width:700px;margin:0 auto;padding:40px}
@@ -186,6 +160,13 @@ input[type=date],input[type=time]{color-scheme:dark}
 #print-area .pr-total-line.big{font-weight:bold;font-size:15px}
 #print-area .pr-footer{margin-top:32px;text-align:center;font-size:10px;color:#666;border-top:1px solid #ccc;padding-top:12px}
 #print-area ul{font-size:12px;padding-left:20px;line-height:2}
+/* DESKTOP */
+@media (min-width:700px){
+  #tabs{order:0;border-top:none;border-bottom:1px solid var(--border)}
+  .modal-overlay{align-items:center;padding:20px}
+  .modal{border-radius:6px;max-height:80vh}
+  .scroll-content{max-width:600px;width:100%;margin:0 auto;align-self:center}
+}
 </style>
 <meta name="theme-color" content="#080808">
 <meta name="mobile-web-app-capable" content="yes">
@@ -196,10 +177,11 @@ input[type=date],input[type=time]{color-scheme:dark}
 <body>
 
 <div id="hdr">
-  <div><div class="logo">AUTOVISION</div><div class="version">PLANEJADOR v5.4</div></div>
+  <div><div class="logo">AUTOVISION</div><div class="version">PLANEJADOR v5.6</div></div>
   <div style="display:flex;gap:8px;align-items:center">
     <span id="hdr-cliente" style="font-size:10px;color:var(--muted2)"></span>
     <button class="btn sm" onclick="irGPS()">📍</button>
+    <button class="btn danger sm" onclick="resetTotal()" title="Apaga tudo e começa do zero">🗑 RESET</button>
   </div>
 </div>
 
@@ -215,14 +197,12 @@ input[type=date],input[type=time]{color-scheme:dark}
 <!-- ① PROJETO -->
 <div id="p-proj" class="panel show">
   <div class="scroll-content">
-
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn outline sm" onclick="importProjClick()">⬆ Carregar</button>
       <button class="btn outline sm" onclick="exportProjeto()">⬇ Salvar</button>
       <input type="file" id="importProjFile" accept=".json" style="display:none" onchange="importProj(event)"/>
       <button class="btn danger sm" onclick="novoProj()" style="margin-left:auto">+ NOVO</button>
     </div>
-
     <div class="field-group">
       <div class="field-label">Cliente</div>
       <input type="text" id="pCliente" placeholder="Nome do cliente" oninput="onProjInput()"/>
@@ -231,26 +211,22 @@ input[type=date],input[type=time]{color-scheme:dark}
       <div class="field-label">Campanha</div>
       <input type="text" id="pCampanha" placeholder="Ex: Junho 2026 — Promoção Inverno" oninput="salvarEstado()"/>
     </div>
-
-    <!-- CALENDÁRIO -->
     <div class="field-label" style="margin-top:4px">Selecione os dias de veiculação</div>
     <div class="cal-wrap">
       <div class="cal-header">
-        <button class="cal-nav" onclick="calNav(-1)">‹</button>
+        <button class="cal-nav" onclick="calNav(-1)">&#8249;</button>
         <div class="cal-month-label" id="cal-label"></div>
-        <button class="cal-nav" onclick="calNav(1)">›</button>
+        <button class="cal-nav" onclick="calNav(1)">&#8250;</button>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
-
     <div class="totals-box">
       <div class="total-item"><div class="lbl">Veiculações</div><div class="val" id="t-veics">0</div></div>
       <div class="total-item"><div class="lbl">Blocos</div><div class="val" id="t-blocos">0</div></div>
-      <div class="total-item"><div class="lbl">Horas totais</div><div class="val" id="t-horas">0<span>h</span></div></div>
+      <div class="total-item"><div class="lbl">Horas (som)</div><div class="val" id="t-horas">0<span>h</span></div></div>
       <div class="total-item"><div class="lbl">Valor (cheio)</div><div class="val" id="t-valor" style="font-size:13px">R$0</div></div>
     </div>
-
-    <button class="btn primary full" onclick="goTab('bairros')">▶ DEFINIR BAIRROS</button>
+    <button class="btn primary full" onclick="goTab('bairros')">&#9658; DEFINIR BAIRROS</button>
   </div>
 </div>
 
@@ -261,55 +237,45 @@ input[type=date],input[type=time]{color-scheme:dark}
     <input id="cidade-input" placeholder="Cidade, UF" value="Viamão, RS" style="width:110px;font-size:11px"/>
     <button class="btn" onclick="buscarBairro()">BUSCAR</button>
   </div>
-
   <div id="confirm-banner" class="banner" style="background:rgba(245,200,0,.06);border-color:rgba(245,200,0,.3)">
     <div id="confirm-name" style="font-size:11px;color:var(--am);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-    <button class="btn sm" style="border-color:var(--green);color:var(--green)" onclick="confirmarBairro()">✓ USAR</button>
-    <button class="btn sm" style="border-color:var(--red);color:var(--red)" onclick="rejeitarBairro()">✕</button>
+    <button class="btn sm" style="border-color:var(--green);color:var(--green)" onclick="confirmarBairro()">&#10003; USAR</button>
+    <button class="btn sm" style="border-color:var(--red);color:var(--red)" onclick="rejeitarBairro()">&#10005;</button>
   </div>
-
   <div class="row">
-    <button class="btn on" id="bBtnAdd"  onclick="setBMode('add')">✚</button>
-    <button class="btn"    id="bBtnMove" onclick="setBMode('move')">✎</button>
-    <button class="btn"    id="bBtnDel"  onclick="setBMode('del')">✕</button>
+    <button class="btn on" id="bBtnAdd"  onclick="setBMode('add')">&#10010;</button>
+    <button class="btn"    id="bBtnMove" onclick="setBMode('move')">&#9998;</button>
+    <button class="btn"    id="bBtnDel"  onclick="setBMode('del')">&#10005;</button>
     <div style="width:1px;background:var(--border);margin:0 4px;height:20px"></div>
-    <button class="btn outline sm" onclick="exportBairroAtual()">⬇ GeoJSON</button>
-    <button class="btn outline sm" onclick="importBairroClick()">⬆ GeoJSON</button>
+    <button class="btn outline sm" onclick="exportBairroAtual()">&#8595; GeoJSON</button>
+    <button class="btn outline sm" onclick="importBairroClick()">&#8593; GeoJSON</button>
     <input type="file" id="importBairroFile" accept=".geojson,.json" style="display:none" onchange="importBairro(event)"/>
     <button class="btn danger sm" style="margin-left:auto" onclick="limparBairroAtual()">🗑</button>
   </div>
-
   <div class="map-wrap"><div id="map-bairro"></div></div>
-
-  <!-- lista de bairros salvos -->
   <div style="background:var(--panel);border-top:1px solid var(--border);padding:6px 10px;flex-shrink:0;max-height:130px;overflow-y:auto" id="bairros-lista-wrap">
     <div style="font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px">Bairros salvos</div>
     <div id="bairros-lista"></div>
   </div>
-
   <div class="status"><div class="dot" id="bDot"></div><span id="bStTxt">Busque ou desenhe o perímetro, depois salve</span></div>
 </div>
 
 <!-- ③ CIRCUITO -->
 <div id="p-circ" class="panel">
   <div class="row">
-    <button class="btn on-start" id="cBtnStart" onclick="setCMode('start')">⊙</button>
-    <button class="btn"          id="cBtnAdd"   onclick="setCMode('add')">✚</button>
-    <button class="btn"          id="cBtnMove"  onclick="setCMode('move')">✎</button>
-    <button class="btn"          id="cBtnDel"   onclick="setCMode('del')">✕</button>
-    <button class="btn primary"  onclick="gerarRota()" style="margin-left:4px">▶ GERAR</button>
+    <button class="btn on-start" id="cBtnStart" onclick="setCMode('start')">&#8857;</button>
+    <button class="btn"          id="cBtnAdd"   onclick="setCMode('add')">&#10010;</button>
+    <button class="btn"          id="cBtnMove"  onclick="setCMode('move')">&#9998;</button>
+    <button class="btn"          id="cBtnDel"   onclick="setCMode('del')">&#10005;</button>
+    <button class="btn primary"  onclick="gerarRota()" style="margin-left:4px">&#9658; GERAR</button>
     <button class="btn green"    onclick="salvarCircuito()" id="btnSalvarCirc" style="display:none">💾 SALVAR</button>
     <button class="btn danger sm" onclick="limparCircuito()" style="margin-left:auto">🗑</button>
   </div>
-
-  <!-- biblioteca de circuitos -->
   <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:6px 10px;flex-shrink:0;max-height:100px;overflow-y:auto" id="circ-biblioteca-wrap">
     <div style="font-size:8px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px">Circuitos salvos</div>
     <div id="circ-biblioteca"></div>
   </div>
-
   <div class="map-wrap"><div id="map-circ"></div></div>
-
   <div class="status"><div class="dot" id="cDot"></div><span id="cStTxt">Marque o início e adicione waypoints</span></div>
 </div>
 
@@ -346,8 +312,8 @@ input[type=date],input[type=time]{color-scheme:dark}
       </div>
       <div style="padding:7px 12px;font-size:9px;color:var(--muted2);border-top:1px solid var(--border)" id="dOthMeta"></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px" id="d-exports" style="display:none">
-      <button class="btn full primary" onclick="exportGPX()">⬇ EXPORTAR GPX — STRAVA</button>
+    <div id="d-exports">
+      <button class="btn full primary" onclick="exportGPX()">&#8595; EXPORTAR GPX — STRAVA</button>
     </div>
   </div>
 </div>
@@ -355,55 +321,71 @@ input[type=date],input[type=time]{color-scheme:dark}
 <!-- ⑥ PROPOSTA -->
 <div id="p-proposta" class="panel">
   <div class="scroll-content">
-
     <div class="field-label">Nível de preço</div>
     <div class="nivel-row">
       <button class="nivel-btn active" id="nv-1" onclick="setNivel(1)">CHEIO<span class="preco">R$75/h</span></button>
-      <button class="nivel-btn"        id="nv-2" onclick="setNivel(2)">INTERMEDIÁRIO<span class="preco">R$60/h</span></button>
+      <button class="nivel-btn"        id="nv-2" onclick="setNivel(2)">INTER<span class="preco">R$60/h</span></button>
       <button class="nivel-btn"        id="nv-3" onclick="setNivel(3)">MÍNIMO<span class="preco">R$50/h</span></button>
     </div>
-
     <div class="card">
       <div class="card-title">Resumo</div>
       <div id="prop-cliente-nome" style="font-size:14px;font-weight:bold;color:var(--am);margin-bottom:2px">—</div>
-      <div id="prop-campanha-nome" style="font-size:10px;color:var(--muted2);margin-bottom:10px">—</div>
-      <div class="prop-line"><span>Horas totais</span><span id="pr-horas">—</span></div>
+      <div id="prop-campanha-nome" style="font-size:10px;color:var(--muted2);margin-bottom:6px">—</div>
+      <div class="field-group" style="margin-bottom:8px">
+        <div class="field-label">Nome do plano</div>
+        <input type="text" id="pr-plano-nome" placeholder="Ex: Plano Dominio — Junho 2026" oninput="salvarEstado()" style="font-size:14px"/>
+        <div id="pr-plano-hint" style="font-size:9px;color:var(--muted2);letter-spacing:1px;margin-top:2px">Sugestao: —</div>
+      </div>
+      <div class="prop-line"><span>Horas sonoras</span><span id="pr-horas">—</span></div>
       <div class="prop-line"><span>Valor por hora</span><span id="pr-valor-hora">R$ 75,00</span></div>
-      <div class="prop-line"><span>Subtotal</span><span id="pr-subtotal">—</span></div>
+      <div class="prop-line"><span>Subtotal sonoro</span><span id="pr-subtotal">—</span></div>
+      <div class="prop-line"><span>Extras</span><span id="pr-extras-sum">R$ 0,00</span></div>
       <div class="prop-line">
         <span>Desconto</span>
         <div style="display:flex;align-items:center;gap:4px">
           <span style="font-size:10px;color:var(--muted2)">R$</span>
-          <input type="number" id="pr-desconto" value="0" min="0" style="width:70px;font-size:12px;padding:3px 6px;text-align:right" oninput="recalcProposta()"/>
+          <input type="number" id="pr-desconto" value="0" min="0" style="width:70px;font-size:12px;padding:3px 6px;text-align:right;min-height:36px" oninput="recalcProposta()"/>
         </div>
       </div>
       <div class="prop-line destaque"><span>TOTAL</span><span id="pr-total">—</span></div>
-      <div class="prop-line"><span style="font-size:10px;color:var(--muted2)">Pagamento semanal — toda segunda-feira</span></div>
+      <div class="prop-line" style="flex-direction:column;align-items:flex-start;gap:6px">
+        <span style="font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase">Forma de pagamento</span>
+        <select id="pr-pgto-sel" onchange="onPgtoSel()" style="width:100%;font-size:11px;padding:6px 8px;min-height:40px">
+          <option value="Semanal — toda segunda-feira">Semanal — toda segunda-feira</option>
+          <option value="Quinzenal — todo dia 1 e 15">Quinzenal — todo dia 1 e 15</option>
+          <option value="Mensal — todo dia 5">Mensal — todo dia 5</option>
+          <option value="À vista — pagamento antecipado">À vista — pagamento antecipado</option>
+          <option value="50% entrada + 50% na conclusão">50% entrada + 50% na conclusão</option>
+          <option value="custom">&#9998; Personalizado...</option>
+        </select>
+        <textarea id="pr-pgto-txt" rows="2" style="width:100%;font-size:11px;padding:6px 8px;resize:none;display:none" placeholder="Descreva a forma de pagamento..."></textarea>
+      </div>
     </div>
-
+    <div class="card">
+      <div class="card-title">Extras (panfletagem, adesivos, etc.)</div>
+      <div id="prop-extras-lista"></div>
+      <button class="btn outline full" onclick="addExtra()" style="margin-top:8px">+ ADICIONAR ITEM</button>
+    </div>
     <div class="card">
       <div class="card-title">Vinheta</div>
       <div class="prop-line">
         <span>Produção de vinheta</span>
         <div style="display:flex;align-items:center;gap:4px">
           <span style="font-size:10px;color:var(--muted2)">R$</span>
-          <input type="number" id="pr-vinheta" value="50" min="0" style="width:70px;font-size:12px;padding:3px 6px;text-align:right" oninput="recalcProposta()"/>
+          <input type="number" id="pr-vinheta" value="50" min="0" style="width:70px;font-size:12px;padding:3px 6px;text-align:right;min-height:36px" oninput="recalcProposta()"/>
           <span style="font-size:10px;color:var(--muted2)">/prod.</span>
         </div>
       </div>
       <div style="font-size:9px;color:var(--muted2);margin-top:4px">Cobrada por demanda — não inclusa no total acima</div>
     </div>
-
     <div class="card" id="prop-crono-card">
       <div class="card-title">Cronograma</div>
       <div id="prop-crono-lista"></div>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn full primary" onclick="gerarPDF()">⬇ EXPORTAR PDF</button>
+      <button class="btn full primary" onclick="gerarPDF()">&#8595; EXPORTAR PDF</button>
       <button class="btn full outline"  onclick="copiarWA()">📋 COPIAR PARA WHATSAPP</button>
     </div>
-
   </div>
 </div>
 
@@ -422,47 +404,36 @@ input[type=date],input[type=time]{color-scheme:dark}
 <script>
 // ════ CONSTANTES ════
 var SPD=11, TILES='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-var CNPJ='39.449.287/0001-77';
+var CNPJ='39.449.284/0001-77';
 var PRECOS={1:75,2:60,3:50};
-var NIVEL_LABELS={1:'Cheio',2:'Intermediário',3:'Mínimo'};
-var TIPOS={1:{label:'Popular denso',dens:8000},2:{label:'Residencial',dens:4000},3:{label:'Espaçado',dens:1500}};
-var TURNOS={1:{label:'Manhã',fator:.40},2:{label:'Tarde',fator:.35},3:{label:'Final tarde',fator:.65},4:{label:'Fim de semana',fator:.80}};
-var MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-var DIAS_NOME=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-var DIAS_NOME_FULL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-var LS_KEY='autovision_v54';
+var NIVEL_LABELS={1:'Cheio',2:'Intermediario',3:'Minimo'};
+var TIPOS={1:{label:'Popular denso',dens:8000},2:{label:'Residencial',dens:4000},3:{label:'Espacado',dens:1500}};
+var TURNOS={1:{label:'Manha',fator:.40},2:{label:'Tarde',fator:.35},3:{label:'Final tarde',fator:.65},4:{label:'Fim de semana',fator:.80}};
+var MESES=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var DIAS_NOME=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+var DIAS_NOME_FULL=['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'];
+var LS_KEY='autovision_v56';
 
-// ════ ESTADO GLOBAL ════
-// Bairros: lista de {id, nome, pts[], area}
-var bairrosList=[];
-var bairroAtual={pts:[], name:''};
+// ════ ESTADO ════
+var bairrosList=[], bairroAtual={pts:[],name:''};
 var bairroColors=['#F5C800','#00C8C8','#9B6DFF','#3DBA6F','#F5A623','#E8384F','#4A9EFF'];
-
-// Circuitos: lista de {id, nome, waypoints[], startPt, lastData, geomLL_serialized}
 var circuitosBib=[];
-var circAtivo={nome:'', waypoints:[], startPt:null, lastData:null, lastGeom:null};
-
-// Veiculações: lista de {id, data:'YYYY-MM-DD', blocos:[{hi,hf,bairros,circuitoId}]}
+var circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
 var veiculacoes=[];
-
-// Proposta
+var extras=[]; // [{id,desc,valor}]
 var nivelAtivo=1;
-
-// Calendário
 var calAno, calMes;
-
-// Mapa estado
 var bMode='add', bPolyL=null, bVtxMarkers=[], gpsMkr=null;
 var pendingGeo=null, pendingName='';
 var cMode='start', startMkr=null;
 var wpMarkers=[], routeLayer=null, streetsLayer=null, perimCircLayers=[];
 var tipoIdx=1, turnoIdx=3;
+var bairrosSalvosLayers=[];
 
 // ════ MAPAS ════
 var mapB=L.map('map-bairro',{zoomControl:true,attributionControl:false});
 L.tileLayer(TILES,{maxZoom:19}).addTo(mapB);
 mapB.setView([-30.05,-51.17],13);
-
 var mapC=null;
 function initMapC(){
   if(mapC)return;
@@ -482,18 +453,18 @@ function goTab(t){
   if(t==='circ')    setTimeout(function(){initMapC();mapC.invalidateSize();syncCircMapa();},80);
   if(t==='crono')   renderCrono();
   if(t==='dados')   populaDados();
-  if(t==='proposta'){recalcProposta();renderPropCrono();}
+  if(t==='proposta'){recalcProposta();renderPropCrono();renderExtras();}
 }
 
 // ════ GPS ════
 function irGPS(){
-  if(!navigator.geolocation){return;}
+  if(!navigator.geolocation)return;
   navigator.geolocation.getCurrentPosition(function(pos){
     var lat=pos.coords.latitude,lng=pos.coords.longitude;
     mapB.setView([lat,lng],15);
     if(mapC)mapC.setView([lat,lng],15);
     if(gpsMkr)mapB.removeLayer(gpsMkr);
-    gpsMkr=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="gps-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(mapB).bindPopup('📍 Você está aqui').openPopup();
+    gpsMkr=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="gps-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(mapB).bindPopup('Voce esta aqui').openPopup();
   },function(){},{enableHighAccuracy:true,timeout:10000});
 }
 
@@ -503,9 +474,7 @@ function cSt(m,c){document.getElementById('cStTxt').textContent=m;document.getEl
 
 // ════ CALENDÁRIO ════
 function initCal(){
-  var now=new Date();
-  calAno=now.getFullYear();calMes=now.getMonth();
-  renderCal();
+  var now=new Date();calAno=now.getFullYear();calMes=now.getMonth();renderCal();
 }
 function calNav(dir){
   calMes+=dir;
@@ -533,9 +502,8 @@ function renderCal(){
     if(dt.getTime()===hoje.getTime())el.classList.add('today');
     if(dt<hoje)el.classList.add('past');
     var temVeic=veiculacoes.some(function(v){return v.data===iso;});
+    if(temVeic)el.classList.add('selected');
     if(temVeic)el.classList.add('has-veic');
-    var selecionado=veiculacoes.some(function(v){return v.data===iso;});
-    if(selecionado)el.classList.add('selected');
     if(!el.classList.contains('past')){
       (function(dateIso,dateObj){
         el.addEventListener('click',function(){toggleDia(dateIso,dateObj);});
@@ -550,16 +518,12 @@ function isoDate(dt){
 function toggleDia(iso,dt){
   var idx=veiculacoes.findIndex(function(v){return v.data===iso;});
   if(idx>=0){
-    // já existe — abre modal de edição
     abrirVeicModal(veiculacoes[idx]);
   } else {
-    // cria nova veiculação com 1 bloco padrão
-    var v={id:'v'+Date.now(),data:iso,blocos:[{id:'b'+Date.now(),hi:'08:00',hf:'12:00',bairros:'',circuitoId:null}]};
+    var v={id:'v'+Date.now(),data:iso,blocos:[{id:'b'+Date.now(),tipo:'som',hi:'08:00',hf:'12:00',bairros:'',circuitoId:null,vinheta:'na',promotores:1}]};
     veiculacoes.push(v);
     veiculacoes.sort(function(a,b){return a.data.localeCompare(b.data);});
-    renderCal();
-    calcTotals();
-    salvarEstado();
+    renderCal();calcTotals();salvarEstado();
     abrirVeicModal(v);
   }
 }
@@ -572,38 +536,86 @@ function abrirVeicModal(v){
   renderVeicModalBody(v);
   document.getElementById('modal-overlay').classList.remove('hidden');
 }
+
 function renderVeicModalBody(v){
   var body=document.getElementById('modal-body');
   var actions=document.getElementById('modal-actions');
   body.innerHTML='';
+
   v.blocos.forEach(function(b,i){
     var div=document.createElement('div');
-    div.style.cssText='background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:8px;margin-bottom:8px';
-    // linha tempo
-    var rowT=document.createElement('div');
-    rowT.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';
-    var lbl=document.createElement('span');lbl.textContent='Bloco '+(i+1);lbl.style.cssText='font-size:9px;color:var(--muted2);min-width:40px';
-    var hi=document.createElement('input');hi.type='time';hi.value=b.hi;hi.style.cssText='flex:1;font-size:11px;padding:5px 7px';
-    var sep=document.createElement('span');sep.textContent='→';sep.style.cssText='font-size:10px;color:var(--muted2)';
-    var hf=document.createElement('input');hf.type='time';hf.value=b.hf;hf.style.cssText='flex:1;font-size:11px;padding:5px 7px';
-    var badge=document.createElement('span');badge.style.cssText='font-size:10px;color:var(--green);min-width:28px;text-align:right';
+    div.style.cssText='background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:10px;margin-bottom:10px';
+
+    // ── TOPO: label + tipo + remover
+    var rowTop=document.createElement('div');
+    rowTop.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';
+    var lbl=document.createElement('span');
+    lbl.textContent='Bloco '+(i+1);
+    lbl.style.cssText='font-size:9px;color:var(--muted2);letter-spacing:2px;min-width:40px;text-transform:uppercase';
+    rowTop.appendChild(lbl);
+
+    // Tipo buttons
+    var tipoWrap=document.createElement('div');
+    tipoWrap.style.cssText='display:flex;gap:4px;flex:1';
+    var tipoAtivo=b.tipo||'som';
+    [{v:'som',l:'Carro de som'},{v:'panfletagem',l:'Panfletagem'}].forEach(function(opt){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.textContent=(opt.v==='som'?'🔊 ':'\uD83D\uDCCB ')+opt.l;
+      btn.style.cssText='flex:1;padding:6px 4px;font-size:10px;border-radius:2px;cursor:pointer;border:1px solid;font-family:Courier New,monospace;transition:all .15s;text-transform:uppercase;letter-spacing:1px';
+      if(tipoAtivo===opt.v){
+        btn.style.background='rgba(245,200,0,.14)';btn.style.borderColor='var(--am)';btn.style.color='var(--am)';
+      } else {
+        btn.style.background='var(--panel2)';btn.style.borderColor='var(--border)';btn.style.color='var(--muted2)';
+      }
+      (function(tipo,bloco,vref){
+        btn.addEventListener('click',function(){bloco.tipo=tipo;calcTotals();salvarEstado();renderVeicModalBody(vref);});
+      })(opt.v,b,v);
+      tipoWrap.appendChild(btn);
+    });
+    rowTop.appendChild(tipoWrap);
+
+    // Remover bloco (só se >1)
+    if(v.blocos.length>1){
+      var btnRem=document.createElement('button');
+      btnRem.type='button';btnRem.className='btn danger sm';btnRem.textContent='x';
+      (function(vid,bid,vref){
+        btnRem.addEventListener('click',function(){
+          var vv=veiculacoes.find(function(x){return x.id===vid;});
+          if(vv)vv.blocos=vv.blocos.filter(function(bb){return bb.id!==bid;});
+          calcTotals();salvarEstado();renderVeicModalBody(vref);
+        });
+      })(v.id,b.id,v);
+      rowTop.appendChild(btnRem);
+    }
+    div.appendChild(rowTop);
+
+    // ── HORÁRIO
+    var rowH=document.createElement('div');
+    rowH.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px';
+    var hi=document.createElement('input');hi.type='time';hi.value=b.hi;hi.style.cssText='flex:1;font-size:15px;padding:7px 8px';
+    var sep=document.createElement('span');sep.textContent='&#8594;';sep.style.cssText='font-size:11px;color:var(--muted2)';
+    var hf=document.createElement('input');hf.type='time';hf.value=b.hf;hf.style.cssText='flex:1;font-size:15px;padding:7px 8px';
+    var badge=document.createElement('span');
+    badge.style.cssText='font-size:11px;color:var(--green);min-width:28px;text-align:right';
     badge.textContent=calcHorasDia(b.hi,b.hf)+'h';
     (function(bloco,badgeEl,hiEl,hfEl){
       hiEl.addEventListener('change',function(){bloco.hi=hiEl.value;badgeEl.textContent=calcHorasDia(bloco.hi,bloco.hf)+'h';calcTotals();salvarEstado();});
       hfEl.addEventListener('change',function(){bloco.hf=hfEl.value;badgeEl.textContent=calcHorasDia(bloco.hi,bloco.hf)+'h';calcTotals();salvarEstado();});
     })(b,badge,hi,hf);
-    rowT.appendChild(lbl);rowT.appendChild(hi);rowT.appendChild(sep);rowT.appendChild(hf);rowT.appendChild(badge);
-    // linha bairros (opcional)
+    rowH.appendChild(hi);rowH.appendChild(sep);rowH.appendChild(hf);rowH.appendChild(badge);
+    div.appendChild(rowH);
+
+    // ── BAIRROS (sempre)
     var rowB=document.createElement('div');
-    rowB.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:4px';
-    var inpB=document.createElement('input');inpB.type='text';inpB.value=b.bairros;
-    inpB.placeholder='Bairros — opcional (ex: Centro, Vila Nova)';
-    inpB.style.cssText='flex:1;font-size:11px;padding:5px 7px';
+    rowB.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:8px';
+    var inpB=document.createElement('input');inpB.type='text';inpB.value=b.bairros||'';
+    inpB.placeholder='Bairros — opcional';
+    inpB.style.cssText='flex:1;font-size:13px;padding:7px 8px';
     (function(bloco){inpB.addEventListener('input',function(){bloco.bairros=inpB.value;salvarEstado();});})(b);
     if(bairrosList.length){
       var btnSug=document.createElement('button');
-      btnSug.className='btn sm';btnSug.textContent='📍';btnSug.title='Usar bairros salvos';
-      btnSug.type='button';
+      btnSug.type='button';btnSug.className='btn sm';btnSug.textContent='📍';
       (function(bloco,inp){
         btnSug.addEventListener('click',function(ev){
           ev.preventDefault();ev.stopPropagation();
@@ -615,34 +627,82 @@ function renderVeicModalBody(v){
     } else {
       rowB.appendChild(inpB);
     }
-    // remover bloco
-    var rowR=document.createElement('div');
-    rowR.style.cssText='display:flex;justify-content:flex-end';
-    if(v.blocos.length>1){
-      var btnRem=document.createElement('button');btnRem.className='btn danger sm';btnRem.textContent='✕ Remover bloco';btnRem.type='button';
-      (function(vid,bid){
-        btnRem.addEventListener('click',function(){
-          var vv=veiculacoes.find(function(x){return x.id===vid;});
-          if(vv){vv.blocos=vv.blocos.filter(function(bb){return bb.id!==bid;});}
-          calcTotals();salvarEstado();renderVeicModalBody(vv||v);
-        });
-      })(v.id,b.id);
-      rowR.appendChild(btnRem);
+    div.appendChild(rowB);
+
+    // ── CAMPOS ESPECÍFICOS POR TIPO
+    var tipoB=b.tipo||'som';
+    if(tipoB==='som'){
+      // Vinheta
+      var rowVin=document.createElement('div');rowVin.style.cssText='margin-bottom:8px';
+      var lblVin=document.createElement('div');lblVin.textContent='Vinheta';
+      lblVin.style.cssText='font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px';
+      rowVin.appendChild(lblVin);
+      var vinWrap=document.createElement('div');vinWrap.style.cssText='display:flex;gap:4px';
+      var vinAtivo=b.vinheta||'na';
+      [{v:'nova',l:'Nova producao'},{v:'tem',l:'Ja tem'},{v:'na',l:'N/A'}].forEach(function(opt){
+        var btn=document.createElement('button');
+        btn.type='button';
+        btn.textContent=opt.l;
+        btn.style.cssText='flex:1;padding:6px 2px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid;font-family:Courier New,monospace;transition:all .15s;text-transform:uppercase;letter-spacing:1px';
+        if(vinAtivo===opt.v){
+          btn.style.background='rgba(155,109,255,.14)';btn.style.borderColor='var(--purple)';btn.style.color='var(--purple)';
+        } else {
+          btn.style.background='var(--panel2)';btn.style.borderColor='var(--border)';btn.style.color='var(--muted2)';
+        }
+        (function(val,bloco,vref){
+          btn.addEventListener('click',function(){bloco.vinheta=val;salvarEstado();renderVeicModalBody(vref);});
+        })(opt.v,b,v);
+        vinWrap.appendChild(btn);
+      });
+      rowVin.appendChild(vinWrap);
+      div.appendChild(rowVin);
+      // Circuito
+      var rowC=document.createElement('div');rowC.style.cssText='display:flex;gap:6px;align-items:center';
+      var lblC=document.createElement('span');lblC.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap;letter-spacing:2px;text-transform:uppercase';lblC.textContent='Circuito:';
+      var selC=document.createElement('select');
+      selC.style.cssText='flex:1;font-size:11px;padding:5px 7px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px;min-height:36px';
+      var optN=document.createElement('option');optN.value='';
+      optN.textContent=circuitosBib.length?'— nenhum —':'— salve um circuito primeiro —';
+      selC.appendChild(optN);
+      circuitosBib.forEach(function(c){
+        var opt=document.createElement('option');opt.value=c.id;
+        opt.textContent=c.nome+(c.lastData?' ('+c.lastData.voltaKm.toFixed(1)+'km)':'');
+        if(b.circuitoId===c.id)opt.selected=true;
+        selC.appendChild(opt);
+      });
+      if(!circuitosBib.length)selC.disabled=true;
+      (function(bloco){selC.addEventListener('change',function(){bloco.circuitoId=selC.value||null;salvarEstado();});})(b);
+      rowC.appendChild(lblC);rowC.appendChild(selC);
+      div.appendChild(rowC);
+    } else {
+      // PANFLETAGEM: promotores
+      var rowP=document.createElement('div');rowP.style.cssText='display:flex;align-items:center;gap:10px';
+      var lblP=document.createElement('span');lblP.textContent='Promotores:';
+      lblP.style.cssText='font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase';
+      var inpP=document.createElement('input');
+      inpP.type='number';inpP.min='1';inpP.max='20';inpP.value=b.promotores||1;
+      inpP.style.cssText='width:80px;font-size:18px;padding:7px 8px;text-align:center';
+      (function(bloco){inpP.addEventListener('input',function(){bloco.promotores=parseInt(inpP.value)||1;salvarEstado();});})(b);
+      rowP.appendChild(lblP);rowP.appendChild(inpP);
+      div.appendChild(rowP);
     }
-    div.appendChild(rowT);div.appendChild(rowB);if(v.blocos.length>1)div.appendChild(rowR);
+
     body.appendChild(div);
   });
-  // botão adicionar bloco
-  var btnAdd=document.createElement('button');btnAdd.className='btn outline full';btnAdd.textContent='+ ADICIONAR BLOCO';
-  (function(vid){
+
+  // Botão adicionar bloco
+  var btnAdd=document.createElement('button');
+  btnAdd.className='btn outline full';btnAdd.textContent='+ ADICIONAR BLOCO';
+  (function(vid,vref){
     btnAdd.addEventListener('click',function(){
       var vv=veiculacoes.find(function(x){return x.id===vid;});
-      if(vv){vv.blocos.push({id:'b'+Date.now(),hi:'08:00',hf:'12:00',bairros:'',circuitoId:null});}
-      calcTotals();salvarEstado();renderVeicModalBody(vv);
+      if(vv)vv.blocos.push({id:'b'+Date.now(),tipo:'som',hi:'08:00',hf:'12:00',bairros:'',circuitoId:null,vinheta:'na',promotores:1});
+      calcTotals();salvarEstado();renderVeicModalBody(vref);
     });
-  })(v.id);
+  })(v.id,v);
   body.appendChild(btnAdd);
-  // actions
+
+  // Actions
   actions.innerHTML='';
   var btnDel=document.createElement('button');btnDel.className='btn danger';btnDel.textContent='🗑 Remover dia';
   (function(vid){
@@ -651,12 +711,12 @@ function renderVeicModalBody(v){
       fecharModal();renderCal();calcTotals();salvarEstado();
     });
   })(v.id);
-  var btnOk=document.createElement('button');btnOk.className='btn primary';btnOk.textContent='✓ OK';btnOk.addEventListener('click',function(){fecharModal();});
+  var btnOk=document.createElement('button');btnOk.className='btn primary';btnOk.textContent='OK';
+  btnOk.addEventListener('click',function(){fecharModal();});
   actions.appendChild(btnDel);actions.appendChild(btnOk);
 }
-function fecharModal(e){
-  // Se chamado pelo overlay (clique fora), só fecha se clicou no próprio overlay
-  if(e&&e.type==='click'&&e.currentTarget===document.getElementById('modal-overlay')&&e.target!==document.getElementById('modal-overlay'))return;
+
+function fecharModal(){
   document.getElementById('modal-overlay').classList.add('hidden');
   renderCal();calcTotals();
 }
@@ -664,29 +724,70 @@ function fecharModal(e){
 // ════ TOTAIS ════
 function calcHorasDia(hi,hf){
   if(!hi||!hf)return 0;
-  var p=function(s){var x=s.split(':');return +x[0]+ +x[1]/60;};
+  var p=function(s){var x=s.split(':');return +x[0]+(+x[1])/60;};
   var d=p(hf)-p(hi);return d>0?Math.round(d*10)/10:0;
 }
 function calcTotals(){
-  var totalBlocos=0,totalHoras=0;
+  var totalBlocos=0,totalHorasSom=0,totalHorasPan=0;
   veiculacoes.forEach(function(v){
     totalBlocos+=v.blocos.length;
-    v.blocos.forEach(function(b){totalHoras+=calcHorasDia(b.hi,b.hf);});
+    v.blocos.forEach(function(b){
+      var h=calcHorasDia(b.hi,b.hf);
+      if((b.tipo||'som')==='panfletagem') totalHorasPan+=h; else totalHorasSom+=h;
+    });
   });
-  totalHoras=Math.round(totalHoras*10)/10;
-  var valorCheio=Math.ceil(totalHoras*PRECOS[1]);
+  totalHorasSom=Math.round(totalHorasSom*10)/10;
+  var valorCheio=Math.ceil(totalHorasSom*PRECOS[1]);
   document.getElementById('t-veics').textContent=veiculacoes.length;
   document.getElementById('t-blocos').textContent=totalBlocos;
-  document.getElementById('t-horas').innerHTML=totalHoras+'<span>h</span>';
+  document.getElementById('t-horas').innerHTML=totalHorasSom+'<span>h</span>';
   document.getElementById('t-valor').textContent='R$'+valorCheio.toLocaleString('pt-BR');
-  var cli=document.getElementById('pCliente').value;
-  document.getElementById('hdr-cliente').textContent=cli||'';
+  document.getElementById('hdr-cliente').textContent=document.getElementById('pCliente').value||'';
   salvarEstado();
 }
 function getTotalHoras(){
   var h=0;
   veiculacoes.forEach(function(v){v.blocos.forEach(function(b){h+=calcHorasDia(b.hi,b.hf);});});
   return Math.round(h*10)/10;
+}
+function getTotalHorasSom(){
+  var h=0;
+  veiculacoes.forEach(function(v){
+    v.blocos.forEach(function(b){if((b.tipo||'som')!=='panfletagem')h+=calcHorasDia(b.hi,b.hf);});
+  });
+  return Math.round(h*10)/10;
+}
+
+// ════ EXTRAS ════
+function renderExtras(){
+  var el=document.getElementById('prop-extras-lista');
+  if(!el)return;
+  el.innerHTML='';
+  if(!extras.length){
+    el.innerHTML='<span style="font-size:10px;color:var(--muted)">Nenhum item extra</span>';
+    recalcProposta();return;
+  }
+  extras.forEach(function(ex){
+    var div=document.createElement('div');div.className='extra-row';
+    var inp=document.createElement('input');inp.type='text';inp.value=ex.desc;
+    inp.placeholder='Descricao (ex: Panfletagem — 3 promotores)';
+    inp.style.cssText='flex:2;font-size:12px;padding:7px 8px;min-height:40px';
+    var inpV=document.createElement('input');inpV.type='number';inpV.value=ex.valor||0;
+    inpV.placeholder='0';inpV.style.cssText='width:80px;font-size:12px;padding:7px 8px;text-align:right;min-height:40px';
+    var btnR=document.createElement('button');btnR.className='btn danger sm';btnR.textContent='x';
+    (function(exid,inpEl,inpVEl){
+      inpEl.addEventListener('input',function(){var e=extras.find(function(x){return x.id===exid;});if(e)e.desc=inpEl.value;recalcProposta();salvarEstado();});
+      inpVEl.addEventListener('input',function(){var e=extras.find(function(x){return x.id===exid;});if(e)e.valor=parseFloat(inpVEl.value)||0;recalcProposta();salvarEstado();});
+      btnR.addEventListener('click',function(){extras=extras.filter(function(x){return x.id!==exid;});renderExtras();salvarEstado();});
+    })(ex.id,inp,inpV);
+    div.appendChild(inp);div.appendChild(inpV);div.appendChild(btnR);
+    el.appendChild(div);
+  });
+  recalcProposta();
+}
+function addExtra(){
+  extras.push({id:'ex'+Date.now(),desc:'',valor:0});
+  renderExtras();
 }
 
 // ════ BAIRROS ════
@@ -699,12 +800,11 @@ function setBMode(m){
   bRedraw();
 }
 function bRedraw(){
-  // remove camadas atuais do bairro em edição
   if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}
   bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];
   var pts=bairroAtual.pts;
-  if(pts.length>=3) bPolyL=L.polygon(pts,{color:'#F5C800',weight:2,fillColor:'#F5C800',fillOpacity:0.08}).addTo(mapB);
-  else if(pts.length>=2) bPolyL=L.polyline(pts,{color:'#F5C800',weight:2,dashArray:'5,4'}).addTo(mapB);
+  if(pts.length>=3)bPolyL=L.polygon(pts,{color:'#F5C800',weight:2,fillColor:'#F5C800',fillOpacity:0.08}).addTo(mapB);
+  else if(pts.length>=2)bPolyL=L.polyline(pts,{color:'#F5C800',weight:2,dashArray:'5,4'}).addTo(mapB);
   pts.forEach(function(pt,i){
     var clsMap={add:'b-add',move:'b-move',del:'b-del'};
     var cls='vx bairro '+clsMap[bMode];
@@ -715,21 +815,17 @@ function bRedraw(){
     })(i);
     bVtxMarkers.push(mkr);
   });
-  // também desenha bairros salvos
   renderBairrosSalvosNoMapa();
-  // atualiza área
   var a=pts.length>=3?polyAreaKm2(pts):0;
   bairroAtual.area=a;
-  if(a>0) bSt(bairroAtual.name+' — '+a.toFixed(2)+' km² — clique SALVAR','g');
-  else if(pts.length>0) bSt(pts.length+' pontos','');
+  if(a>0)bSt((bairroAtual.name||'Bairro')+' — '+a.toFixed(2)+' km² — clique Salvar','g');
+  else if(pts.length>0)bSt(pts.length+' pontos','');
 }
 mapB.on('click',function(e){
   if(bMode!=='add')return;
   bairroAtual.pts.push([e.latlng.lat,e.latlng.lng]);
-  bRedraw();
-  bSt(bairroAtual.pts.length+' pontos','');
+  bRedraw();bSt(bairroAtual.pts.length+' pontos','');
 });
-var bairrosSalvosLayers=[];
 function renderBairrosSalvosNoMapa(){
   bairrosSalvosLayers.forEach(function(l){mapB.removeLayer(l);});bairrosSalvosLayers=[];
   bairrosList.forEach(function(b,i){
@@ -753,19 +849,19 @@ async function buscarBairro(){
   bSt('Buscando '+q+'...','y');
   document.getElementById('confirm-banner').classList.remove('show');
   try{
-    var res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q+', '+c)+'&format=json&polygon_geojson=1&limit=5',{headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/5.4'}});
+    var res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q+', '+c)+'&format=json&polygon_geojson=1&limit=5',{headers:{'Accept-Language':'pt-BR','User-Agent':'AutovisionRoute/5.6'}});
     var data=await res.json();
     var item=data.find(function(d){return['suburb','neighbourhood','quarter','residential'].includes(d.type);})||data[0];
-    if(!item){bSt('Não encontrado','r');return;}
+    if(!item){bSt('Nao encontrado','r');return;}
     var bb=item.boundingbox;
     mapB.fitBounds([[+bb[0],+bb[2]],[+bb[1],+bb[3]]],{padding:[20,20]});
     pendingName=item.display_name.split(',').slice(0,2).join(',').trim();
     if(item.geojson&&(item.geojson.type==='Polygon'||item.geojson.type==='MultiPolygon')){
       pendingGeo=item.geojson;
-      document.getElementById('confirm-name').textContent='"'+pendingName+'" — é esse?';
+      document.getElementById('confirm-name').textContent='"'+pendingName+'" — e esse?';
       document.getElementById('confirm-banner').classList.add('show');
       bSt('Confirme o bairro','y');
-    } else bSt('Sem polígono — desenhe manualmente','');
+    } else bSt('Sem poligono — desenhe manualmente','');
   }catch(e){bSt('Erro na busca','r');}
 }
 document.getElementById('bairro-input').addEventListener('keydown',function(e){if(e.key==='Enter')buscarBairro();});
@@ -780,48 +876,40 @@ function confirmarBairro(){
   bairroAtual.name=pendingName;
   bRedraw();
   document.getElementById('confirm-banner').classList.remove('show');
-  // auto salvar na lista
-  salvarBairroNaLista();
+  salvarBairroNaLista(pendingName);
   pendingGeo=null;
 }
 function rejeitarBairro(){document.getElementById('confirm-banner').classList.remove('show');bSt('Rejeitado','');pendingGeo=null;}
 function salvarBairroNaLista(nomeForced){
-  if(bairroAtual.pts.length<3){bSt('Desenhe o perímetro primeiro','r');return;}
+  if(bairroAtual.pts.length<3){bSt('Desenhe o perimetro primeiro','r');return;}
   var nome=nomeForced||bairroAtual.name;
   if(!nome){
-    abrirNomeModal('Nome do bairro','Ex: Centro Viamão',function(n){
-      salvarBairroNaLista(n||('Bairro '+(bairrosList.length+1)));
-    });
+    abrirNomeModal('Nome do bairro','Ex: Centro Viamao',function(n){salvarBairroNaLista(n||('Bairro '+(bairrosList.length+1)));});
     return;
   }
   var existente=bairrosList.findIndex(function(b){return b.nome===nome;});
   var entry={id:'br'+Date.now(),nome:nome,pts:bairroAtual.pts.slice(),area:polyAreaKm2(bairroAtual.pts)};
-  if(existente>=0) bairrosList[existente]=entry;
-  else bairrosList.push(entry);
-  renderBairrosLista();
-  renderBairrosSalvosNoMapa();
-  bSt('"'+nome+'" salvo','g');
-  salvarEstado();
+  if(existente>=0)bairrosList[existente]=entry; else bairrosList.push(entry);
+  renderBairrosLista();renderBairrosSalvosNoMapa();
+  bSt('"'+nome+'" salvo','g');salvarEstado();
 }
 function renderBairrosLista(){
-  var el=document.getElementById('bairros-lista');
-  el.innerHTML='';
+  var el=document.getElementById('bairros-lista');el.innerHTML='';
   if(!bairrosList.length){el.innerHTML='<span style="font-size:10px;color:var(--muted)">Nenhum bairro salvo</span>';return;}
   bairrosList.forEach(function(b,i){
     var cor=bairroColors[i%bairroColors.length];
     var div=document.createElement('div');div.className='bairro-item';
     div.innerHTML='<div class="bairro-dot" style="background:'+cor+'"></div>'
       +'<span class="bairro-nome">'+b.nome+'</span>'
-      +'<span class="bairro-area">'+b.area.toFixed(2)+' km²</span>'
-      +'<button class="btn sm outline" onclick="editarBairro(\''+b.id+'\')">✎</button>'
-      +'<button class="btn sm outline" onclick="exportarBairroId(\''+b.id+'\')">⬇</button>'
-      +'<button class="btn danger sm" onclick="removerBairro(\''+b.id+'\')">✕</button>';
+      +'<span class="bairro-area">'+b.area.toFixed(2)+' km2</span>'
+      +'<button class="btn sm outline" onclick="editarBairro(\''+b.id+'\')">&#9998;</button>'
+      +'<button class="btn sm outline" onclick="exportarBairroId(\''+b.id+'\')">&#8595;</button>'
+      +'<button class="btn danger sm" onclick="removerBairro(\''+b.id+'\')">x</button>';
     el.appendChild(div);
   });
 }
 function editarBairro(id){
-  var b=bairrosList.find(function(x){return x.id===id;});
-  if(!b)return;
+  var b=bairrosList.find(function(x){return x.id===id;});if(!b)return;
   bairroAtual={pts:b.pts.slice(),name:b.nome,area:b.area};
   bRedraw();
   mapB.fitBounds(L.latLngBounds(b.pts.map(function(p){return L.latLng(p[0],p[1]);})),{padding:[20,20]});
@@ -832,13 +920,12 @@ function removerBairro(id){
   renderBairrosLista();renderBairrosSalvosNoMapa();salvarEstado();
 }
 function exportarBairroId(id){
-  var b=bairrosList.find(function(x){return x.id===id;});
-  if(!b)return;
-  var geo={type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Polygon',coordinates:[[...b.pts.map(function(p){return[p[1],p[0]];}), [b.pts[0][1],b.pts[0][0]]]]},properties:{nome:b.nome}}]};
+  var b=bairrosList.find(function(x){return x.id===id;});if(!b)return;
+  var geo={type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Polygon',coordinates:[[].concat(b.pts.map(function(p){return[p[1],p[0]];}),[[b.pts[0][1],b.pts[0][0]]])]},properties:{nome:b.nome}}]};
   dl(JSON.stringify(geo,null,2),'application/json','bairro-'+b.nome.replace(/\s+/g,'-').toLowerCase()+'.geojson');
 }
 function exportBairroAtual(){
-  if(bairroAtual.pts.length>=3){salvarBairroNaLista();} else {bSt('Desenhe o perímetro primeiro','r');}
+  if(bairroAtual.pts.length>=3)salvarBairroNaLista(); else bSt('Desenhe o perimetro primeiro','r');
 }
 function importBairroClick(){document.getElementById('importBairroFile').click();}
 function importBairro(ev){
@@ -848,15 +935,15 @@ function importBairro(ev){
     try{
       var geo=JSON.parse(e.target.result);
       var coords=null,nome='Importado';
-      if(geo.type==='FeatureCollection'){coords=geo.features[0].geometry.coordinates[0];nome=geo.features[0].properties&&geo.features[0].properties.nome||nome;}
-      else if(geo.type==='Feature'){coords=geo.geometry.coordinates[0];nome=geo.properties&&geo.properties.nome||nome;}
+      if(geo.type==='FeatureCollection'){coords=geo.features[0].geometry.coordinates[0];nome=(geo.features[0].properties&&geo.features[0].properties.nome)||nome;}
+      else if(geo.type==='Feature'){coords=geo.geometry.coordinates[0];nome=(geo.properties&&geo.properties.nome)||nome;}
       else if(geo.type==='Polygon'){coords=geo.coordinates[0];}
       if(!coords)throw new Error();
       bairroAtual.pts=coords.slice(0,-1).map(function(c){return[c[1],c[0]];});
       bairroAtual.name=nome;
       bRedraw();
       mapB.fitBounds(L.latLngBounds(bairroAtual.pts.map(function(p){return L.latLng(p[0],p[1]);})),{padding:[20,20]});
-      salvarBairroNaLista();
+      salvarBairroNaLista(nome);
       bSt('GeoJSON importado','g');
     }catch(err){bSt('Erro ao importar','r');}
   };
@@ -876,11 +963,10 @@ function syncCircMapa(){
   });
   if(bairrosList.length){
     var allPts=[];bairrosList.forEach(function(b){allPts=allPts.concat(b.pts);});
-    if(allPts.length) mapC.fitBounds(L.latLngBounds(allPts.map(function(p){return L.latLng(p[0],p[1]);})),{padding:[20,20]});
-    if(!streetsLayer) loadStreets();
+    if(allPts.length)mapC.fitBounds(L.latLngBounds(allPts.map(function(p){return L.latLng(p[0],p[1]);})),{padding:[20,20]});
+    if(!streetsLayer)loadStreets();
   }
-  renderWaypoints();
-  renderCircBiblioteca();
+  renderWaypoints();renderCircBiblioteca();
 }
 async function loadStreets(){
   if(!bairrosList.length||!mapC)return;
@@ -909,7 +995,7 @@ async function loadStreets(){
     L.polyline(pts,{color:style.color,weight:style.weight,opacity:0.7}).addTo(group);
   });
   streetsLayer=group;group.addTo(mapC);
-  cSt('Ruas: 🔴 longas · 🟠 médias · ⚫ curtas','g');
+  cSt('Ruas: longos medios curtos','g');
 }
 function setCMode(m){
   cMode=m;
@@ -923,7 +1009,7 @@ function onMapCClick(e){
   if(cMode==='start'){
     circAtivo.startPt={lat:e.latlng.lat,lng:e.latlng.lng};
     if(startMkr)mapC.removeLayer(startMkr);
-    startMkr=L.circleMarker([circAtivo.startPt.lat,circAtivo.startPt.lng],{radius:9,color:'#3DBA6F',fillColor:'#3DBA6F',fillOpacity:1,weight:2}).addTo(mapC).bindPopup('⊙ INÍCIO');
+    startMkr=L.circleMarker([circAtivo.startPt.lat,circAtivo.startPt.lng],{radius:9,color:'#3DBA6F',fillColor:'#3DBA6F',fillOpacity:1,weight:2}).addTo(mapC).bindPopup('INICIO');
     setCMode('add');
   } else if(cMode==='add'){
     circAtivo.waypoints.push({lat:e.latlng.lat,lng:e.latlng.lng});
@@ -955,8 +1041,8 @@ function renderWaypoints(){
   });
   var oddCount=Object.values(deg).filter(function(d){return d>0&&d%2!==0;}).length;
   if(circAtivo.waypoints.length>0){
-    if(oddCount>0)cSt(circAtivo.waypoints.length+' pts · '+oddCount+' nó'+(oddCount>1?'s ímpares':' ímpar')+' (laranja)','y');
-    else cSt(circAtivo.waypoints.length+' pts ✔ — ▶ GERAR','g');
+    if(oddCount>0)cSt(circAtivo.waypoints.length+' pts · '+oddCount+' no'+(oddCount>1?'s impares':' impar')+' (laranja)','y');
+    else cSt(circAtivo.waypoints.length+' pts OK — GERAR','g');
   }
   var btnS=document.getElementById('btnSalvarCirc');
   if(btnS)btnS.style.display=circAtivo.lastData?'':'none';
@@ -987,65 +1073,49 @@ async function gerarRota(){
   routeLayer=L.polyline(geomLL,{color:'#9B6DFF',weight:3,opacity:.9}).addTo(mapC);
   circAtivo.lastGeom=geomLL;
   var voltaKm=distM/1000,voltaHr=voltaKm/SPD;
-  // usa horas da primeira veiculação com esse circuito, ou fallback 3h
-  var horas=3;
+  // usa horas reais do projeto (sonoras), fallback 3h
+  var horas=getTotalHorasSom()||3;
   var areaKm2=0;
   bairrosList.forEach(function(b){if(b.pts&&b.pts.length>=3)areaKm2+=polyAreaKm2(b.pts);});
   var pct=areaKm2>0?Math.min(100,Math.ceil((voltaKm/(areaKm2*12))*100)):0;
   var areaCob=voltaKm*0.08,tipoDens=TIPOS[tipoIdx].dens,turnoFator=TURNOS[turnoIdx].fator;
-  var voltas=Math.floor(horas/voltaHr);
+  var voltas=voltaHr>0?Math.floor(horas/voltaHr):0;
   var othVolta=Math.ceil(areaCob*tipoDens*turnoFator/100)*100;
   var othTotal=othVolta*voltas,potencial=Math.ceil(areaKm2*tipoDens/100)*100;
-  circAtivo.lastData={voltaKm,voltaHr,voltas,horas,areaKm2,pct,othVolta,othTotal,potencial,viaRua,nPts:allPts.length,tipoIdx,turnoIdx};
+  circAtivo.lastData={voltaKm:voltaKm,voltaHr:voltaHr,voltas:voltas,horas:horas,areaKm2:areaKm2,pct:pct,othVolta:othVolta,othTotal:othTotal,potencial:potencial,viaRua:viaRua,nPts:allPts.length,tipoIdx:tipoIdx,turnoIdx:turnoIdx};
   document.getElementById('t-dados').classList.add('done');
   document.getElementById('btnSalvarCirc').style.display='';
-  cSt(voltaKm.toFixed(1)+'km/volta · '+fmtT(voltaHr)+' · ▶ SALVAR circuito','g');
+  cSt(voltaKm.toFixed(1)+'km/volta · '+fmtT(voltaHr)+' · SALVAR circuito','g');
   salvarEstado();
 }
 function salvarCircuito(nomeForced){
   if(!nomeForced){
-    abrirNomeModal('Nome do circuito','Ex: Centro Viamão, São Lucas + Lisboa',function(n){
-      if(n) salvarCircuito(n);
-    });
+    abrirNomeModal('Nome do circuito','Ex: Centro Viamao',function(n){if(n)salvarCircuito(n);});
     return;
   }
-  var nome=nomeForced;
-  var existente=circuitosBib.findIndex(function(c){return c.nome===nome;});
+  var existente=circuitosBib.findIndex(function(c){return c.nome===nomeForced;});
   var geomSerial=circAtivo.lastGeom?circAtivo.lastGeom.map(function(p){return[p.lat,p.lng];}):[];
-  var entry={
-    id:'c'+Date.now(),nome,
-    waypoints:circAtivo.waypoints.slice(),
-    startPt:circAtivo.startPt,
-    lastData:circAtivo.lastData,
-    geomSerial
-  };
-  if(existente>=0) circuitosBib[existente]=entry;
-  else circuitosBib.push(entry);
-  renderCircBiblioteca();
-  cSt('"'+nome+'" salvo na biblioteca','g');
-  salvarEstado();
+  var entry={id:'c'+Date.now(),nome:nomeForced,waypoints:circAtivo.waypoints.slice(),startPt:circAtivo.startPt,lastData:circAtivo.lastData,geomSerial:geomSerial};
+  if(existente>=0)circuitosBib[existente]=entry; else circuitosBib.push(entry);
+  renderCircBiblioteca();cSt('"'+nomeForced+'" salvo','g');salvarEstado();
 }
 function renderCircBiblioteca(){
-  var el=document.getElementById('circ-biblioteca');
-  el.innerHTML='';
+  var el=document.getElementById('circ-biblioteca');el.innerHTML='';
   if(!circuitosBib.length){el.innerHTML='<span style="font-size:10px;color:var(--muted)">Nenhum circuito salvo</span>';return;}
   circuitosBib.forEach(function(c){
     var div=document.createElement('div');div.className='circ-item';
     var meta=c.lastData?c.lastData.voltaKm.toFixed(1)+'km · '+fmtT(c.lastData.voltaHr)+'/volta':'sem dados';
     div.innerHTML='<span class="circ-nome">'+c.nome+'</span>'
       +'<span class="circ-meta">'+meta+'</span>'
-      +'<button class="btn sm outline" onclick="carregarCircuito(\''+c.id+'\')">▶</button>'
-      +'<button class="btn danger sm" onclick="removerCircuito(\''+c.id+'\')">✕</button>';
+      +'<button class="btn sm outline" onclick="carregarCircuito(\''+c.id+'\')">&#9658;</button>'
+      +'<button class="btn danger sm" onclick="removerCircuito(\''+c.id+'\')">x</button>';
     el.appendChild(div);
   });
 }
 function carregarCircuito(id){
-  var c=circuitosBib.find(function(x){return x.id===id;});
-  if(!c)return;
+  var c=circuitosBib.find(function(x){return x.id===id;});if(!c)return;
   limparCircuito(true);
-  circAtivo.waypoints=c.waypoints.slice();
-  circAtivo.startPt=c.startPt;
-  circAtivo.lastData=c.lastData;
+  circAtivo.waypoints=c.waypoints.slice();circAtivo.startPt=c.startPt;circAtivo.lastData=c.lastData;
   if(c.geomSerial&&c.geomSerial.length){
     circAtivo.lastGeom=c.geomSerial.map(function(p){return L.latLng(p[0],p[1]);});
     routeLayer=L.polyline(circAtivo.lastGeom,{color:'#9B6DFF',weight:3,opacity:.9}).addTo(mapC);
@@ -1054,13 +1124,10 @@ function carregarCircuito(id){
     if(startMkr)mapC.removeLayer(startMkr);
     startMkr=L.circleMarker([circAtivo.startPt.lat,circAtivo.startPt.lng],{radius:9,color:'#3DBA6F',fillColor:'#3DBA6F',fillOpacity:1,weight:2}).addTo(mapC);
   }
-  renderWaypoints();
-  document.getElementById('btnSalvarCirc').style.display='';
-  cSt('"'+c.nome+'" carregado','g');
+  renderWaypoints();document.getElementById('btnSalvarCirc').style.display='';cSt('"'+c.nome+'" carregado','g');
 }
 function removerCircuito(id){
-  circuitosBib=circuitosBib.filter(function(c){return c.id!==id;});
-  renderCircBiblioteca();salvarEstado();
+  circuitosBib=circuitosBib.filter(function(c){return c.id!==id;});renderCircBiblioteca();salvarEstado();
 }
 function limparCircuito(silencioso){
   if(!mapC)return;
@@ -1074,8 +1141,7 @@ function limparCircuito(silencioso){
 
 // ════ CRONOGRAMA ════
 function renderCrono(){
-  var lista=document.getElementById('veics-lista');
-  lista.innerHTML='';
+  var lista=document.getElementById('veics-lista');lista.innerHTML='';
   var empty=document.getElementById('crono-empty');
   if(!veiculacoes.length){empty.style.display='';return;}
   empty.style.display='none';
@@ -1089,78 +1155,82 @@ function renderCrono(){
       +'<span class="veic-dia">'+DIAS_NOME[dt.getDay()]+'</span>'
       +'<span class="veic-blocos-count">'+v.blocos.length+' bloco'+(v.blocos.length>1?'s':'')+'</span>'
       +'<span class="veic-total-h">'+Math.round(hTotal*10)/10+'h</span>';
-    var btnRem=document.createElement('button');btnRem.className='veic-remove';btnRem.textContent='✕';
+    var btnRem=document.createElement('button');btnRem.className='veic-remove';btnRem.textContent='x';
     (function(vid){btnRem.addEventListener('click',function(e){e.stopPropagation();veiculacoes=veiculacoes.filter(function(x){return x.id!==vid;});calcTotals();renderCrono();renderCal();salvarEstado();});})(v.id);
     header.appendChild(btnRem);
     var body=document.createElement('div');body.className='veic-body';
     v.blocos.forEach(function(b,i){
-      var circ=b.circuitoId?circuitosBib.find(function(c){return c.id===b.circuitoId;}):null;
+      var tipoB=b.tipo||'som';
       var bdiv=document.createElement('div');bdiv.className='bloco-card';
-
-      // linha horário
-      var rowH=document.createElement('div');rowH.className='bloco-row';
-      rowH.innerHTML='<span style="font-size:9px;color:var(--muted2);min-width:50px">Bloco '+(i+1)+'</span>'
-        +'<span style="font-size:12px;color:var(--text)">'+b.hi+' → '+b.hf+'</span>'
+      // Ícone de tipo
+      var tipoLabel=tipoB==='panfletagem'?'📋 Panfletagem':'🔊 Carro de som';
+      var rowTipo=document.createElement('div');
+      rowTipo.style.cssText='font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px';
+      rowTipo.textContent=tipoLabel;bdiv.appendChild(rowTipo);
+      // Horário
+      var rowH=document.createElement('div');
+      rowH.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:4px';
+      rowH.innerHTML='<span style="font-size:12px;color:var(--text)">'+b.hi+' \u2192 '+b.hf+'</span>'
         +'<span style="font-size:11px;color:var(--green);margin-left:auto">'+calcHorasDia(b.hi,b.hf)+'h</span>';
       bdiv.appendChild(rowH);
-
-      // linha bairro (se tiver)
-      if(b.bairros){
-        var rowBairro=document.createElement('div');
-        rowBairro.style.cssText='font-size:10px;color:var(--muted2);margin-top:4px';
-        rowBairro.textContent='📍 '+b.bairros;
-        bdiv.appendChild(rowBairro);
-      }
-
-      // seletor de circuito
-      var rowC=document.createElement('div');
-      rowC.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
-      var lbl=document.createElement('span');
-      lbl.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap';
-      lbl.textContent='🗺 Circuito:';
-      var sel=document.createElement('select');
-      sel.style.cssText='flex:1;font-size:10px;padding:4px 6px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px';
-      var optN=document.createElement('option');optN.value='';optN.textContent='— nenhum —';sel.appendChild(optN);
-      circuitosBib.forEach(function(c){
-        var opt=document.createElement('option');opt.value=c.id;
-        opt.textContent=c.nome+(c.lastData?' ('+c.lastData.voltaKm.toFixed(1)+'km)':'');
-        if(b.circuitoId===c.id)opt.selected=true;
-        sel.appendChild(opt);
-      });
-      (function(bloco){
-        sel.addEventListener('change',function(){
-          bloco.circuitoId=sel.value||null;
-          salvarEstado();
+      // Bairros
+      if(b.bairros){var rowBairro=document.createElement('div');rowBairro.style.cssText='font-size:10px;color:var(--muted2)';rowBairro.textContent='📍 '+b.bairros;bdiv.appendChild(rowBairro);}
+      // Tipo-específico
+      if(tipoB==='som'){
+        // Vinheta
+        var vin=b.vinheta||'na';
+        if(vin!=='na'){
+          var rowVin=document.createElement('div');rowVin.style.cssText='font-size:10px;color:var(--purple);margin-top:2px';
+          rowVin.textContent='Vinheta: '+(vin==='nova'?'Nova producao':'Ja tem');bdiv.appendChild(rowVin);
+        }
+        // Circuito
+        var rowC=document.createElement('div');rowC.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
+        var lblC=document.createElement('span');lblC.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap;letter-spacing:2px;text-transform:uppercase';lblC.textContent='Circuito:';
+        var selC=document.createElement('select');
+        selC.style.cssText='flex:1;font-size:10px;padding:4px 6px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px;min-height:36px';
+        var optN=document.createElement('option');optN.value='';
+        optN.textContent=circuitosBib.length?'— nenhum —':'— salve um circuito primeiro —';
+        selC.appendChild(optN);
+        circuitosBib.forEach(function(c){
+          var opt=document.createElement('option');opt.value=c.id;
+          opt.textContent=c.nome+(c.lastData?' ('+c.lastData.voltaKm.toFixed(1)+'km)':'');
+          if(b.circuitoId===c.id)opt.selected=true;
+          selC.appendChild(opt);
         });
-      })(b);
-      rowC.appendChild(lbl);rowC.appendChild(sel);
-      bdiv.appendChild(rowC);
-
+        if(!circuitosBib.length)selC.disabled=true;
+        (function(bloco){selC.addEventListener('change',function(){bloco.circuitoId=selC.value||null;salvarEstado();});})(b);
+        rowC.appendChild(lblC);rowC.appendChild(selC);bdiv.appendChild(rowC);
+      } else {
+        // Panfletagem: promotores
+        var rowP=document.createElement('div');rowP.style.cssText='font-size:10px;color:var(--orange);margin-top:2px';
+        rowP.textContent=(b.promotores||1)+' promotor'+(((b.promotores||1)>1)?'es':'');bdiv.appendChild(rowP);
+      }
       body.appendChild(bdiv);
     });
-    // editar
-    var btnEdit=document.createElement('button');btnEdit.className='btn outline full';btnEdit.textContent='✎ Editar veiculação';
+    var btnEdit=document.createElement('button');btnEdit.className='btn outline full';btnEdit.textContent='Editar veiculacao';
     (function(vref){btnEdit.addEventListener('click',function(){abrirVeicModal(vref);});})(v);
     body.appendChild(btnEdit);
-    div.appendChild(header);div.appendChild(body);
-    lista.appendChild(div);
+    div.appendChild(header);div.appendChild(body);lista.appendChild(div);
   });
 }
 
 // ════ DADOS ════
 function fmtT(h){var hh=Math.floor(h),mm=Math.round((h-hh)*60);if(mm===60)return(hh+1)+'h00';return hh>0?hh+'h'+String(mm).padStart(2,'0'):mm+'min';}
 function populaDados(){
-  if(!circAtivo.lastData){document.getElementById('d-empty').style.display='';document.getElementById('d-circ-info').style.display='none';document.getElementById('d-oth-box').style.display='none';document.getElementById('d-exports').style.display='none';return;}
+  var empty=document.getElementById('d-empty');
+  var ci=document.getElementById('d-circ-info');
+  var oth=document.getElementById('d-oth-box');
+  var exp=document.getElementById('d-exports');
+  if(!circAtivo.lastData){
+    empty.style.display='';ci.style.display='none';oth.style.display='none';exp.style.display='none';return;
+  }
   var d=circAtivo.lastData;
-  document.getElementById('d-empty').style.display='none';
-  document.getElementById('d-circ-info').style.display='';
-  document.getElementById('d-oth-box').style.display='';
-  document.getElementById('d-exports').style.display='';
+  empty.style.display='none';ci.style.display='';oth.style.display='';exp.style.display='flex';
   document.getElementById('dKm').innerHTML=d.voltaKm.toFixed(1)+'<span>km</span>';
   document.getElementById('dT').innerHTML=fmtT(d.voltaHr);
   document.getElementById('dVoltas').innerHTML=d.voltas+'<span>x</span>';
   document.getElementById('dTKm').innerHTML=(d.voltas*d.voltaKm).toFixed(1)+'<span>km</span>';
-  document.getElementById('dArea').innerHTML=d.areaKm2.toFixed(2)+'<span>km²</span>';
+  document.getElementById('dArea').innerHTML=d.areaKm2.toFixed(2)+'<span>km2</span>';
   document.getElementById('dCob').innerHTML='~'+d.pct+'<span>%</span>';
   document.getElementById('dPotencial').innerHTML='~'+d.potencial.toLocaleString('pt-BR');
   document.getElementById('dOthVolta').innerHTML='~'+d.othVolta.toLocaleString('pt-BR');
@@ -1176,15 +1246,29 @@ function exportGPX(){
   var startMs=Date.now(),pts=circAtivo.lastGeom.map(function(p){return[p.lat,p.lng];});
   var dist=0;
   for(var i=0;i<pts.length-1;i++){var la=pts[i][0],lo=pts[i][1],lb=pts[i+1][0],lp=pts[i+1][1];var R=6371000,dLat=(lb-la)*Math.PI/180,dLon=(lp-lo)*Math.PI/180;var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(la*Math.PI/180)*Math.cos(lb*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);dist+=2*R*Math.asin(Math.sqrt(s));}
-  var msPerPt=(dist/SPD/1000)*3600000/pts.length,trkpts='';
+  var msPerPt=(dist/SPD/1000)*3600000/Math.max(pts.length,1),trkpts='';
   pts.forEach(function(pt,i){var t=new Date(startMs+i*msPerPt).toISOString();trkpts+='      <trkpt lat="'+pt[0].toFixed(6)+'" lon="'+pt[1].toFixed(6)+'">\n        <time>'+t+'</time>\n      </trkpt>\n';});
   var gpx='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="AUTOVISION" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>'+name+'</name></metadata>\n  <trk><name>'+name+'</name><trkseg>\n'+trkpts+'  </trkseg></trk>\n</gpx>';
   dl(gpx,'application/gpx+xml',(cli+'-'+camp+'.gpx').replace(/\s+/g,'-').toLowerCase());
 }
 
 // ════ PROPOSTA ════
+function onPgtoSel(){
+  var sel=document.getElementById('pr-pgto-sel');
+  var txt=document.getElementById('pr-pgto-txt');
+  txt.style.display=sel.value==='custom'?'':'none';
+  if(sel.value==='custom')txt.focus();
+  salvarEstado();
+}
+function getPgtoTexto(){
+  var sel=document.getElementById('pr-pgto-sel');
+  var txt=document.getElementById('pr-pgto-txt');
+  if(!sel)return 'Semanal — toda segunda-feira';
+  if(sel.value==='custom')return txt.value.trim()||'—';
+  return sel.value;
+}
 function getNomePlano(h){
-  if(h<=24)return'Plano Presença';if(h<=60)return'Plano Expansão';if(h<=100)return'Plano Domínio';return'Plano Total';
+  if(h<=24)return'Plano Presenca';if(h<=60)return'Plano Expansao';if(h<=100)return'Plano Dominio';return'Plano Total';
 }
 function setNivel(n){
   nivelAtivo=n;
@@ -1192,86 +1276,106 @@ function setNivel(n){
   recalcProposta();
 }
 function recalcProposta(){
-  var hT=getTotalHoras();
+  var hSom=getTotalHorasSom();
   var preco=PRECOS[nivelAtivo];
-  var subtotal=Math.ceil(hT*preco);
+  var subtotalSom=Math.ceil(hSom*preco);
+  var totalExtras=extras.reduce(function(s,e){return s+(parseFloat(e.valor)||0);},0);
+  var subtotal=subtotalSom+totalExtras;
   var desc=parseFloat(document.getElementById('pr-desconto').value)||0;
   var total=Math.max(0,subtotal-desc);
   var cli=document.getElementById('pCliente').value||'—';
   var camp=document.getElementById('pCampanha').value||'';
   document.getElementById('prop-cliente-nome').textContent=cli;
-  document.getElementById('prop-campanha-nome').textContent=camp+(camp?' · ':'')+getNomePlano(hT);
-  document.getElementById('pr-horas').textContent=hT+'h';
+  document.getElementById('prop-campanha-nome').textContent=camp;
+  document.getElementById('pr-plano-hint').textContent='Sugestao: '+getNomePlano(hSom)+' ('+hSom+'h sonoras)';
+  document.getElementById('pr-horas').textContent=hSom+'h';
   document.getElementById('pr-valor-hora').textContent='R$ '+preco+',00';
-  document.getElementById('pr-subtotal').textContent='R$ '+subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('pr-subtotal').textContent='R$ '+subtotalSom.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('pr-extras-sum').textContent='R$ '+totalExtras.toLocaleString('pt-BR',{minimumFractionDigits:2});
   document.getElementById('pr-total').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 }
 function renderPropCrono(){
-  var el=document.getElementById('prop-crono-lista');
-  el.innerHTML='';
-  if(!veiculacoes.length){el.innerHTML='<span style="font-size:10px;color:var(--muted)">Sem veiculações cadastradas</span>';return;}
+  var el=document.getElementById('prop-crono-lista');el.innerHTML='';
+  if(!veiculacoes.length){el.innerHTML='<span style="font-size:10px;color:var(--muted)">Sem veiculacoes cadastradas</span>';return;}
   veiculacoes.forEach(function(v){
     var dt=new Date(v.data+'T00:00:00');
     var dataFmt=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0');
-    var div=document.createElement('div');div.className='crono-item';
-    var header=document.createElement('div');header.className='crono-header';
-    header.innerHTML='<span class="crono-data">'+dataFmt+'/'+dt.getFullYear()+'</span><span class="crono-dia">'+DIAS_NOME_FULL[dt.getDay()]+'</span>';
-    var blocos=document.createElement('div');blocos.className='crono-blocos';
+    var div=document.createElement('div');
+    div.style.cssText='margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)';
+    var header=document.createElement('div');header.style.cssText='display:flex;gap:10px;align-items:center;margin-bottom:4px';
+    header.innerHTML='<span style="font-size:12px;font-weight:bold;color:var(--am)">'+dataFmt+'/'+dt.getFullYear()+'</span>'
+      +'<span style="font-size:10px;color:var(--muted2)">'+DIAS_NOME_FULL[dt.getDay()]+'</span>';
+    div.appendChild(header);
     v.blocos.forEach(function(b){
-      var bdiv=document.createElement('div');bdiv.className='crono-bloco';
+      var tipoB=b.tipo||'som';
       var circ=b.circuitoId?circuitosBib.find(function(c){return c.id===b.circuitoId;}):null;
-      bdiv.innerHTML='<span>'+b.hi+' – '+b.hf+' · '+calcHorasDia(b.hi,b.hf)+'h</span>'
-        +(b.bairros?' · <span>'+b.bairros+'</span>':'')
-        +(circ?' · <span style="color:var(--purple)">'+circ.nome+'</span>':'');
-      blocos.appendChild(bdiv);
+      var bdiv=document.createElement('div');
+      bdiv.style.cssText='font-size:10px;color:var(--muted2);margin-left:10px;margin-bottom:2px';
+      var icon=tipoB==='panfletagem'?'📋':'🔊';
+      bdiv.textContent=icon+' '+b.hi+'–'+b.hf+' · '+calcHorasDia(b.hi,b.hf)+'h'
+        +(b.bairros?' · '+b.bairros:'')
+        +(tipoB==='panfletagem'?' · '+(b.promotores||1)+' promotor'+(((b.promotores||1)>1)?'es':''):'')
+        +(circ?' · '+circ.nome:'')
+        +((tipoB==='som'&&b.vinheta&&b.vinheta!=='na')?' [Vinheta: '+(b.vinheta==='nova'?'Nova':'Ja tem')+']':'');
+      div.appendChild(bdiv);
     });
-    div.appendChild(header);div.appendChild(blocos);
     el.appendChild(div);
   });
 }
 function gerarPDF(){
   var cli=document.getElementById('pCliente').value||'Cliente';
   var camp=document.getElementById('pCampanha').value||'';
-  var hT=getTotalHoras();
+  var hSom=getTotalHorasSom();
   var preco=PRECOS[nivelAtivo];
-  var subtotal=Math.ceil(hT*preco);
+  var subtotalSom=Math.ceil(hSom*preco);
+  var totalExtras=extras.reduce(function(s,e){return s+(parseFloat(e.valor)||0);},0);
   var desc=parseFloat(document.getElementById('pr-desconto').value)||0;
-  var total=Math.max(0,subtotal-desc);
-  var plano=getNomePlano(hT);
+  var total=Math.max(0,subtotalSom+totalExtras-desc);
+  var plano=(document.getElementById('pr-plano-nome').value.trim())||getNomePlano(hSom);
   var vinheta=parseFloat(document.getElementById('pr-vinheta').value)||50;
   var linhasCrono='';
   veiculacoes.forEach(function(v){
     var dt=new Date(v.data+'T00:00:00');
     var dataFmt=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
-    v.blocos.forEach(function(b,i){
+    v.blocos.forEach(function(b){
+      var tipoB=b.tipo||'som';
       var circ=b.circuitoId?circuitosBib.find(function(c){return c.id===b.circuitoId;}):null;
+      var tipoLabel=tipoB==='panfletagem'?'Panfletagem'+(b.promotores?' ('+b.promotores+' prom.)':''):'Carro de som';
       linhasCrono+='<tr>'
         +'<td>'+dataFmt+'</td>'
         +'<td>'+DIAS_NOME_FULL[dt.getDay()]+'</td>'
         +'<td>'+b.hi+' – '+b.hf+'</td>'
         +'<td>'+(b.bairros||'—')+'</td>'
-        +'<td>'+(circ?circ.nome:'—')+'</td>'
+        +'<td>'+tipoLabel+'</td>'
         +'<td style="text-align:right">'+calcHorasDia(b.hi,b.hf)+'h</td>'
         +'</tr>';
     });
   });
-  var html='<h1>SUGESTÃO DE VEICULAÇÃO SONORA</h1>'
+  var linhasExtras='';
+  extras.forEach(function(ex){
+    if(ex.desc||ex.valor){
+      linhasExtras+='<div class="pr-total-line"><span>'+ex.desc+'</span><span>R$ '+((ex.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}))+'</span></div>';
+    }
+  });
+  var html='<h1>SUGESTAO DE VEICULACAO SONORA</h1>'
     +'<h2>CLIENTE: '+cli.toUpperCase()+(camp?' — '+camp.toUpperCase():'')+'</h2>'
-    +'<p>A AUTOVISION apresenta proposta de divulgação volante com carro de som para fortalecimento da marca, campanhas promocionais e ampla cobertura nas principais regiões estratégicas.</p>'
-    +'<p style="font-size:10px;color:#888"><em>Os horários são estimados e podem sofrer pequenas variações operacionais.</em></p>'
+    +'<p>A AUTOVISION apresenta proposta de divulgacao volante com carro de som para fortalecimento da marca, campanhas promocionais e ampla cobertura nas principais regioes estrategicas.</p>'
+    +'<p style="font-size:10px;color:#888"><em>Os horarios sao estimados e podem sofrer pequenas variacoes operacionais.</em></p>'
     +'<div class="pr-label">PLANO</div><p style="font-size:14px;font-weight:bold;letter-spacing:2px">'+plano+'</p>'
     +'<div class="pr-label">CRONOGRAMA</div>'
-    +'<table><tr><th>Data</th><th>Dia</th><th>Horário</th><th>Bairros</th><th>Circuito</th><th>Horas</th></tr>'+linhasCrono+'</table>'
+    +'<table><tr><th>Data</th><th>Dia</th><th>Horario</th><th>Bairros</th><th>Tipo</th><th>Horas</th></tr>'+linhasCrono+'</table>'
     +'<div class="pr-total">'
-    +'<div class="pr-total-line"><span>Total de horas:</span><span>'+hT+'h sonoras</span></div>'
+    +'<div class="pr-total-line"><span>Horas sonoras:</span><span>'+hSom+'h</span></div>'
     +'<div class="pr-total-line"><span>Valor por hora:</span><span>R$ '+preco+',00</span></div>'
+    +'<div class="pr-total-line"><span>Subtotal sonoro:</span><span>R$ '+subtotalSom.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div>'
+    +(linhasExtras?linhasExtras:'')
     +(desc>0?'<div class="pr-total-line"><span>Desconto:</span><span>— R$ '+desc.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div>':'')
     +'<div class="pr-total-line big"><span>VALOR TOTAL:</span><span>R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div>'
-    +'<div class="pr-total-line"><span>Pagamento:</span><span>Semanal — toda segunda-feira</span></div>'
-    +'<div class="pr-total-line"><span>Produção de vinheta:</span><span>R$ '+vinheta+',00 por produção (sob demanda)</span></div>'
+    +'<div class="pr-total-line"><span>Pagamento:</span><span>'+getPgtoTexto()+'</span></div>'
+    +'<div class="pr-total-line"><span>Producao de vinheta:</span><span>R$ '+vinheta+',00 por producao (sob demanda)</span></div>'
     +'</div>'
     +'<div class="pr-label" style="margin-top:20px">INCLUSO</div>'
-    +'<ul><li>Carro de som elétrico</li><li>Motorista profissional</li><li>Planejamento estratégico de roteiro</li><li>Divulgação volante nas regiões programadas</li><li>Cobertura comercial de alto impacto</li></ul>'
+    +'<ul><li>Carro de som eletrico</li><li>Motorista profissional</li><li>Planejamento estrategico de roteiro</li><li>Divulgacao volante nas regioes programadas</li><li>Cobertura comercial de alto impacto</li></ul>'
     +'<div class="pr-footer">AUTOVISION · CNPJ: '+CNPJ+'</div>';
   document.getElementById('print-area').innerHTML=html;
   setTimeout(function(){window.print();},100);
@@ -1279,48 +1383,94 @@ function gerarPDF(){
 function copiarWA(){
   var cli=document.getElementById('pCliente').value||'Cliente';
   var camp=document.getElementById('pCampanha').value||'';
-  var hT=getTotalHoras();
+  var hSom=getTotalHorasSom();
   var preco=PRECOS[nivelAtivo];
-  var subtotal=Math.ceil(hT*preco);
+  var subtotalSom=Math.ceil(hSom*preco);
+  var totalExtras=extras.reduce(function(s,e){return s+(parseFloat(e.valor)||0);},0);
   var desc=parseFloat(document.getElementById('pr-desconto').value)||0;
-  var total=Math.max(0,subtotal-desc);
-  var plano=getNomePlano(hT);
+  var total=Math.max(0,subtotalSom+totalExtras-desc);
+  var plano=(document.getElementById('pr-plano-nome').value.trim())||getNomePlano(hSom);
   var vinheta=parseFloat(document.getElementById('pr-vinheta').value)||50;
   var crono='';
   veiculacoes.forEach(function(v){
     var dt=new Date(v.data+'T00:00:00');
     var dataFmt=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0');
     v.blocos.forEach(function(b){
-      crono+='\n  '+dataFmt+' ('+DIAS_NOME[dt.getDay()]+') '+b.hi+'–'+b.hf+' · '+calcHorasDia(b.hi,b.hf)+'h'+(b.bairros?' · '+b.bairros:'');
+      var tipoB=b.tipo||'som';
+      var icon=tipoB==='panfletagem'?'📋':'🔊';
+      crono+='\n  '+icon+' '+dataFmt+' ('+DIAS_NOME[dt.getDay()]+') '+b.hi+'–'+b.hf+' · '+calcHorasDia(b.hi,b.hf)+'h'+(b.bairros?' · '+b.bairros:'')+(tipoB==='panfletagem'?' · '+(b.promotores||1)+' prom.':'');
     });
   });
-  var txt='*AUTOVISION — VEICULAÇÃO SONORA*\n'
+  var extrasWA='';
+  extras.forEach(function(ex){if(ex.desc)extrasWA+='\n*'+ex.desc+':* R$ '+((ex.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}));});
+  var txt='*AUTOVISION — VEICULACAO SONORA*\n'
     +'─────────────────────────\n'
     +'*Cliente:* '+cli+(camp?' — '+camp:'')+'\n'
     +'*Plano:* '+plano+'\n'
     +'─────────────────────────\n'
     +'*CRONOGRAMA*\n'+crono+'\n'
     +'─────────────────────────\n'
-    +'*Horas totais:* '+hT+'h\n'
+    +'*Horas sonoras:* '+hSom+'h\n'
+    +(extrasWA?extrasWA+'\n':'')
     +'*TOTAL: R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'*\n'
-    +'*Pagamento:* semanal — toda segunda-feira\n'
-    +'*Vinheta:* R$ '+vinheta+',00 por produção\n'
+    +'*Pagamento:* '+getPgtoTexto()+'\n'
+    +'*Vinheta:* R$ '+vinheta+',00 por producao\n'
     +'─────────────────────────\n'
     +'_AUTOVISION · CNPJ: '+CNPJ+'_';
-  navigator.clipboard.writeText(txt).then(function(){alert('✓ Copiado! Cole no WhatsApp.');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;top:10px;left:10px;right:10px;z-index:9999;height:180px;font-size:11px;background:#111;color:#eee;border:1px solid #444;padding:8px;border-radius:4px';
+  navigator.clipboard.writeText(txt).then(function(){alert('Copiado! Cole no WhatsApp.');}).catch(function(){
+    var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;top:10px;left:10px;right:10px;z-index:9999;height:200px;font-size:11px;background:#111;color:#eee;border:1px solid #444;padding:8px;border-radius:4px';
     document.body.appendChild(ta);ta.select();document.execCommand('copy');
-    setTimeout(function(){document.body.removeChild(ta);},4000);alert('✓ Copiado!');
+    setTimeout(function(){document.body.removeChild(ta);},5000);alert('Copiado!');
   });
 }
 
-// ════ EXPORT/IMPORT PROJETO ════
-function dl(content,type,name){var blob=new Blob([content],{type});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
+// ════ RESET TOTAL ════
+function resetTotal(){
+  if(!confirm('RESET TOTAL\n\nApaga TUDO: projeto, bairros, circuitos, veiculacoes, dados salvos e localStorage.\n\nNao tem volta. Continuar?'))return;
+  // Clear state
+  bairrosList=[];bairroAtual={pts:[],name:''};
+  circuitosBib=[];
+  circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
+  veiculacoes=[];extras=[];
+  nivelAtivo=1;tipoIdx=1;turnoIdx=3;
+  // Clear inputs
+  document.getElementById('pCliente').value='';
+  document.getElementById('pCampanha').value='';
+  document.getElementById('pr-desconto').value='0';
+  // Clear map layers
+  if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}
+  bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];
+  bairrosSalvosLayers.forEach(function(l){mapB.removeLayer(l);});bairrosSalvosLayers=[];
+  if(mapC){
+    perimCircLayers.forEach(function(l){mapC.removeLayer(l);});perimCircLayers=[];
+    if(startMkr){mapC.removeLayer(startMkr);startMkr=null;}
+    if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}
+    wpMarkers.forEach(function(m){mapC.removeLayer(m);});wpMarkers=[];
+    if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}
+  }
+  // Clear localStorage
+  localStorage.removeItem(LS_KEY);
+  // Re-render
+  renderBairrosLista();renderCircBiblioteca();
+  renderExtras();
+  calcTotals();
+  document.getElementById('hdr-cliente').textContent='';
+  document.getElementById('t-dados').classList.remove('done');
+  [1,2,3].forEach(function(i){document.getElementById('nv-'+i).className='nivel-btn'+(i===1?' active':'');});
+  initCal();renderCal();
+  goTab('proj');
+  bSt('Resetado','');
+}
+
+// ════ EXPORT/IMPORT ════
+function dl(content,type,name){var blob=new Blob([content],{type:type});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
 function exportProjeto(){
   var proj={
+    version:56,
     cliente:document.getElementById('pCliente').value,
     campanha:document.getElementById('pCampanha').value,
-    bairrosList,circuitosBib,veiculacoes,tipoIdx,turnoIdx
+    planoNome:(document.getElementById('pr-plano-nome')||{value:''}).value,
+    bairrosList:bairrosList,circuitosBib:circuitosBib,veiculacoes:veiculacoes,extras:extras,tipoIdx:tipoIdx,turnoIdx:turnoIdx
   };
   var name=((proj.cliente||'projeto')+'-'+(proj.campanha||'campanha')+'.json').replace(/\s+/g,'-').toLowerCase();
   dl(JSON.stringify(proj,null,2),'application/json',name);
@@ -1336,25 +1486,27 @@ function importProj(ev){
       document.getElementById('pCampanha').value=p.campanha||'';
       if(p.bairrosList){bairrosList=p.bairrosList;renderBairrosLista();renderBairrosSalvosNoMapa();}
       if(p.circuitosBib){circuitosBib=p.circuitosBib;renderCircBiblioteca();}
-      if(p.veiculacoes){veiculacoes=p.veiculacoes;}
+      if(p.veiculacoes)veiculacoes=p.veiculacoes;
+      if(p.extras)extras=p.extras; else extras=[];
+      if(p.planoNome){var pn=document.getElementById('pr-plano-nome');if(pn)pn.value=p.planoNome;}
       if(p.tipoIdx)tipoIdx=p.tipoIdx;
       if(p.turnoIdx)turnoIdx=p.turnoIdx;
-      calcTotals();renderCal();goTab('proj');
+      calcTotals();renderCal();renderExtras();goTab('proj');
     }catch(err){alert('Erro ao importar projeto');}
   };
   r.readAsText(file);ev.target.value='';
 }
 function novoProj(){
-  if(!confirm('Novo projeto? O atual não será apagado do armazenamento.'))return;
-  document.getElementById('pCliente').value='';
-  document.getElementById('pCampanha').value='';
-  bairrosList=[];circuitosBib=[];veiculacoes=[];
+  if(!confirm('Novo projeto? O atual nao sera apagado do armazenamento.'))return;
+  document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
+  bairrosList=[];circuitosBib=[];veiculacoes=[];extras=[];
   bairroAtual={pts:[],name:''};
   if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}
   bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];
-  renderBairrosLista();renderCircBiblioteca();
+  renderBairrosLista();renderCircBiblioteca();renderExtras();
   calcTotals();renderCal();
 }
+function onProjInput(){calcTotals();}
 
 // ════ ÁREA ════
 function polyAreaKm2(p){
@@ -1370,8 +1522,10 @@ function salvarEstado(){
     localStorage.setItem(LS_KEY,JSON.stringify({
       cliente:document.getElementById('pCliente').value,
       campanha:document.getElementById('pCampanha').value,
-      bairrosList,circuitosBib,veiculacoes,tipoIdx,turnoIdx,
-      circAtivo:{waypoints:circAtivo.waypoints,startPt:circAtivo.startPt,lastData:circAtivo.lastData,geomSerial}
+      planoNome:(document.getElementById('pr-plano-nome')||{value:''}).value,
+      bairrosList:bairrosList,circuitosBib:circuitosBib,veiculacoes:veiculacoes,extras:extras,
+      tipoIdx:tipoIdx,turnoIdx:turnoIdx,
+      circAtivo:{waypoints:circAtivo.waypoints,startPt:circAtivo.startPt,lastData:circAtivo.lastData,geomSerial:geomSerial}
     }));
   }catch(e){}
 }
@@ -1383,7 +1537,9 @@ function restaurarEstado(){
     if(s.campanha)document.getElementById('pCampanha').value=s.campanha;
     if(s.bairrosList){bairrosList=s.bairrosList;renderBairrosLista();renderBairrosSalvosNoMapa();}
     if(s.circuitosBib){circuitosBib=s.circuitosBib;renderCircBiblioteca();}
-    if(s.veiculacoes){veiculacoes=s.veiculacoes;}
+    if(s.veiculacoes)veiculacoes=s.veiculacoes;
+    if(s.extras)extras=s.extras;
+    if(s.planoNome){var pn=document.getElementById('pr-plano-nome');if(pn)pn.value=s.planoNome;}
     if(s.tipoIdx)tipoIdx=s.tipoIdx;
     if(s.turnoIdx)turnoIdx=s.turnoIdx;
     if(s.circAtivo){
@@ -1402,34 +1558,29 @@ function setupAutoSave(){
   ['pCliente','pCampanha'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.addEventListener('input',function(){calcTotals();salvarEstado();});
   });
-  setInterval(salvarEstado,5000);
+  setInterval(salvarEstado,8000);
 }
 
 // ════ INIT ════
 window.addEventListener('load',function(){
-  initCal();
-  restaurarEstado();
-  renderCal();
-  setupAutoSave();
+  initCal();restaurarEstado();renderCal();renderExtras();setupAutoSave();
 });
-// ════ MINI-MODAL DE NOME (substitui prompt() — compatível iOS) ════
-function abrirNomeModal(titulo, placeholder, callback){
+
+// ════ MINI-MODAL DE NOME ════
+function abrirNomeModal(titulo,placeholder,callback){
   var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px';
   var box=document.createElement('div');
   box.style.cssText='background:#141414;border:1px solid #1E1E1E;border-radius:4px;padding:20px;width:100%;max-width:340px';
-  var lbl=document.createElement('div');
-  lbl.textContent=titulo;
+  var lbl=document.createElement('div');lbl.textContent=titulo;
   lbl.style.cssText='font-size:10px;letter-spacing:3px;color:#F5C800;text-transform:uppercase;margin-bottom:12px;font-family:Courier New,monospace';
-  var inp=document.createElement('input');
-  inp.type='text';inp.placeholder=placeholder;
-  inp.style.cssText='width:100%;font-size:13px;padding:10px;margin-bottom:12px;background:#0E0E0E;border:1px solid #2A2A2A;color:#E8E8E8;border-radius:2px;font-family:Courier New,monospace;box-sizing:border-box';
-  var row=document.createElement('div');
-  row.style.cssText='display:flex;gap:8px';
-  var btnOk=document.createElement('button');
-  btnOk.textContent='✓ OK';btnOk.style.cssText='flex:1;padding:10px;background:#F5C800;border:none;border-radius:2px;font-weight:bold;font-family:Courier New,monospace;font-size:11px;cursor:pointer;color:#000';
-  var btnCan=document.createElement('button');
-  btnCan.textContent='Cancelar';btnCan.style.cssText='padding:10px 14px;background:#141414;border:1px solid #2A2A2A;border-radius:2px;color:#666;font-family:Courier New,monospace;font-size:11px;cursor:pointer';
+  var inp=document.createElement('input');inp.type='text';inp.placeholder=placeholder;
+  inp.style.cssText='width:100%;font-size:14px;padding:10px;margin-bottom:12px;background:#0E0E0E;border:1px solid #2A2A2A;color:#E8E8E8;border-radius:2px;font-family:Courier New,monospace;box-sizing:border-box';
+  var row=document.createElement('div');row.style.cssText='display:flex;gap:8px';
+  var btnOk=document.createElement('button');btnOk.textContent='OK';
+  btnOk.style.cssText='flex:1;padding:10px;background:#F5C800;border:none;border-radius:2px;font-weight:bold;font-family:Courier New,monospace;font-size:12px;cursor:pointer;color:#000';
+  var btnCan=document.createElement('button');btnCan.textContent='Cancelar';
+  btnCan.style.cssText='padding:10px 14px;background:#141414;border:1px solid #2A2A2A;border-radius:2px;color:#666;font-family:Courier New,monospace;font-size:12px;cursor:pointer';
   function fechar(val){document.body.removeChild(overlay);if(val!==null)callback(val);}
   btnOk.addEventListener('click',function(){fechar(inp.value.trim());});
   btnCan.addEventListener('click',function(){fechar(null);});
@@ -1439,7 +1590,6 @@ function abrirNomeModal(titulo, placeholder, callback){
   overlay.appendChild(box);document.body.appendChild(overlay);
   setTimeout(function(){inp.focus();},100);
 }
-
 </script>
 </body>
 </html>
