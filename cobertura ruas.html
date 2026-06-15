@@ -21,7 +21,7 @@ body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;
 .logo{font-size:13px;letter-spacing:4px;color:var(--am);font-weight:bold}
 .version{font-size:9px;color:var(--muted);letter-spacing:2px}
 #tabs{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:var(--panel);overflow-x:auto;order:99;-webkit-overflow-scrolling:touch}
-.tab{flex:1;min-width:56px;min-height:var(--touch-sm);padding:8px 2px;text-align:center;font-size:9px;letter-spacing:1px;color:var(--muted);cursor:pointer;border-top:2px solid transparent;transition:all .2s;text-transform:uppercase;user-select:none;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tab{flex:1;min-width:48px;min-height:var(--touch-sm);padding:6px 2px;text-align:center;font-size:8px;letter-spacing:0px;color:var(--muted);cursor:pointer;border-top:2px solid transparent;transition:all .2s;text-transform:uppercase;user-select:none;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .tab.active{color:var(--am);border-top-color:var(--am);background:rgba(245,200,0,.06)}
 .tab.done{color:var(--green)}.tab.done.active{color:var(--am)}
 .panel{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
@@ -186,12 +186,13 @@ textarea{min-height:auto;resize:none}
 </div>
 
 <div id="tabs">
-  <div class="tab active" id="t-proj"     onclick="goTab('proj')">① PROJETO</div>
+  <div class="tab active" id="t-proj"     onclick="goTab('proj')">① PROJ</div>
   <div class="tab"        id="t-bairros"  onclick="goTab('bairros')">② BAIRROS</div>
-  <div class="tab"        id="t-circ"     onclick="goTab('circ')">③ CIRCUITO</div>
-  <div class="tab"        id="t-crono"    onclick="goTab('crono')">④ CRONOGRAMA</div>
-  <div class="tab"        id="t-dados"    onclick="goTab('dados')">⑤ DADOS</div>
-  <div class="tab"        id="t-proposta" onclick="goTab('proposta')">⑥ PROPOSTA</div>
+  <div class="tab"        id="t-circ"     onclick="goTab('circ')">③ CIRC</div>
+  <div class="tab"        id="t-criativo" onclick="goTab('criativo')">④ CRIATIVO</div>
+  <div class="tab"        id="t-crono"    onclick="goTab('crono')">⑤ CRONO</div>
+  <div class="tab"        id="t-dados"    onclick="goTab('dados')">⑥ DADOS</div>
+  <div class="tab"        id="t-proposta" onclick="goTab('proposta')">⑦ PROPOSTA</div>
 </div>
 
 <!-- ① PROJETO -->
@@ -279,7 +280,23 @@ textarea{min-height:auto;resize:none}
   <div class="status"><div class="dot" id="cDot"></div><span id="cStTxt">Marque o início e adicione waypoints</span></div>
 </div>
 
-<!-- ④ CRONOGRAMA -->
+<!-- ④ CRIATIVO -->
+<div id="p-criativo" class="panel">
+  <div class="row" style="flex-wrap:wrap;gap:6px;padding:8px 10px">
+    <input id="criativo-nome-inp" placeholder="Nome do criativo" style="flex:2;min-width:120px;font-size:14px"/>
+    <select id="criativo-tipo-sel" style="flex:1;min-width:100px;font-size:13px">
+      <option value="vinheta">Vinheta</option>
+      <option value="arte">Arte (panfleto)</option>
+    </select>
+    <button class="btn on" onclick="addCriativo()">+ ADD</button>
+  </div>
+  <div class="scroll-content">
+    <div style="font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Criativos cadastrados</div>
+    <div id="criativos-lista"></div>
+  </div>
+</div>
+
+<!-- ⑤ CRONOGRAMA -->
 <div id="p-crono" class="panel">
   <div class="scroll-content" id="crono-content">
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:20px" id="crono-empty">Selecione dias no PROJETO para criar veiculações</div>
@@ -418,6 +435,7 @@ var LS_KEY='autovision_v56';
 var bairrosList=[], bairroAtual={pts:[],name:''};
 var bairroColors=['#F5C800','#00C8C8','#9B6DFF','#3DBA6F','#F5A623','#E8384F','#4A9EFF'];
 var circuitosBib=[];
+var criativosBib=[];
 var circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
 var veiculacoes=[];
 var extras=[]; // [{id,desc,valor}]
@@ -445,12 +463,13 @@ function initMapC(){
 
 // ════ TABS ════
 function goTab(t){
-  ['proj','bairros','circ','crono','dados','proposta'].forEach(function(n){
+  ['proj','bairros','circ','criativo','crono','dados','proposta'].forEach(function(n){
     document.getElementById('p-'+n).classList.toggle('show',n===t);
     document.getElementById('t-'+n).classList.toggle('active',n===t);
   });
   if(t==='bairros') setTimeout(function(){mapB.invalidateSize();},80);
   if(t==='circ')    setTimeout(function(){initMapC();mapC.invalidateSize();syncCircMapa();},80);
+  if(t==='criativo') renderCriativosBib();
   if(t==='crono')   renderCrono();
   if(t==='dados')   populaDados();
   if(t==='proposta'){recalcProposta();renderPropCrono();renderExtras();}
@@ -520,7 +539,7 @@ function toggleDia(iso,dt){
   if(idx>=0){
     abrirVeicModal(veiculacoes[idx]);
   } else {
-    var v={id:'v'+Date.now(),data:iso,blocos:[{id:'b'+Date.now(),tipo:'som',hi:'08:00',hf:'12:00',bairros:'',circuitoId:null,vinheta:'na',promotores:1}]};
+    var v={id:'v'+Date.now(),data:iso,blocos:[{id:'b'+Date.now(),tipo:'som',hi:'08:00',hf:'12:00',bairros:'',circuitoId:null,criativoId:null,promotores:1}]};
     veiculacoes.push(v);
     veiculacoes.sort(function(a,b){return a.data.localeCompare(b.data);});
     renderCal();calcTotals();salvarEstado();
@@ -632,49 +651,7 @@ function renderVeicModalBody(v){
     // ── CAMPOS ESPECÍFICOS POR TIPO
     var tipoB=b.tipo||'som';
     if(tipoB==='som'){
-      // Vinheta
-      var rowVin=document.createElement('div');rowVin.style.cssText='margin-bottom:8px';
-      var lblVin=document.createElement('div');lblVin.textContent='Vinheta';
-      lblVin.style.cssText='font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px';
-      rowVin.appendChild(lblVin);
-      var vinWrap=document.createElement('div');vinWrap.style.cssText='display:flex;gap:4px';
-      var vinAtivo=b.vinheta||'na';
-      [{v:'nova',l:'Nova producao'},{v:'tem',l:'Ja tem'},{v:'na',l:'N/A'}].forEach(function(opt){
-        var btn=document.createElement('button');
-        btn.type='button';
-        btn.textContent=opt.l;
-        btn.style.cssText='flex:1;padding:6px 2px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid;font-family:Courier New,monospace;transition:all .15s;text-transform:uppercase;letter-spacing:1px';
-        if(vinAtivo===opt.v){
-          btn.style.background='rgba(155,109,255,.14)';btn.style.borderColor='var(--purple)';btn.style.color='var(--purple)';
-        } else {
-          btn.style.background='var(--panel2)';btn.style.borderColor='var(--border)';btn.style.color='var(--muted2)';
-        }
-        (function(val,bloco,vref){
-          btn.addEventListener('click',function(){bloco.vinheta=val;salvarEstado();renderVeicModalBody(vref);});
-        })(opt.v,b,v);
-        vinWrap.appendChild(btn);
-      });
-      rowVin.appendChild(vinWrap);
-      div.appendChild(rowVin);
-      // Circuito
-      var rowC=document.createElement('div');rowC.style.cssText='display:flex;gap:6px;align-items:center';
-      var lblC=document.createElement('span');lblC.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap;letter-spacing:2px;text-transform:uppercase';lblC.textContent='Circuito:';
-      var selC=document.createElement('select');
-      selC.style.cssText='flex:1;font-size:11px;padding:5px 7px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px;min-height:36px';
-      var optN=document.createElement('option');optN.value='';
-      optN.textContent=circuitosBib.length?'— nenhum —':'— salve um circuito primeiro —';
-      selC.appendChild(optN);
-      circuitosBib.forEach(function(c){
-        var opt=document.createElement('option');opt.value=c.id;
-        opt.textContent=c.nome+(c.lastData?' ('+c.lastData.voltaKm.toFixed(1)+'km)':'');
-        if(b.circuitoId===c.id)opt.selected=true;
-        selC.appendChild(opt);
-      });
-      if(!circuitosBib.length)selC.disabled=true;
-      (function(bloco){selC.addEventListener('change',function(){bloco.circuitoId=selC.value||null;salvarEstado();});})(b);
-      rowC.appendChild(lblC);rowC.appendChild(selC);
-      div.appendChild(rowC);
-    } else {
+          } else {
       // PANFLETAGEM: promotores
       var rowP=document.createElement('div');rowP.style.cssText='display:flex;align-items:center;gap:10px';
       var lblP=document.createElement('span');lblP.textContent='Promotores:';
@@ -696,7 +673,7 @@ function renderVeicModalBody(v){
   (function(vid,vref){
     btnAdd.addEventListener('click',function(){
       var vv=veiculacoes.find(function(x){return x.id===vid;});
-      if(vv)vv.blocos.push({id:'b'+Date.now(),tipo:'som',hi:'08:00',hf:'12:00',bairros:'',circuitoId:null,vinheta:'na',promotores:1});
+      if(vv)vv.blocos.push({id:'b'+Date.now(),tipo:'som',hi:'08:00',hf:'12:00',bairros:'',circuitoId:null,criativoId:null,promotores:1});
       calcTotals();salvarEstado();renderVeicModalBody(vref);
     });
   })(v.id,v);
@@ -1177,12 +1154,7 @@ function renderCrono(){
       if(b.bairros){var rowBairro=document.createElement('div');rowBairro.style.cssText='font-size:10px;color:var(--muted2)';rowBairro.textContent='📍 '+b.bairros;bdiv.appendChild(rowBairro);}
       // Tipo-específico
       if(tipoB==='som'){
-        // Vinheta
-        var vin=b.vinheta||'na';
-        if(vin!=='na'){
-          var rowVin=document.createElement('div');rowVin.style.cssText='font-size:10px;color:var(--purple);margin-top:2px';
-          rowVin.textContent='Vinheta: '+(vin==='nova'?'Nova producao':'Ja tem');bdiv.appendChild(rowVin);
-        }
+
         // Circuito
         var rowC=document.createElement('div');rowC.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
         var lblC=document.createElement('span');lblC.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap;letter-spacing:2px;text-transform:uppercase';lblC.textContent='Circuito:';
@@ -1205,6 +1177,23 @@ function renderCrono(){
         var rowP=document.createElement('div');rowP.style.cssText='font-size:10px;color:var(--orange);margin-top:2px';
         rowP.textContent=(b.promotores||1)+' promotor'+(((b.promotores||1)>1)?'es':'');bdiv.appendChild(rowP);
       }
+      // Criativo (universal — som e panfletagem)
+      var rowCr=document.createElement('div');rowCr.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
+      var lblCr=document.createElement('span');lblCr.style.cssText='font-size:9px;color:var(--muted2);white-space:nowrap;letter-spacing:2px;text-transform:uppercase';lblCr.textContent='Criativo:';
+      var selCr=document.createElement('select');
+      selCr.style.cssText='flex:1;font-size:10px;padding:4px 6px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:Courier New,monospace;border-radius:2px;min-height:36px';
+      var optNCr=document.createElement('option');optNCr.value='';
+      optNCr.textContent=criativosBib.length?'— nenhum —':'— cadastre um criativo primeiro —';
+      selCr.appendChild(optNCr);
+      criativosBib.forEach(function(c){
+        var opt=document.createElement('option');opt.value=c.id;
+        opt.textContent=(c.tipo==='vinheta'?'Vinheta: ':'Arte: ')+c.nome;
+        if(b.criativoId===c.id)opt.selected=true;
+        selCr.appendChild(opt);
+      });
+      if(!criativosBib.length)selCr.disabled=true;
+      (function(bloco){selCr.addEventListener('change',function(){bloco.criativoId=selCr.value||null;salvarEstado();});})(b);
+      rowCr.appendChild(lblCr);rowCr.appendChild(selCr);bdiv.appendChild(rowCr);
       body.appendChild(bdiv);
     });
     var btnEdit=document.createElement('button');btnEdit.className='btn outline full';btnEdit.textContent='Editar veiculacao';
@@ -1312,11 +1301,12 @@ function renderPropCrono(){
       var bdiv=document.createElement('div');
       bdiv.style.cssText='font-size:10px;color:var(--muted2);margin-left:10px;margin-bottom:2px';
       var icon=tipoB==='panfletagem'?'📋':'🔊';
+      var criativo=b.criativoId?criativosBib.find(function(c){return c.id===b.criativoId;}):null;
       bdiv.textContent=icon+' '+b.hi+'–'+b.hf+' · '+calcHorasDia(b.hi,b.hf)+'h'
         +(b.bairros?' · '+b.bairros:'')
         +(tipoB==='panfletagem'?' · '+(b.promotores||1)+' promotor'+(((b.promotores||1)>1)?'es':''):'')
         +(circ?' · '+circ.nome:'')
-        +((tipoB==='som'&&b.vinheta&&b.vinheta!=='na')?' [Vinheta: '+(b.vinheta==='nova'?'Nova':'Ja tem')+']':'');
+        +(criativo?' · '+(criativo.tipo==='vinheta'?'Vinheta: ':'Arte: ')+criativo.nome:'');
       div.appendChild(bdiv);
     });
     el.appendChild(div);
@@ -1341,12 +1331,13 @@ function gerarPDF(){
       var tipoB=b.tipo||'som';
       var circ=b.circuitoId?circuitosBib.find(function(c){return c.id===b.circuitoId;}):null;
       var tipoLabel=tipoB==='panfletagem'?'Panfletagem'+(b.promotores?' ('+b.promotores+' prom.)':''):'Carro de som';
+      var criativo56=b.criativoId?criativosBib.find(function(c){return c.id===b.criativoId;}):null;
       linhasCrono+='<tr>'
         +'<td>'+dataFmt+'</td>'
         +'<td>'+DIAS_NOME_FULL[dt.getDay()]+'</td>'
         +'<td>'+b.hi+' – '+b.hf+'</td>'
         +'<td>'+(b.bairros||'—')+'</td>'
-        +'<td>'+tipoLabel+'</td>'
+        +'<td>'+tipoLabel+(criativo56?' / '+(criativo56.tipo==='vinheta'?'Vinheta':'Arte')+': '+criativo56.nome:'')+'</td>'
         +'<td style="text-align:right">'+calcHorasDia(b.hi,b.hf)+'h</td>'
         +'</tr>';
     });
@@ -1424,12 +1415,43 @@ function copiarWA(){
   });
 }
 
+
+// ════ CRIATIVOS ════
+function addCriativo(){
+  var nome=document.getElementById('criativo-nome-inp').value.trim();
+  if(!nome)return;
+  var tipo=document.getElementById('criativo-tipo-sel').value;
+  criativosBib.push({id:'cr'+Date.now(),nome:nome,tipo:tipo});
+  document.getElementById('criativo-nome-inp').value='';
+  renderCriativosBib();salvarEstado();
+}
+function removeCriativo(id){
+  criativosBib=criativosBib.filter(function(c){return c.id!==id;});
+  renderCriativosBib();salvarEstado();
+}
+function renderCriativosBib(){
+  var el=document.getElementById('criativos-lista');if(!el)return;
+  el.innerHTML='';
+  if(!criativosBib.length){el.innerHTML='<span style="font-size:10px;color:var(--muted)">Nenhum criativo cadastrado</span>';return;}
+  criativosBib.forEach(function(c){
+    var div=document.createElement('div');div.className='circ-item';
+    var tipoLabel=c.tipo==='vinheta'?'🎙 Vinheta':'📄 Arte';
+    div.innerHTML='<span class="circ-nome">'+c.nome+'</span>'
+      +'<span class="circ-meta">'+tipoLabel+'</span>';
+    var btnDel=document.createElement('button');
+    btnDel.className='btn danger sm';btnDel.textContent='x';
+    (function(cid){btnDel.addEventListener('click',function(){removeCriativo(cid);});})(c.id);
+    div.appendChild(btnDel);
+    el.appendChild(div);
+  });
+}
+
 // ════ RESET TOTAL ════
 function resetTotal(){
   if(!confirm('RESET TOTAL\n\nApaga TUDO: projeto, bairros, circuitos, veiculacoes, dados salvos e localStorage.\n\nNao tem volta. Continuar?'))return;
   // Clear state
   bairrosList=[];bairroAtual={pts:[],name:''};
-  circuitosBib=[];
+  circuitosBib=[];criativosBib=[];
   circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
   veiculacoes=[];extras=[];
   nivelAtivo=1;tipoIdx=1;turnoIdx=3;
@@ -1470,7 +1492,7 @@ function exportProjeto(){
     cliente:document.getElementById('pCliente').value,
     campanha:document.getElementById('pCampanha').value,
     planoNome:(document.getElementById('pr-plano-nome')||{value:''}).value,
-    bairrosList:bairrosList,circuitosBib:circuitosBib,veiculacoes:veiculacoes,extras:extras,tipoIdx:tipoIdx,turnoIdx:turnoIdx
+    bairrosList:bairrosList,circuitosBib:circuitosBib,criativosBib:criativosBib,veiculacoes:veiculacoes,extras:extras,tipoIdx:tipoIdx,turnoIdx:turnoIdx
   };
   var name=((proj.cliente||'projeto')+'-'+(proj.campanha||'campanha')+'.json').replace(/\s+/g,'-').toLowerCase();
   dl(JSON.stringify(proj,null,2),'application/json',name);
@@ -1488,6 +1510,7 @@ function importProj(ev){
       if(p.circuitosBib){circuitosBib=p.circuitosBib;renderCircBiblioteca();}
       if(p.veiculacoes)veiculacoes=p.veiculacoes;
       if(p.extras)extras=p.extras; else extras=[];
+      if(p.criativosBib){criativosBib=p.criativosBib;renderCriativosBib();}
       if(p.planoNome){var pn=document.getElementById('pr-plano-nome');if(pn)pn.value=p.planoNome;}
       if(p.tipoIdx)tipoIdx=p.tipoIdx;
       if(p.turnoIdx)turnoIdx=p.turnoIdx;
@@ -1499,7 +1522,7 @@ function importProj(ev){
 function novoProj(){
   if(!confirm('Novo projeto? O atual nao sera apagado do armazenamento.'))return;
   document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
-  bairrosList=[];circuitosBib=[];veiculacoes=[];extras=[];
+  bairrosList=[];circuitosBib=[];criativosBib=[];veiculacoes=[];extras=[];
   bairroAtual={pts:[],name:''};
   if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}
   bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];
@@ -1523,7 +1546,7 @@ function salvarEstado(){
       cliente:document.getElementById('pCliente').value,
       campanha:document.getElementById('pCampanha').value,
       planoNome:(document.getElementById('pr-plano-nome')||{value:''}).value,
-      bairrosList:bairrosList,circuitosBib:circuitosBib,veiculacoes:veiculacoes,extras:extras,
+      bairrosList:bairrosList,circuitosBib:circuitosBib,criativosBib:criativosBib,veiculacoes:veiculacoes,extras:extras,
       tipoIdx:tipoIdx,turnoIdx:turnoIdx,
       circAtivo:{waypoints:circAtivo.waypoints,startPt:circAtivo.startPt,lastData:circAtivo.lastData,geomSerial:geomSerial}
     }));
@@ -1539,6 +1562,7 @@ function restaurarEstado(){
     if(s.circuitosBib){circuitosBib=s.circuitosBib;renderCircBiblioteca();}
     if(s.veiculacoes)veiculacoes=s.veiculacoes;
     if(s.extras)extras=s.extras;
+    if(s.criativosBib){criativosBib=s.criativosBib;renderCriativosBib();}
     if(s.planoNome){var pn=document.getElementById('pr-plano-nome');if(pn)pn.value=s.planoNome;}
     if(s.tipoIdx)tipoIdx=s.tipoIdx;
     if(s.turnoIdx)turnoIdx=s.turnoIdx;
@@ -1563,7 +1587,7 @@ function setupAutoSave(){
 
 // ════ INIT ════
 window.addEventListener('load',function(){
-  initCal();restaurarEstado();renderCal();renderExtras();setupAutoSave();
+  initCal();restaurarEstado();renderCal();renderExtras();renderCriativosBib();setupAutoSave();
 });
 
 // ════ MINI-MODAL DE NOME ════
