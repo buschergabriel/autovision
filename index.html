@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AUTOVISION</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onerror=function(){window.__LEAFLET_FAILED=true;};document.head.appendChild(s);"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.crossOrigin='anonymous';s.onerror=function(){window.__LEAFLET_FAILED=true;};document.head.appendChild(s);"></script>
 <style>
 :root{
   --am:#F5C800;--bg:#080808;--panel:#0E0E0E;--panel2:#141414;
@@ -417,6 +417,19 @@ textarea{min-height:auto;resize:none}
 
 <!-- PRINT -->
 <div id="print-area"></div>
+
+<div id="err-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#3A0000;color:#FFAAAA;font-family:monospace;font-size:11px;padding:10px 12px;max-height:40vh;overflow-y:auto;border-bottom:2px solid #FF4444;white-space:pre-wrap"></div>
+
+<script>
+window.onerror=function(msg,src,line,col,err){
+  var b=document.getElementById('err-banner');
+  if(b){
+    b.style.display='block';
+    b.textContent+='ERRO: '+msg+' | linha '+line+':'+col+'\n';
+  }
+  return false;
+};
+</script>
 
 <script>
 // ════ CONSTANTES ════
