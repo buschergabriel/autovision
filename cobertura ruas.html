@@ -476,7 +476,7 @@ function goTab(t){
     document.getElementById('p-'+n).classList.toggle('show',n===t);
     document.getElementById('t-'+n).classList.toggle('active',n===t);
   });
-  if(t==='bairros') setTimeout(function(){initMapB();mapB.invalidateSize();},80);
+  if(t==='bairros') setTimeout(function(){initMapB();mapB.invalidateSize();bRedraw();},80);
   if(t==='circ')    setTimeout(function(){initMapC();mapC.invalidateSize();syncCircMapa();},80);
   if(t==='criativo') renderCriativosBib();
   if(t==='crono')   renderCrono();
@@ -1527,9 +1527,8 @@ function novoProj(){
   document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
   bairrosList=[];circuitosBib=[];criativosBib=[];veiculacoes=[];extras=[];
   bairroAtual={pts:[],name:''};
-  if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}
-  bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];
-  renderBairrosLista();renderCircBiblioteca();renderExtras();
+  if(mapB){if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];}
+  renderBairrosLista();renderCircBiblioteca();renderExtras();renderCriativosBib();
   calcTotals();renderCal();
 }
 function onProjInput(){calcTotals();}
