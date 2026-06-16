@@ -497,7 +497,26 @@ function goTab(t){
     document.getElementById('p-'+n).classList.toggle('show',n===t);
     document.getElementById('t-'+n).classList.toggle('active',n===t);
   });
-  if(t==='bairros') setTimeout(function(){initMapB();if(mapB){mapB.invalidateSize();bRedraw();}},80);
+  if(t==='bairros') setTimeout(function(){
+    initMapB();
+    if(mapB){mapB.invalidateSize();bRedraw();}
+    var mw=document.querySelector('#p-bairros .map-wrap');
+    var mb=document.getElementById('map-bairro');
+    var rw=mw?mw.getBoundingClientRect():null;
+    var rb=mb?mb.getBoundingClientRect():null;
+    var dbg=document.getElementById('err-banner');
+    if(dbg){
+      dbg.style.display='block';
+      dbg.style.background='#001A33';dbg.style.color='#AACCFF';dbg.style.borderColor='#3399FF';
+      dbg.textContent='DIAGNOSTICO BAIRROS:\n'
+        +'typeof L = '+(typeof L)+'\n'
+        +'mapB = '+(mapB?'criado':'NULL')+'\n'
+        +'map-wrap tamanho = '+(rw?Math.round(rw.width)+'x'+Math.round(rw.height):'elemento nao encontrado')+'\n'
+        +'map-bairro tamanho = '+(rb?Math.round(rb.width)+'x'+Math.round(rb.height):'elemento nao encontrado')+'\n'
+        +'map-bairro filhos = '+(mb?mb.children.length:'n/a')+'\n'
+        +'map-bairro classes = '+(mb?mb.className:'n/a');
+    }
+  },80);
   if(t==='circ')    setTimeout(function(){initMapC();if(mapC){mapC.invalidateSize();syncCircMapa();}},80);
   if(t==='criativo') renderCriativosBib();
   if(t==='crono')   renderCrono();
