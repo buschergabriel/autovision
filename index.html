@@ -559,6 +559,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
     <button class="btn sm" id="cBtnAdd" onclick="setCMode('add')">＋</button>
     <button class="btn sm" id="cBtnMove" onclick="setCMode('move')">✎</button>
     <button class="btn sm" id="cBtnDel" onclick="setCMode('del')">✕</button>
+    <button class="btn sm on-cyan" onclick="gerarCircuitoAuto()" id="cBtnAuto" title="Gerar circuito automático pelo bairro">⚡ Auto</button>
     <button class="btn sm on" onclick="gerarRota()" style="margin-left:4px">▶ Gerar</button>
     <button class="btn sm green" onclick="salvarCircuito()" id="btnSalvarCirc" style="display:none">💾</button>
     <button class="btn danger sm" onclick="limparCircuito()" style="margin-left:auto">🗑</button>
@@ -683,7 +684,7 @@ window.onerror=function(msg,src,line,col){
 </script>
 <script>
 // ════ CONSTANTES ════
-var SPD=11;
+var SPD=10;
 var TILES='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 var CNPJ='39.449.284/0001-77';
 var PRECOS={1:75,2:60,3:50};
@@ -716,6 +717,7 @@ var bMode='add', bPolyL=null, bVtxMarkers=[], gpsMkr=null;
 var pendingGeo=null, pendingName='';
 var cMode='start', startMkr=null;
 var wpMarkers=[], routeLayer=null, streetsLayer=null, perimCircLayers=[];
+var overpassElements=[];
 var bairrosSalvosLayers=[];
 // Pacotes
 var pacoteDestaque=2; // 1,2,3
@@ -1510,13 +1512,17 @@ function importBairro(ev){
 }
 
 // ════ CIRCUITO ════
-var STREET_COLORS=[{min:400,color:'#D45C5C',weight:4},{min:150,color:'#E8943A',weight:2.5},{min:0,color:'#555',weight:1.5}];
+var STREET_COLORS=[{min:300,color:'#D45C5C',weight:4},{min:80,color:'#E8943A',weight:2.5},{min:0,color:'#555',weight:1.5}];
+var HIGHWAY_WEIGHT={motorway:100,trunk:100,primary:100,secondary:80,tertiary:60,unclassified:40,residential:25,living_street:20};
+var BUFFER_M=60, MAX_WP=18, MIN_LEN_M=80;
 function syncCircMapa(){
   if(!mapC)return;
   perimCircLayers.forEach(function(l){mapC.removeLayer(l);});perimCircLayers=[];
   bairrosList.forEach(function(b,i){if(!b.pts||b.pts.length<3)return;var cor=bairroColors[i%bairroColors.length];var l=L.polygon(b.pts,{color:cor,weight:1.5,fillColor:cor,fillOpacity:0.04,dashArray:'4,4'}).addTo(mapC);perimCircLayers.push(l);});
   if(bairrosList.length){var allPts=[];bairrosList.forEach(function(b){allPts=allPts.concat(b.pts);});if(allPts.length)mapC.fitBounds(L.latLngBounds(allPts.map(function(p){return L.latLng(p[0],p[1]);})),{padding:[20,20]});if(!streetsLayer)loadStreets();}
-  renderWaypoints();renderCircBiblioteca();
+  renderWaypoints();
+  if(circAtivo.lastGeom&&circAtivo.lastGeom.length&&!routeLayer){routeLayer=L.polyline(circAtivo.lastGeom,{color:'#8B72D4',weight:3,opacity:.9}).addTo(mapC);}
+  renderCircBiblioteca();
 }
 function distFlat(a,b){var dLat=(b[0]-a[0])*111320,dLon=(b[1]-a[1])*111320*Math.cos(a[0]*Math.PI/180);return Math.sqrt(dLat*dLat+dLon*dLon);}
 function aggregateRuas(elements){
@@ -1531,13 +1537,84 @@ async function loadStreets(){
   var q='[out:json][timeout:30];way(poly:"'+polyStr+'")[highway][highway!~"^(footway|path|steps|cycleway|pedestrian|proposed|construction|track)$"];out geom;';
   var SERVERS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
   var elements=[];
-  for(var i=0;i<SERVERS.length;i++){try{var res=await fetch(SERVERS[i],{method:'POST',body:'data='+encodeURIComponent(q),signal:AbortSignal.timeout(30000)});if(!res.ok)continue;var d=await res.json();elements=d.elements||[];if(elements.length)break;}catch(e){continue;}}
+  for(var i=0;i<SERVERS.length;i++){try{var res=await fetch(SERVERS[i],{method:'POST',body:'data='+encodeURIComponent(q),signal:AbortSignal.timeout(30000)});if(!res.ok)continue;var d=await res.json();elements=d.elements||[];if(elements.length){overpassElements=elements;break;}}catch(e){continue;}}
   if(!elements.length)return;
   var ruas=aggregateRuas(elements);
   if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}
   var group=L.layerGroup();
   ruas.forEach(function(r){var style=STREET_COLORS.find(function(s){return r.totalLen>=s.min;})||STREET_COLORS[STREET_COLORS.length-1];r.segments.forEach(function(pts){L.polyline(pts,{color:style.color,weight:style.weight,opacity:0.7}).addTo(group);});});
   streetsLayer=group;group.addTo(mapC);cSt('Ruas carregadas','g');
+}
+async function gerarCircuitoAuto(){
+  if(!bairrosList.length){cSt('Selecione um bairro primeiro','r');return;}
+  if(!mapC){cSt('Mapa não iniciado','r');return;}
+  if(!overpassElements||!overpassElements.length){cSt('Carregando ruas...','y');await loadStreets();if(!overpassElements||!overpassElements.length){cSt('Sem dados de rua — verifique conexão','r');return;}}
+  // 1. Agrupar por nome, acumulando peso máximo, comprimento e pontos
+  var grupos={};
+  overpassElements.forEach(function(el,idx){
+    if(!el.geometry||el.geometry.length<2||!el.tags)return;
+    var hw=el.tags.highway||'';
+    var peso=HIGHWAY_WEIGHT[hw]||0;
+    if(peso===0)return;
+    var pts=el.geometry.map(function(p){return[p.lat,p.lon];});
+    var len=0;for(var i=0;i<pts.length-1;i++)len+=distFlat(pts[i],pts[i+1]);
+    var nome=el.tags.name||(peso>=60?'__via_'+hw+'_'+idx:null);
+    if(!nome)return; // unnamed baixo peso: ignora
+    if(!grupos[nome])grupos[nome]={nome:nome,peso:peso,totalLen:0,allPts:[],hw:hw};
+    if(peso>grupos[nome].peso)grupos[nome].peso=peso;
+    grupos[nome].totalLen+=len;
+    grupos[nome].allPts=grupos[nome].allPts.concat(pts);
+  });
+  // 2. Filtrar curtas de baixo peso
+  var ruas=Object.values(grupos).filter(function(r){return r.totalLen>=MIN_LEN_M||r.peso>=80;});
+  if(!ruas.length){cSt('Nenhuma via válida — verifique o bairro selecionado','r');return;}
+  // 3. Centroide e ponto de start de cada rua
+  ruas.forEach(function(r){
+    var mid=Math.floor(r.allPts.length/2);
+    r.centro=r.allPts[mid];
+    r.startPt=r.allPts[0];
+  });
+  // 4. Ordenar por peso desc, comprimento desc
+  ruas.sort(function(a,b){return b.peso-a.peso||b.totalLen-a.totalLen;});
+  // 5. Buffer 60m: pular ruas de baixo peso já cobertas por via de maior peso
+  var selecionadas=[];
+  ruas.forEach(function(rua){
+    if(rua.peso>=80){selecionadas.push(rua);return;}
+    var coberta=selecionadas.some(function(s){
+      if(s.peso<=rua.peso)return false;
+      var dLat=(s.centro[0]-rua.centro[0])*111320;
+      var dLon=(s.centro[1]-rua.centro[1])*111320*Math.cos(rua.centro[0]*Math.PI/180);
+      return Math.sqrt(dLat*dLat+dLon*dLon)<=BUFFER_M;
+    });
+    if(!coberta)selecionadas.push(rua);
+  });
+  // 6. Cap de waypoints
+  if(selecionadas.length>MAX_WP)selecionadas=selecionadas.slice(0,MAX_WP);
+  // 7. Nearest-neighbor: ordenar por proximidade a partir da rua mais prioritária
+  var ordered=[selecionadas[0]];
+  var remaining=selecionadas.slice(1);
+  var current=selecionadas[0].centro;
+  while(remaining.length){
+    var minD=Infinity,minI=0;
+    remaining.forEach(function(r,i){
+      var dLat=(r.centro[0]-current[0])*111320;
+      var dLon=(r.centro[1]-current[1])*111320*Math.cos(current[0]*Math.PI/180);
+      var d=Math.sqrt(dLat*dLat+dLon*dLon);
+      if(d<minD){minD=d;minI=i;}
+    });
+    ordered.push(remaining[minI]);
+    current=remaining[minI].centro;
+    remaining.splice(minI,1);
+  }
+  // 8. Popular circAtivo
+  limparCircuito(true);
+  var sp=ordered[0].startPt;
+  circAtivo.startPt={lat:sp[0],lng:sp[1]};
+  startMkr=L.circleMarker([circAtivo.startPt.lat,circAtivo.startPt.lng],
+    {radius:9,color:'#3DB87A',fillColor:'#3DB87A',fillOpacity:1,weight:2}).addTo(mapC);
+  circAtivo.waypoints=ordered.slice(1).map(function(r){return{lat:r.centro[0],lng:r.centro[1]};});
+  renderWaypoints();
+  cSt(circAtivo.waypoints.length+' pontos gerados — edite e clique ▶ Gerar','g');
 }
 function setCMode(m){
   cMode=m;
@@ -1776,6 +1853,12 @@ function renderCriativosBib(){
 }
 
 // ════ RESET ════
+function _limparMapa(){
+  overpassElements=[];
+  if(mapB){if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];bairrosSalvosLayers.forEach(function(l){mapB.removeLayer(l);});bairrosSalvosLayers=[];}
+  if(mapC){perimCircLayers.forEach(function(l){mapC.removeLayer(l);});perimCircLayers=[];if(startMkr){mapC.removeLayer(startMkr);startMkr=null;}if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}wpMarkers.forEach(function(m){mapC.removeLayer(m);});wpMarkers=[];if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}}
+  cMode='start';if(mapC){['cBtnStart','cBtnAdd','cBtnMove','cBtnDel'].forEach(function(id){var el=document.getElementById(id);if(el)el.className='btn sm';});var s=document.getElementById('cBtnStart');if(s)s.className='btn sm on-green';}
+}
 function resetTotal(){
   if(!confirm('RESET TOTAL — apaga tudo. Continuar?'))return;
   bairrosList=[];bairroAtual={pts:[],name:''};circuitosBib=[];criativosBib=[];
@@ -1784,11 +1867,10 @@ function resetTotal(){
   pacotes=[{nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}];
   pacoteDestaque=2;
   document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
-  if(mapB){if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];bairrosSalvosLayers.forEach(function(l){mapB.removeLayer(l);});bairrosSalvosLayers=[];}
-  if(mapC){perimCircLayers.forEach(function(l){mapC.removeLayer(l);});perimCircLayers=[];if(startMkr){mapC.removeLayer(startMkr);startMkr=null;}if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}wpMarkers.forEach(function(m){mapC.removeLayer(m);});wpMarkers=[];if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}}
+  _limparMapa();
   localStorage.removeItem(LS_KEY);
   stepDone=[];currentStep=0;
-  renderBairrosLista();renderCircBiblioteca();renderCriativosBib();
+  renderBairrosLista();renderCircBiblioteca();renderCriativosBib();renderPacotesUI();
   calcTotals();initCal();renderCal();buildProgress();buildMenu();goStep(0);
 }
 
@@ -1833,9 +1915,11 @@ function novoProj(){
   if(!confirm('Novo projeto?'))return;
   document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
   bairrosList=[];circuitosBib=[];criativosBib=[];veiculacoes=[];extras=[];bairroAtual={pts:[],name:''};
-  if(mapB){if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];}
-  if(mapC&&streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}
-  renderBairrosLista();renderCircBiblioteca();renderCriativosBib();calcTotals();renderCal();
+  circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
+  tipoIdx=1;turnoIdx=3;pacoteDestaque=2;
+  pacotes=[{nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}];
+  _limparMapa();
+  renderBairrosLista();renderCircBiblioteca();renderCriativosBib();renderPacotesUI();calcTotals();renderCal();
 }
 function onProjInput(){calcTotals();}
 
