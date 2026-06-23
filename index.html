@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
 <style>
+
 /* ── TOKENS ─────────────────────────────────────────────── */
 :root{
   --am:#D4A843;       /* amarelo quente, menos saturado */
@@ -452,19 +453,145 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 
 /* ── ERR BANNER ─────────────────────────────────────────── */
 #err-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#3A0000;color:#FFAAAA;font-family:monospace;font-size:11px;padding:10px 12px;max-height:40vh;overflow-y:auto;border-bottom:2px solid var(--red);white-space:pre-wrap}
+
+
+/* ── V2: SCREENS ─────────────────────────────────────────── */
+.v-screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.v-screen.show{display:flex}
+.s-hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:52px;flex-shrink:0;display:flex;align-items:center;gap:12px}
+.s-hdr .logo{font-size:15px;letter-spacing:3px;color:var(--am);font-weight:700;font-family:'Courier New',monospace}
+.s-hdr .version{font-size:9px;color:var(--text3);letter-spacing:2px}
+.s-body{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.s-footer{background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;flex-shrink:0}
+.s-back{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0 8px 0 0;display:flex;align-items:center;min-width:36px}
+.s-title{font-size:14px;font-weight:600;flex:1;color:var(--text)}
+.s-subtitle{font-size:11px;color:var(--text3)}
+
+/* ── CLIENTE / PROJETO CARDS ────────────────────────────── */
+.cl-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column;gap:4px;-webkit-tap-highlight-color:transparent}
+.cl-card:active{border-color:var(--am);background:var(--am-glow)}
+.cl-nome{font-size:15px;font-weight:600;color:var(--text)}
+.cl-seg{font-size:11px;color:var(--text2)}
+.cl-contato{font-size:11px;color:var(--text3)}
+.cl-meta{font-size:10px;color:var(--am);margin-top:2px}
+.pr-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;cursor:pointer;transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.pr-card:active{border-color:var(--am)}
+.pr-nome{font-size:14px;font-weight:600}
+.pr-data{font-size:11px;color:var(--text2);margin-top:2px}
+.pr-props{font-size:10px;color:var(--text3);margin-top:4px;display:flex;gap:10px}
+
+/* ── PROPOSTA CARDS ─────────────────────────────────────── */
+.prop-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.prop-id{font-size:12px;font-family:'Courier New',monospace;color:var(--am);min-width:80px}
+.prop-data{font-size:11px;color:var(--text2);flex:1}
+.prop-status{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid}
+.prop-status.rascunho{color:var(--text3);border-color:var(--border2)}
+.prop-status.enviada{color:var(--am);border-color:var(--am)}
+.prop-status.aceita{color:var(--green);border-color:var(--green)}
+.prop-status.recusada{color:var(--red);border-color:var(--red)}
+
+/* ── RECURSOS TABS ──────────────────────────────────────── */
+.rec-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.rec-tab{flex:1;padding:12px;text-align:center;font-size:11px;letter-spacing:.5px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;text-transform:uppercase}
+.rec-tab.active{color:var(--am);border-bottom-color:var(--am)}
+
+/* ── EMPRESA BAIRRO ITEM ────────────────────────────────── */
+.eb-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.eb-nome{font-size:13px;flex:1}
+.eb-cidade{font-size:10px;color:var(--text3)}
+
+/* ── ÁREA CUT LINE ──────────────────────────────────────── */
+.area-cut{background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--am);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.area-cut span{color:var(--text2)}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ══════════════════════════════════════════════════════════
+     VIEW: CLIENTES
+══════════════════════════════════════════════════════════ -->
+<div id="v-clientes" class="v-screen show">
+  <div class="s-hdr">
+    <div>
+      <div class="logo">AUTOVISION</div>
+      <div class="version">v7.0</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn sm ghost" onclick="goView('recursos')">Recursos</button>
+      <button class="btn sm ghost" onclick="abrirMenu()">☰</button>
+    </div>
+  </div>
+  <div class="s-body" id="clientes-lista-wrap">
+    <div style="font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase">Clientes</div>
+    <div id="clientes-lista"></div>
+    <div id="cl-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;display:none">Nenhum cliente ainda</div>
+  </div>
+  <div class="s-footer">
+    <button class="btn primary full" onclick="novoClienteModal()">+ Novo cliente</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     VIEW: PROJETOS
+══════════════════════════════════════════════════════════ -->
+<div id="v-projetos" class="v-screen">
+  <div class="s-hdr">
+    <button class="s-back" onclick="goView('clientes')">‹</button>
+    <div>
+      <div class="s-title" id="proj-cl-nome">—</div>
+      <div class="s-subtitle" id="proj-cl-seg"></div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn sm ghost" id="proj-cl-edit-btn" onclick="editarClienteAtual()">✎</button>
+      <button class="btn sm ghost" onclick="abrirMenu()">☰</button>
+    </div>
+  </div>
+  <div class="s-body">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px" id="proj-cl-contato-box"></div>
+    <div style="font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-top:4px">Projetos</div>
+    <div id="projetos-lista"></div>
+    <div id="pr-empty" style="text-align:center;padding:30px 0;color:var(--text3);font-size:13px;display:none">Nenhum projeto ainda</div>
+  </div>
+  <div class="s-footer">
+    <button class="btn primary full" onclick="novoProjetoModal()">+ Novo projeto</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     VIEW: RECURSOS DA EMPRESA
+══════════════════════════════════════════════════════════ -->
+<div id="v-recursos" class="v-screen">
+  <div class="s-hdr">
+    <button class="s-back" onclick="goView('clientes')">‹</button>
+    <div class="s-title">Recursos da empresa</div>
+    <button class="btn sm ghost" style="margin-left:auto" onclick="abrirMenu()">☰</button>
+  </div>
+  <div class="rec-tabs">
+    <div class="rec-tab active" id="rtab-bairros" onclick="recTab('bairros')">Bairros</div>
+    <div class="rec-tab" id="rtab-circuitos" onclick="recTab('circuitos')">Circuitos</div>
+    <div class="rec-tab" id="rtab-criativos" onclick="recTab('criativos')">Criativos</div>
+  </div>
+  <div class="s-body" id="recursos-body"></div>
+  <div class="s-footer" id="recursos-footer">
+    <button class="btn primary full" onclick="addRecurso()">+ Adicionar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     VIEW: WIZARD
+══════════════════════════════════════════════════════════ -->
+<div id="v-wizard" class="v-screen">
+
+<!-- HEADER WIZARD -->
 <div id="hdr">
   <div>
     <div class="logo">AUTOVISION</div>
-    <div class="version">v6.3</div>
+    <div class="version">v7.0</div>
   </div>
   <div id="hdr-right">
-    <span id="hdr-cliente"></span>
+    <span id="hdr-cliente" style="font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="btn icon ghost" onclick="irGPS()" title="GPS">📍</button>
+    <button class="btn sm ghost" onclick="exitWizard()">‹ Voltar</button>
     <button class="btn icon ghost" onclick="abrirMenu()" title="Menu">☰</button>
   </div>
 </div>
@@ -474,24 +601,16 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   <div id="progress-steps"></div>
 </div>
 
-<!-- PANELS -->
-
-<!-- ① PROJETO -->
-<div id="p-proj" class="panel show">
+<!-- ① CAMPANHA -->
+<div id="p-campanha" class="panel show">
   <div class="scroll-content">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn ghost sm" onclick="importProjClick()">⬆ Carregar</button>
-      <button class="btn ghost sm" onclick="exportProjeto()">⬇ Salvar</button>
-      <input type="file" id="importProjFile" accept=".json" style="display:none" onchange="importProj(event)"/>
-      <button class="btn danger sm" onclick="novoProj()" style="margin-left:auto">+ Novo</button>
-    </div>
     <div class="field-group">
-      <div class="field-label">Cliente</div>
-      <input type="text" id="pCliente" placeholder="Nome do cliente" oninput="onProjInput()"/>
+      <div class="field-label">Nome do projeto</div>
+      <input type="text" id="pNome" placeholder="Ex: Campanha Natal 2025" oninput="salvarEstado()"/>
     </div>
     <div class="field-group">
       <div class="field-label">Contexto da ação</div>
-      <textarea id="pCampanha" placeholder="Descreva o problema do cliente — evento, público, local, janela de tempo. Ex: pacientes pós-catarata sendo encaminhados para óculos. Ônibus na Praça Santa Isabel, seg–sáb, 3 turnos: 7h, 14h e 16h." oninput="salvarEstado()"></textarea>
+      <textarea id="pCampanha" placeholder="Descreva o objetivo — evento, público, local, janela de tempo." oninput="salvarEstado()"></textarea>
     </div>
     <div class="field-label" style="margin-top:4px">Dias de veiculação</div>
     <div class="cal-wrap">
@@ -514,12 +633,13 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ② BAIRROS -->
+<!-- ② ÁREA -->
 <div id="p-bairros" class="panel">
   <div class="toolbar">
     <input id="bairro-input" placeholder="Bairro" style="flex:1;min-width:80px;font-size:13px;height:36px;min-height:36px"/>
     <input id="cidade-input" placeholder="Cidade, UF" value="Viamão, RS" style="width:100px;font-size:12px;height:36px;min-height:36px"/>
     <button class="btn sm" onclick="buscarBairro()">Buscar</button>
+    <button class="btn sm on-cyan" onclick="usarBairroEmpresaModal()" title="Usar da empresa">🏢</button>
   </div>
   <div id="confirm-banner" class="banner" style="background:rgba(212,168,67,.06);border-color:rgba(212,168,67,.3)">
     <div id="confirm-name" style="font-size:11px;color:var(--am);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
@@ -537,9 +657,12 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
     <button class="btn danger sm" onclick="limparBairroAtual()" style="margin-left:auto">🗑</button>
   </div>
   <div class="map-wrap"><div id="map-bairro"></div></div>
-  <div style="background:var(--surface);border-top:1px solid var(--border);padding:6px 12px;flex-shrink:0;max-height:110px;overflow-y:auto">
+  <div style="background:var(--surface);border-top:1px solid var(--border);padding:6px 12px;flex-shrink:0;max-height:130px;overflow-y:auto">
     <div style="font-size:9px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Bairros</div>
     <div id="bairros-lista"></div>
+    <div id="area-cut-box" class="area-cut" style="display:none">
+      <span id="area-cut-txt"></span>
+    </div>
   </div>
   <div class="map-status"><div class="dot" id="bDot"></div><span id="bStTxt">Busque ou desenhe o perímetro</span></div>
   <div id="nav-footer">
@@ -559,7 +682,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
     <button class="btn sm" id="cBtnAdd" onclick="setCMode('add')">＋</button>
     <button class="btn sm" id="cBtnMove" onclick="setCMode('move')">✎</button>
     <button class="btn sm" id="cBtnDel" onclick="setCMode('del')">✕</button>
-    <button class="btn sm on-cyan" onclick="gerarCircuitoAuto()" id="cBtnAuto" title="Gerar circuito automático pelo bairro">⚡ Auto</button>
+    <button class="btn sm on-cyan" onclick="gerarCircuitoAuto()" id="cBtnAuto" title="Gerar circuito automático">⚡ Auto</button>
     <button class="btn sm on" onclick="gerarRota()" style="margin-left:4px">▶ Gerar</button>
     <button class="btn sm green" onclick="salvarCircuito()" id="btnSalvarCirc" style="display:none">💾</button>
     <button class="btn danger sm" onclick="limparCircuito()" style="margin-left:auto">🗑</button>
@@ -621,34 +744,17 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
       </select>
       <textarea id="pr-pgto-txt" rows="2" style="display:none;margin-top:8px;font-size:13px" placeholder="Descreva..."></textarea>
     </div>
+
+    <!-- PROPOSTAS DO PROJETO -->
+    <div class="card" style="margin-top:4px">
+      <div class="card-title">Propostas geradas</div>
+      <div id="propostas-lista"></div>
+      <div id="prop-empty" style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;display:none">Nenhuma proposta gerada ainda</div>
+    </div>
   </div>
   <div id="nav-footer">
     <button class="btn ghost" onclick="goStep(4)">← Voltar</button>
-    <button class="btn primary" onclick="goStep(6)">Gerar proposta →</button>
-  </div>
-</div>
-
-<!-- ⑧ PROPOSTA -->
-<div id="p-proposta" class="panel">
-  <div class="scroll-content">
-    <!-- Preview dos pacotes -->
-    <div style="font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Preview — como o cliente vê</div>
-    <div id="prop-preview-pacotes"></div>
-
-    <!-- Cronograma -->
-    <div class="card" id="prop-crono-card">
-      <div class="card-title">Cronograma</div>
-      <div id="prop-crono-lista"></div>
-    </div>
-
-    <!-- Ações -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn full primary" onclick="gerarPDF()">↓ Exportar PDF</button>
-      <button class="btn full ghost" onclick="copiarWA()">📋 Copiar para WhatsApp</button>
-    </div>
-  </div>
-  <div id="nav-footer">
-    <button class="btn ghost" onclick="goStep(5)">← Pacotes</button>
+    <button class="btn primary" onclick="gerarPropostaModal()">📄 Gerar proposta</button>
   </div>
 </div>
 
@@ -659,10 +765,13 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   <div id="menu-items"></div>
   <div class="menu-divider"></div>
   <div class="menu-item" onclick="irGPS();fecharMenu()"><span class="menu-icon">📍</span><span class="menu-label">GPS</span></div>
+  <div class="menu-item" onclick="exportarProjeto();fecharMenu()"><span class="menu-icon">⬇</span><span class="menu-label">Exportar projeto</span></div>
   <div class="menu-item danger" onclick="resetTotal();fecharMenu()" style="color:#774444"><span class="menu-icon">🗑</span><span class="menu-label">Reset total</span></div>
 </div>
 
-<!-- MODAIS -->
+</div><!-- /v-wizard -->
+
+<!-- MODAIS COMPARTILHADOS -->
 <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)fecharModal()">
   <div class="modal">
     <div class="modal-title" id="modal-title">—</div>
@@ -671,7 +780,27 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- PRINT -->
+<!-- PROPOSTA MODAL (sheet) -->
+<div id="prop-modal-overlay" class="modal-overlay hidden">
+  <div class="modal" style="max-height:92vh">
+    <div class="modal-title" id="prop-modal-id">—</div>
+    <div id="prop-modal-body" style="overflow-y:auto;max-height:60vh"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+      <button class="btn full primary" onclick="gerarPDFProposta()">↓ Exportar PDF</button>
+      <button class="btn full ghost" onclick="copiarWAProposta()">📋 Copiar WhatsApp</button>
+      <div style="display:flex;gap:8px">
+        <select id="prop-status-sel" style="flex:1;font-size:13px" onchange="atualizarStatusProposta(this.value)">
+          <option value="rascunho">Rascunho</option>
+          <option value="enviada">Enviada</option>
+          <option value="aceita">Aceita</option>
+          <option value="recusada">Recusada</option>
+        </select>
+        <button class="btn ghost" onclick="fecharPropostaModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="print-area"></div>
 <div id="err-banner"></div>
 
@@ -693,18 +822,51 @@ var TURNOS={1:{label:'Manha',fator:.40},2:{label:'Tarde',fator:.35},3:{label:'Fi
 var MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var DIAS_NOME=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 var DIAS_FULL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-var LS_KEY='autovision_v63';
+var LS_KEY='autovision_v2';
+
+// ════ STEPS (6 — sem PROJETO, sem PROPOSTA) ════
 var STEPS=[
-  {id:'proj',    icon:'①', label:'Projeto'},
-  {id:'bairros', icon:'②', label:'Área'},
-  {id:'circ',    icon:'③', label:'Circuito'},
-  {id:'criativo',icon:'④', label:'Criativo'},
-  {id:'crono',   icon:'⑤', label:'Cronograma'},
-  {id:'pacotes', icon:'⑥', label:'Pacotes'},
-  {id:'proposta',icon:'⑦', label:'Proposta'},
+  {id:'campanha', icon:'①', label:'Campanha', panel:'p-campanha'},
+  {id:'bairros',  icon:'②', label:'Área',     panel:'p-bairros'},
+  {id:'circ',     icon:'③', label:'Circuito', panel:'p-circ'},
+  {id:'criativo', icon:'④', label:'Criativo',  panel:'p-criativo'},
+  {id:'crono',    icon:'⑤', label:'Cronograma',panel:'p-crono'},
+  {id:'pacotes',  icon:'⑥', label:'Pacotes',   panel:'p-pacotes'},
 ];
 
-// ════ ESTADO ════
+// ════ V2: DATA MODEL ════
+var LS_KEY_OLD='autovision_v63';
+// EMPRESA (recursos permanentes — não pertencem a projeto)
+var empresa={
+  bairros:[
+    {id:'eb1',nome:'Viamópolis',  cidade:'Viamão, RS, Brasil'},
+    {id:'eb2',nome:'São Lucas',   cidade:'Viamão, RS, Brasil'},
+    {id:'eb3',nome:'Santo Onofre',cidade:'Viamão, RS, Brasil'},
+    {id:'eb4',nome:'Jardim Krahe',cidade:'Viamão, RS, Brasil'},
+    {id:'eb5',nome:'Querência',   cidade:'Viamão, RS, Brasil'},
+    {id:'eb6',nome:'Centro',      cidade:'Viamão, RS, Brasil'},
+    {id:'eb7',nome:'Jardim Fiuza',cidade:'Viamão, RS, Brasil'},
+    {id:'eb8',nome:'Jardim Viamar',cidade:'Viamão, RS, Brasil'},
+    {id:'eb9',nome:'Estalagem',   cidade:'Viamão, RS, Brasil'},
+    {id:'eb10',nome:'Tarumã',     cidade:'Viamão, RS, Brasil'},
+    {id:'eb11',nome:'Lisboa',     cidade:'Viamão, RS, Brasil'},
+  ],
+  circuitos:[],
+  criativos:[]
+};
+
+var clientes=[];
+var projetos=[];
+var propostaCounter=0;
+
+// ════ NAVIGATION STATE ════
+var currentView='clientes';
+var currentClienteId=null;
+var currentProjetoId=null;
+var currentPropostaId=null; // proposta aberta no modal
+var recTabAtual='bairros';
+
+// ════ WIZARD GLOBALS (synced from/to currentProjeto) ════
 var currentStep=0;
 var stepDone=[];
 var bairrosList=[], bairroAtual={pts:[],name:''};
@@ -719,81 +881,511 @@ var cMode='start', startMkr=null;
 var wpMarkers=[], routeLayer=null, streetsLayer=null, perimCircLayers=[];
 var overpassElements=[];
 var bairrosSalvosLayers=[];
-// Pacotes
-var pacoteDestaque=2; // 1,2,3
+var pacoteDestaque=2;
 var pacotes=[
-  {nome:'Básico',     desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
+  {nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
   {nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
-  {nome:'Premium',    desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
+  {nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}
 ];
 var calAno, calMes;
+var mapB=null;
+var mapC=null;
 
-// ════ WIZARD NAVIGATION ════
-function buildProgress(){
-  var wrap=document.getElementById('progress-steps');
-  wrap.innerHTML='';
-  STEPS.forEach(function(s,i){
-    if(i>0){
-      var line=document.createElement('div');
-      line.className='pstep-line'+(stepDone.indexOf(i-1)>=0?' done':'');
-      line.id='pline-'+i;
-      wrap.appendChild(line);
-    }
-    var div=document.createElement('div');
-    div.className='pstep'+(i===currentStep?' active':'')+(stepDone.indexOf(i)>=0?' done':'');
-    div.id='pstep-'+i;
-    div.innerHTML='<div class="pstep-dot">'+(stepDone.indexOf(i)>=0?'✓':s.icon)+'</div>'
-      +'<div class="pstep-label">'+s.label+'</div>';
-    div.onclick=(function(idx){return function(){goStep(idx);};})(i);
-    wrap.appendChild(div);
+// ════ CONSTANTS (map) ════
+var STREET_COLORS=[{min:300,color:'#D45C5C',weight:4},{min:80,color:'#E8943A',weight:2.5},{min:0,color:'#555',weight:1.5}];
+var HIGHWAY_WEIGHT={motorway:100,trunk:100,primary:100,secondary:80,tertiary:60,unclassified:40,residential:25,living_street:20};
+var BUFFER_M=60, MAX_WP=18, MIN_LEN_M=80;
+
+
+// ════ NAVEGAÇÃO ENTRE VIEWS ════
+function goView(v){
+  currentView=v;
+  ['v-clientes','v-projetos','v-wizard','v-recursos'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.classList.toggle('show',id==='v-'+v);
   });
-  // Scroll active into view
-  var active=document.getElementById('pstep-'+currentStep);
-  if(active)active.scrollIntoView({inline:'center',behavior:'smooth'});
+  if(v==='clientes')renderClientes();
+  if(v==='projetos')renderProjetos();
+  if(v==='recursos')renderRecursos();
 }
-function buildMenu(){
-  var el=document.getElementById('menu-items');
-  el.innerHTML='';
-  STEPS.forEach(function(s,i){
-    var div=document.createElement('div');
-    div.className='menu-item'+(i===currentStep?' active':'')+(stepDone.indexOf(i)>=0?' done':'');
-    div.innerHTML='<span class="menu-icon">'+s.icon+'</span>'
-      +'<span class="menu-label">'+s.label+'</span>'
-      +(stepDone.indexOf(i)>=0?'<span class="menu-check">✓</span>':'');
-    div.onclick=(function(idx){return function(){goStep(idx);fecharMenu();};})(i);
-    el.appendChild(div);
-  });
+
+function enterWizard(projetoId){
+  currentProjetoId=projetoId;
+  var p=projetos.find(function(x){return x.id===projetoId;});
+  if(!p)return;
+  // Sync projeto → wizard globals
+  syncWizardFromProjeto(p);
+  goView('wizard');
+  // Init wizard UI
+  var cl=clientes.find(function(x){return x.id===p.clienteId;});
+  document.getElementById('hdr-cliente').textContent=cl?cl.nome:'';
+  buildProgress();buildMenu();
+  initCal();renderCal();renderCriativosBib();renderCircBiblioteca();
+  renderPacotesUI();renderPropostas();calcTotals();
+  goStep(p.currentStep||0);
 }
-function goStep(idx){
-  // Mark previous as done
-  if(stepDone.indexOf(currentStep)<0)stepDone.push(currentStep);
-  currentStep=idx;
-  STEPS.forEach(function(s){
-    var p=document.getElementById('p-'+s.id);
-    if(p)p.classList.toggle('show',false);
-    // Remove all nav-footer duplicates — keep only inside current panel
-  });
-  var target=document.getElementById('p-'+STEPS[idx].id);
-  if(target)target.classList.add('show');
-  buildProgress();
-  buildMenu();
-  // Tab-specific init
-  if(STEPS[idx].id==='bairros') setTimeout(function(){initMapB();if(mapB){mapB.invalidateSize();bRedraw();}},80);
-  if(STEPS[idx].id==='circ')    setTimeout(function(){initMapC();if(mapC){mapC.invalidateSize();syncCircMapa();}},80);
-  if(STEPS[idx].id==='criativo') renderCriativosBib();
-  if(STEPS[idx].id==='crono')   renderCrono();
-  if(STEPS[idx].id==='pacotes') renderPacotesUI();
-  if(STEPS[idx].id==='proposta'){renderPropPreview();renderPropCrono();}
+
+function exitWizard(){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  if(p)syncWizardToProjeto(p);
+  // Destroy maps
+  if(mapB){mapB.remove();mapB=null;}
+  if(mapC){mapC.remove();mapC=null;}
+  streetsLayer=null;overpassElements=[];
   salvarEstado();
+  goView('projetos');
 }
-function abrirMenu(){
-  document.getElementById('menu-overlay').classList.add('show');
-  document.getElementById('side-menu').classList.add('show');
+
+function syncWizardFromProjeto(p){
+  bairrosList=(p.bairrosList||[]).map(function(b){return Object.assign({},b);});
+  circuitosBib=(p.circuitosBib||[]).map(function(c){return Object.assign({},c);});
+  criativosBib=(p.criativosBib||[]).map(function(c){return Object.assign({},c);});
+  veiculacoes=(p.veiculacoes||[]).map(function(v){return Object.assign({},v);});
+  extras=p.extras||[];
+  tipoIdx=p.tipoIdx||1;
+  turnoIdx=p.turnoIdx||3;
+  pacotes=p.pacotes||[
+    {nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
+    {nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
+    {nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}
+  ];
+  pacoteDestaque=p.pacoteDestaque||2;
+  stepDone=p.stepDone||[];
+  currentStep=p.currentStep||0;
+  circAtivo={
+    nome:(p.circAtivo&&p.circAtivo.nome)||'',
+    waypoints:(p.circAtivo&&p.circAtivo.waypoints)||[],
+    startPt:(p.circAtivo&&p.circAtivo.startPt)||null,
+    lastData:(p.circAtivo&&p.circAtivo.lastData)||null,
+    lastGeom:null
+  };
+  if(p.circAtivo&&p.circAtivo.geomSerial&&p.circAtivo.geomSerial.length&&typeof L!=='undefined'){
+    circAtivo.lastGeom=p.circAtivo.geomSerial.map(function(pt){return L.latLng(pt[0],pt[1]);});
+  }
+  setTimeout(function(){
+    var nome=document.getElementById('pNome');if(nome)nome.value=p.nome||'';
+    var camp=document.getElementById('pCampanha');if(camp)camp.value=p.campanha||'';
+  },50);
 }
-function fecharMenu(){
-  document.getElementById('menu-overlay').classList.remove('show');
-  document.getElementById('side-menu').classList.remove('show');
+
+function syncWizardToProjeto(p){
+  p.bairrosList=bairrosList.slice();
+  p.circuitosBib=circuitosBib.slice();
+  p.criativosBib=criativosBib.slice();
+  p.veiculacoes=veiculacoes.slice();
+  p.extras=extras;
+  p.tipoIdx=tipoIdx;p.turnoIdx=turnoIdx;
+  p.pacotes=pacotes;p.pacoteDestaque=pacoteDestaque;
+  p.stepDone=stepDone;p.currentStep=currentStep;
+  var nome=document.getElementById('pNome');if(nome)p.nome=nome.value;
+  var camp=document.getElementById('pCampanha');if(camp)p.campanha=camp.value;
+  p.circAtivo={
+    nome:circAtivo.nome,
+    waypoints:circAtivo.waypoints,
+    startPt:circAtivo.startPt,
+    lastData:circAtivo.lastData,
+    geomSerial:circAtivo.lastGeom?circAtivo.lastGeom.map(function(pt){return[pt.lat,pt.lng];}):[]
+  };
 }
+
+// ════ CLIENTES ════
+function renderClientes(){
+  var lista=document.getElementById('clientes-lista');
+  var empty=document.getElementById('cl-empty');
+  lista.innerHTML='';
+  if(!clientes.length){empty.style.display='block';return;}
+  empty.style.display='none';
+  clientes.forEach(function(cl){
+    var nProjetos=projetos.filter(function(p){return p.clienteId===cl.id;}).length;
+    var div=document.createElement('div');
+    div.className='cl-card';
+    div.innerHTML='<div class="cl-nome">'+esc(cl.nome)+'</div>'
+      +(cl.segmento?'<div class="cl-seg">'+esc(cl.segmento)+'</div>':'')
+      +(cl.contatoNome?'<div class="cl-contato">'+esc(cl.contatoNome)+(cl.contatoCargo?' · '+esc(cl.contatoCargo):'')+'</div>':'')
+      +'<div class="cl-meta">'+nProjetos+' projeto'+(nProjetos!==1?'s':'')+'</div>';
+    div.addEventListener('click',function(){abrirCliente(cl.id);});
+    lista.appendChild(div);
+  });
+}
+
+function abrirCliente(id){
+  currentClienteId=id;
+  var cl=clientes.find(function(x){return x.id===id;});
+  if(!cl)return;
+  document.getElementById('proj-cl-nome').textContent=cl.nome;
+  document.getElementById('proj-cl-seg').textContent=cl.segmento||'';
+  var box=document.getElementById('proj-cl-contato-box');
+  box.innerHTML='';
+  if(cl.contatoNome){
+    box.innerHTML='<div style="font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:6px">Contato</div>'
+      +'<div style="font-size:14px;font-weight:600;margin-bottom:2px">'+esc(cl.contatoNome)+'</div>'
+      +(cl.contatoCargo?'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">'+esc(cl.contatoCargo)+'</div>':'')
+      +(cl.contatoTel?'<a href="https://wa.me/55'+cl.contatoTel.replace(/\D/g,'')+'" style="color:var(--green);font-size:13px;text-decoration:none">📱 '+esc(cl.contatoTel)+'</a>':'')
+      +(cl.obs?'<div style="font-size:12px;color:var(--text3);margin-top:8px;font-style:italic">'+esc(cl.obs)+'</div>':'');
+  } else {
+    box.style.display='none';
+  }
+  goView('projetos');
+}
+
+function novoClienteModal(){
+  var fields='<div class="field-group"><div class="field-label">Nome da empresa *</div><input id="cl-f-nome" placeholder="Ex: Farmácia Rubem"/></div>'
+    +'<div class="field-group"><div class="field-label">Segmento</div><input id="cl-f-seg" placeholder="Ex: Saúde, Varejo, Alimentação"/></div>'
+    +'<div style="font-size:10px;letter-spacing:1px;color:var(--am);text-transform:uppercase;margin:12px 0 8px">Contato comercial</div>'
+    +'<div class="field-group"><div class="field-label">Nome do contato</div><input id="cl-f-cnome" placeholder="Nome de quem você fala"/></div>'
+    +'<div class="field-row"><div class="field-group"><div class="field-label">Cargo</div><input id="cl-f-cargo" placeholder="Proprietário, Gerente..."/></div></div>'
+    +'<div class="field-group"><div class="field-label">WhatsApp / Tel</div><input id="cl-f-tel" placeholder="51 99999-9999" type="tel"/></div>'
+    +'<div class="field-group"><div class="field-label">Observações</div><textarea id="cl-f-obs" placeholder="Histórico, preferências..." style="min-height:60px"></textarea></div>';
+  abrirModalGen('Novo cliente',fields,[
+    {label:'Salvar',primary:true,action:function(){salvarCliente(null);}},
+    {label:'Cancelar',action:fecharModal}
+  ]);
+}
+
+function editarClienteAtual(){
+  var cl=clientes.find(function(x){return x.id===currentClienteId;});
+  if(!cl)return;
+  var fields='<div class="field-group"><div class="field-label">Nome da empresa *</div><input id="cl-f-nome" value="'+esc(cl.nome)+'"/></div>'
+    +'<div class="field-group"><div class="field-label">Segmento</div><input id="cl-f-seg" value="'+esc(cl.segmento||'')+'"/></div>'
+    +'<div style="font-size:10px;letter-spacing:1px;color:var(--am);text-transform:uppercase;margin:12px 0 8px">Contato comercial</div>'
+    +'<div class="field-group"><div class="field-label">Nome do contato</div><input id="cl-f-cnome" value="'+esc(cl.contatoNome||'')+'"/></div>'
+    +'<div class="field-group"><div class="field-label">Cargo</div><input id="cl-f-cargo" value="'+esc(cl.contatoCargo||'')+'"/></div>'
+    +'<div class="field-group"><div class="field-label">WhatsApp / Tel</div><input id="cl-f-tel" value="'+esc(cl.contatoTel||'')+'" type="tel"/></div>'
+    +'<div class="field-group"><div class="field-label">Observações</div><textarea id="cl-f-obs" style="min-height:60px">'+esc(cl.obs||'')+'</textarea></div>';
+  abrirModalGen('Editar cliente',fields,[
+    {label:'Salvar',primary:true,action:function(){salvarCliente(cl.id);}},
+    {label:'Cancelar',action:fecharModal}
+  ]);
+}
+
+function salvarCliente(id){
+  var nome=(document.getElementById('cl-f-nome').value||'').trim();
+  if(!nome){alert('Nome obrigatório');return;}
+  if(id){
+    var cl=clientes.find(function(x){return x.id===id;});
+    if(cl){cl.nome=nome;cl.segmento=v('cl-f-seg');cl.contatoNome=v('cl-f-cnome');cl.contatoCargo=v('cl-f-cargo');cl.contatoTel=v('cl-f-tel');cl.obs=v('cl-f-obs');}
+  } else {
+    var cl={id:'cl'+Date.now(),nome:nome,segmento:v('cl-f-seg'),contatoNome:v('cl-f-cnome'),contatoCargo:v('cl-f-cargo'),contatoTel:v('cl-f-tel'),obs:v('cl-f-obs')};
+    clientes.push(cl);
+    currentClienteId=cl.id;
+  }
+  fecharModal();salvarEstado();
+  if(id){abrirCliente(id);}else{abrirCliente(cl.id);}
+}
+
+// ════ PROJETOS ════
+function renderProjetos(){
+  var lista=document.getElementById('projetos-lista');
+  var empty=document.getElementById('pr-empty');
+  lista.innerHTML='';
+  var prs=projetos.filter(function(p){return p.clienteId===currentClienteId;});
+  if(!prs.length){empty.style.display='block';return;}
+  empty.style.display='none';
+  prs.sort(function(a,b){return (b.criadoEm||0)-(a.criadoEm||0);});
+  prs.forEach(function(p){
+    var nProp=(p.propostas||[]).length;
+    var div=document.createElement('div');
+    div.className='pr-card';
+    div.innerHTML='<div class="pr-nome">'+esc(p.nome||'Sem nome')+'</div>'
+      +'<div class="pr-data">'+(p.campanha?esc(p.campanha.substring(0,80))+'..':'')+'</div>'
+      +'<div class="pr-props"><span>'+( (p.bairrosList||[]).length)+' bairros</span><span>'+((p.circuitosBib||[]).length)+' circuitos</span><span>'+nProp+' proposta'+(nProp!==1?'s':'')+'</span></div>';
+    div.addEventListener('click',function(){enterWizard(p.id);});
+    lista.appendChild(div);
+  });
+}
+
+function novoProjetoModal(){
+  if(!currentClienteId){alert('Selecione um cliente primeiro');return;}
+  var fields='<div class="field-group"><div class="field-label">Nome do projeto *</div><input id="np-nome" placeholder="Ex: Campanha Natal 2025"/></div>'
+    +'<div class="field-group"><div class="field-label">Contexto (opcional)</div><textarea id="np-camp" placeholder="Objetivo, público, período..." style="min-height:60px"></textarea></div>';
+  abrirModalGen('Novo projeto',fields,[
+    {label:'Criar',primary:true,action:criarProjeto},
+    {label:'Cancelar',action:fecharModal}
+  ]);
+}
+
+function criarProjeto(){
+  var nome=(document.getElementById('np-nome').value||'').trim();
+  if(!nome){alert('Nome obrigatório');return;}
+  var p={
+    id:'p'+Date.now(),clienteId:currentClienteId,criadoEm:Date.now(),
+    nome:nome,campanha:v('np-camp'),
+    bairrosList:[],circuitosBib:[],criativosBib:[],
+    veiculacoes:[],extras:[],
+    tipoIdx:1,turnoIdx:3,pacoteDestaque:2,
+    pacotes:[
+      {nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
+      {nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},
+      {nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}
+    ],
+    propostas:[],stepDone:[],currentStep:0,
+    circAtivo:{nome:'',waypoints:[],startPt:null,lastData:null,geomSerial:[]}
+  };
+  projetos.push(p);
+  fecharModal();salvarEstado();
+  enterWizard(p.id);
+}
+
+// ════ RECURSOS DA EMPRESA ════
+var _recTab='bairros';
+function recTab(t){
+  _recTab=t;
+  ['bairros','circuitos','criativos'].forEach(function(x){
+    var el=document.getElementById('rtab-'+x);
+    if(el)el.classList.toggle('active',x===t);
+  });
+  renderRecursos();
+}
+
+function renderRecursos(){
+  var body=document.getElementById('recursos-body');
+  body.innerHTML='';
+  if(_recTab==='bairros'){
+    if(!empresa.bairros.length){body.innerHTML='<div style="color:var(--text3);text-align:center;padding:40px 0;font-size:13px">Nenhum bairro cadastrado</div>';return;}
+    empresa.bairros.forEach(function(b){
+      var d=document.createElement('div');
+      d.className='eb-item';
+      d.innerHTML='<div style="flex:1"><div class="eb-nome">'+esc(b.nome)+'</div><div class="eb-cidade">'+esc(b.cidade||'')+'</div></div>'
+        +'<button class="btn sm danger" data-ebid="'+b.id+'">🗑</button>';
+      d.querySelector('button').addEventListener('click',function(e){e.stopPropagation();removerBairroEmpresa(b.id);});
+      body.appendChild(d);
+    });
+  } else if(_recTab==='circuitos'){
+    if(!empresa.circuitos.length){body.innerHTML='<div style="color:var(--text3);text-align:center;padding:40px 0;font-size:13px">Nenhum circuito salvo</div>';return;}
+    empresa.circuitos.forEach(function(c){
+      var d=document.createElement('div');d.className='circ-item';
+      d.innerHTML='<div class="circ-nome">'+esc(c.nome)+'</div>'
+        +'<button class="btn sm danger">🗑</button>';
+      d.querySelector('button').addEventListener('click',function(){removerCircuitoEmpresa(c.id);});
+      body.appendChild(d);
+    });
+  } else {
+    if(!empresa.criativos.length){body.innerHTML='<div style="color:var(--text3);text-align:center;padding:40px 0;font-size:13px">Nenhum criativo cadastrado</div>';return;}
+    empresa.criativos.forEach(function(c){
+      var d=document.createElement('div');d.className='criativo-item';
+      d.innerHTML='<div style="flex:1">'+esc(c.nome)+'</div>'
+        +'<button class="btn sm danger">🗑</button>';
+      d.querySelector('button').addEventListener('click',function(){removerCriativoEmpresa(c.id);});
+      body.appendChild(d);
+    });
+  }
+}
+
+function addRecurso(){
+  if(_recTab==='bairros'){
+    abrirModalGen('Adicionar bairro da empresa',[
+      '<div class="field-group"><div class="field-label">Nome do bairro</div><input id="eb-nome" placeholder="Ex: Centro"/></div>',
+      '<div class="field-group"><div class="field-label">Cidade</div><input id="eb-cidade" value="Viamão, RS, Brasil"/></div>'
+    ].join(''),[
+      {label:'Adicionar',primary:true,action:function(){
+        var n=v('eb-nome');if(!n)return;
+        empresa.bairros.push({id:'eb'+Date.now(),nome:n,cidade:v('eb-cidade')});
+        fecharModal();salvarEstado();renderRecursos();
+      }},
+      {label:'Cancelar',action:fecharModal}
+    ]);
+  } else if(_recTab==='circuitos'){
+    alert('Salve circuitos a partir do passo ③ de um projeto');
+  } else {
+    abrirModalGen('Adicionar criativo padrão',[
+      '<div class="field-group"><div class="field-label">Nome</div><input id="ec-nome" placeholder="Vinheta padrão"/></div>'
+    ].join(''),[
+      {label:'Adicionar',primary:true,action:function(){
+        var n=v('ec-nome');if(!n)return;
+        empresa.criativos.push({id:'ec'+Date.now(),nome:n,tipo:'vinheta'});
+        fecharModal();salvarEstado();renderRecursos();
+      }},
+      {label:'Cancelar',action:fecharModal}
+    ]);
+  }
+}
+
+function removerBairroEmpresa(id){empresa.bairros=empresa.bairros.filter(function(b){return b.id!==id;});salvarEstado();renderRecursos();}
+function removerCircuitoEmpresa(id){empresa.circuitos=empresa.circuitos.filter(function(c){return c.id!==id;});salvarEstado();renderRecursos();}
+function removerCriativoEmpresa(id){empresa.criativos=empresa.criativos.filter(function(c){return c.id!==id;});salvarEstado();renderRecursos();}
+
+// ════ USAR BAIRRO DA EMPRESA ════
+function usarBairroEmpresaModal(){
+  if(!empresa.bairros.length){alert('Nenhum bairro cadastrado na empresa.');return;}
+  var wrap=document.createElement('div');
+  empresa.bairros.forEach(function(b){
+    var d=document.createElement('div');
+    d.className='eb-item';d.style.cursor='pointer';
+    d.innerHTML='<div><div class="eb-nome">'+esc(b.nome)+'</div><div class="eb-cidade">'+esc(b.cidade||'')+'</div></div>';
+    d.addEventListener('click',function(){usarBairroEmpresa(b.id);});
+    wrap.appendChild(d);
+  });
+  abrirModalGen('Bairros da empresa',wrap.outerHTML,[{label:'Fechar',action:fecharModal}]);
+}
+
+async function usarBairroEmpresa(ebId){
+  var eb=empresa.bairros.find(function(b){return b.id===ebId;});
+  if(!eb)return;
+  fecharModal();
+  var partes=eb.nome+', '+(eb.cidade||'Viamão, RS, Brasil');
+  document.getElementById('bairro-input').value=eb.nome;
+  document.getElementById('cidade-input').value=eb.cidade||'Viamão, RS, Brasil';
+  await buscarBairro();
+}
+
+// ════ PROPOSTAS ════
+function gerarPropostaModal(){
+  // Sync current wizard state first
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  if(p)syncWizardToProjeto(p);
+  // Generate proposal
+  propostaCounter++;
+  var id='PRO-'+String(propostaCounter).padStart(4,'0');
+  var cl=clientes.find(function(x){return x.id===(p?p.clienteId:null);});
+  var snapshot={
+    id:id,
+    projetoId:currentProjetoId,
+    clienteId:p?p.clienteId:null,
+    cliente:cl?cl.nome:'',
+    projeto:p?p.nome:'',
+    campanha:p?p.campanha:'',
+    dataCriacao:new Date().toISOString(),
+    status:'rascunho',
+    pacotes:JSON.parse(JSON.stringify(pacotes)),
+    pacoteDestaque:pacoteDestaque,
+    veiculacoes:JSON.parse(JSON.stringify(veiculacoes)),
+    pgto:(document.getElementById('pr-pgto-sel')||{}).value||'',
+    pgtoTxt:(document.getElementById('pr-pgto-txt')||{}).value||'',
+    totais:{
+      dias:veiculacoes.length,
+      blocos:veiculacoes.reduce(function(s,v){return s+(v.blocos||[]).length;},0),
+      horasSom:getTotalHorasSom()
+    }
+  };
+  if(p){
+    if(!p.propostas)p.propostas=[];
+    p.propostas.push(snapshot);
+  }
+  salvarEstado();
+  renderPropostas();
+  abrirPropostaModal(id);
+}
+
+function renderPropostas(){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  var lista=document.getElementById('propostas-lista');
+  var empty=document.getElementById('prop-empty');
+  if(!lista)return;
+  lista.innerHTML='';
+  var props=(p&&p.propostas)||[];
+  if(!props.length){if(empty)empty.style.display='block';return;}
+  if(empty)empty.style.display='none';
+  props.slice().reverse().forEach(function(pr){
+    var d=document.createElement('div');
+    d.className='prop-card';
+    d.innerHTML='<div class="prop-id">'+esc(pr.id)+'</div>'
+      +'<div class="prop-data">'+new Date(pr.dataCriacao).toLocaleDateString('pt-BR')+'</div>'
+      +'<div class="prop-status '+pr.status+'">'+pr.status+'</div>'
+      +'<button class="btn sm ghost">Abrir</button>';
+    (function(pid){div.querySelector('button').addEventListener('click',function(){abrirPropostaModal(pid);});})(pr.id);
+    lista.appendChild(d);
+  });
+}
+
+function abrirPropostaModal(propId){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  if(!p)return;
+  var pr=(p.propostas||[]).find(function(x){return x.id===propId;});
+  if(!pr)return;
+  currentPropostaId=propId;
+  document.getElementById('prop-modal-id').textContent=pr.id+' — '+esc(pr.cliente||'');
+  // Render snapshot
+  var body=document.getElementById('prop-modal-body');
+  body.innerHTML='';
+  // Status select
+  document.getElementById('prop-status-sel').value=pr.status||'rascunho';
+  // Preview pacotes do snapshot
+  var pacHTML='<div style="font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">'+esc(pr.campanha||pr.projeto||'')+'</div>';
+  (pr.pacotes||[]).forEach(function(pk,i){
+    var final=pk.cheio*(1-pk.desconto/100);
+    var dest=(i+1)===pr.pacoteDestaque;
+    pacHTML+='<div class="pacote-card'+(dest?' destaque':'')+'">'+
+      (dest?'<div class="pacote-badge">Recomendado</div>':'')+
+      '<div class="pacote-header"><div style="font-weight:600">'+esc(pk.nome)+'</div></div>'+
+      (pk.desc?'<div style="font-size:13px;color:var(--text2);margin-bottom:8px">'+esc(pk.desc)+'</div>':'')+
+      '<div class="pacote-precos">'+
+      (pk.desconto>0?'<div class="pacote-cheio">R$'+pk.cheio.toFixed(0)+'</div>':'')+
+      '<div class="pacote-final">R$'+final.toFixed(0)+'</div>'+
+      (pk.desconto>0?'<div class="pacote-economia">-'+pk.desconto+'%</div>':'')+
+      '</div></div>';
+  });
+  body.innerHTML=pacHTML;
+  document.getElementById('prop-modal-overlay').classList.remove('hidden');
+}
+
+function fecharPropostaModal(){document.getElementById('prop-modal-overlay').classList.add('hidden');currentPropostaId=null;}
+
+function atualizarStatusProposta(status){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  if(!p||!currentPropostaId)return;
+  var pr=(p.propostas||[]).find(function(x){return x.id===currentPropostaId;});
+  if(pr){pr.status=status;salvarEstado();renderPropostas();}
+}
+
+function gerarPDFProposta(){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  var pr=(p&&p.propostas||[]).find(function(x){return x.id===currentPropostaId;});
+  if(!pr)return;
+  // Use existing gerarPDF logic with snapshot data
+  var oldPacotes=pacotes,oldDest=pacoteDestaque;
+  pacotes=pr.pacotes;pacoteDestaque=pr.pacoteDestaque;
+  gerarPDF();
+  pacotes=oldPacotes;pacoteDestaque=oldDest;
+}
+
+function copiarWAProposta(){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  var pr=(p&&p.propostas||[]).find(function(x){return x.id===currentPropostaId;});
+  if(!pr)return;
+  var oldPacotes=pacotes,oldDest=pacoteDestaque;
+  pacotes=pr.pacotes;pacoteDestaque=pr.pacoteDestaque;
+  copiarWA();
+  pacotes=oldPacotes;pacoteDestaque=oldDest;
+}
+
+// ════ ÁREA CUT LINE ════
+function updateAreaCut(){
+  var box=document.getElementById('area-cut-box');
+  var txt=document.getElementById('area-cut-txt');
+  if(!box||!txt)return;
+  var totalArea=0;
+  bairrosList.forEach(function(b){if(b.pts&&b.pts.length>=3)totalArea+=polyAreaKm2(b.pts);});
+  if(totalArea<0.01){box.style.display='none';return;}
+  var horasDia=4;
+  var cobPorDia=horasDia*SPD*0.12;
+  var dias=Math.ceil(totalArea/cobPorDia);
+  txt.innerHTML='Área total: <strong>'+totalArea.toFixed(2)+' km²</strong>&nbsp;·&nbsp;'
+    +'Estimativa: <strong>'+dias+' dia'+(dias!==1?'s':'')+'</strong> de operação ('+horasDia+'h/dia a '+SPD+'km/h)';
+  box.style.display='flex';
+}
+
+// ════ HELPERS ════
+function v(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function abrirModalGen(titulo,bodyHTML,btns){
+  document.getElementById('modal-title').textContent=titulo;
+  document.getElementById('modal-body').innerHTML=bodyHTML;
+  var actions=document.getElementById('modal-actions');
+  actions.innerHTML='';
+  btns.forEach(function(b){
+    var btn=document.createElement('button');
+    btn.className='btn'+(b.primary?' primary':' ghost');
+    btn.style.flex='1';btn.style.height='52px';
+    btn.textContent=b.label;
+    btn.addEventListener('click',b.action);
+    actions.appendChild(btn);
+  });
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  setTimeout(function(){var first=document.getElementById('modal-body').querySelector('input,textarea');if(first)first.focus();},150);
+}
+
+
 
 // ════ MAPS ════
 var mapB=null;
@@ -966,21 +1558,9 @@ function renderVeicModalBody(v){
   btnOk.addEventListener('click',function(){fecharModal();});
   actions.appendChild(btnDel);actions.appendChild(btnOk);
 }
-function fecharModal(){document.getElementById('modal-overlay').classList.add('hidden');renderCal();calcTotals();}
 
 // ════ TOTAIS ════
 function calcHorasDia(hi,hf){if(!hi||!hf)return 0;var p=function(s){var x=s.split(':');return+x[0]+(+x[1])/60;};var d=p(hf)-p(hi);return d>0?Math.round(d*10)/10:0;}
-function calcTotals(){
-  var tb=0,hSom=0,hPan=0;
-  veiculacoes.forEach(function(v){tb+=v.blocos.length;v.blocos.forEach(function(b){var h=calcHorasDia(b.hi,b.hf);if((b.tipo||'panfletagem')==='panfletagem')hPan+=h;else hSom+=h;});});
-  hSom=Math.round(hSom*10)/10;
-  document.getElementById('t-veics').textContent=veiculacoes.length;
-  document.getElementById('t-blocos').textContent=tb;
-  document.getElementById('t-horas').innerHTML=hSom+'<span>h</span>';
-  document.getElementById('t-valor').textContent='R$'+Math.ceil(hSom*PRECOS[1]).toLocaleString('pt-BR');
-  document.getElementById('hdr-cliente').textContent=document.getElementById('pCliente').value||'';
-  salvarEstado();
-}
 function getTotalHorasSom(){var h=0;veiculacoes.forEach(function(v){v.blocos.forEach(function(b){if((b.tipo||'panfletagem')!=='panfletagem')h+=calcHorasDia(b.hi,b.hf);});});return Math.round(h*10)/10;}
 
 // ════ PACOTES ════
@@ -1467,7 +2047,7 @@ function salvarBairroNaLista(nomeForced){
   var existente=bairrosList.findIndex(function(b){return b.nome===nome;});
   var entry={id:'br'+Date.now(),nome:nome,pts:bairroAtual.pts.slice(),area:polyAreaKm2(bairroAtual.pts)};
   if(existente>=0)bairrosList[existente]=entry;else bairrosList.push(entry);
-  renderBairrosLista();renderBairrosSalvosNoMapa();bSt('"'+nome+'" salvo','g');salvarEstado();
+  renderBairrosLista();renderBairrosSalvosNoMapa();bSt('"'+nome+'" salvo','g');salvarEstado();updateAreaCut();
 }
 function renderBairrosLista(){
   var el=document.getElementById('bairros-lista');el.innerHTML='';
@@ -1484,7 +2064,7 @@ function renderBairrosLista(){
   });
 }
 function editarBairro(id){var b=bairrosList.find(function(x){return x.id===id;});if(!b)return;bairroAtual={pts:b.pts.slice(),name:b.nome,area:b.area};bRedraw();if(mapB)mapB.fitBounds(L.latLngBounds(b.pts.map(function(p){return L.latLng(p[0],p[1]);})),{padding:[20,20]});bSt('Editando "'+b.nome+'"','y');}
-function removerBairro(id){bairrosList=bairrosList.filter(function(b){return b.id!==id;});renderBairrosLista();renderBairrosSalvosNoMapa();salvarEstado();}
+function removerBairro(id){bairrosList=bairrosList.filter(function(b){return b.id!==id;});renderBairrosLista();renderBairrosSalvosNoMapa();salvarEstado();updateAreaCut();}
 function salvarAreaAtual(){
   if(bairroAtual.pts.length<3){bSt('Desenhe pelo menos 3 pontos','r');return;}
   abrirNomeModal('Nome da área','Ex: Praça Santa Isabel',function(n){
@@ -1853,75 +2433,9 @@ function renderCriativosBib(){
 }
 
 // ════ RESET ════
-function _limparMapa(){
-  overpassElements=[];
-  if(mapB){if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];bairrosSalvosLayers.forEach(function(l){mapB.removeLayer(l);});bairrosSalvosLayers=[];}
-  if(mapC){perimCircLayers.forEach(function(l){mapC.removeLayer(l);});perimCircLayers=[];if(startMkr){mapC.removeLayer(startMkr);startMkr=null;}if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}wpMarkers.forEach(function(m){mapC.removeLayer(m);});wpMarkers=[];if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}}
-  cMode='start';if(mapC){['cBtnStart','cBtnAdd','cBtnMove','cBtnDel'].forEach(function(id){var el=document.getElementById(id);if(el)el.className='btn sm';});var s=document.getElementById('cBtnStart');if(s)s.className='btn sm on-green';}
-}
-function resetTotal(){
-  if(!confirm('RESET TOTAL — apaga tudo. Continuar?'))return;
-  bairrosList=[];bairroAtual={pts:[],name:''};circuitosBib=[];criativosBib=[];
-  circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
-  veiculacoes=[];extras=[];tipoIdx=1;turnoIdx=3;
-  pacotes=[{nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}];
-  pacoteDestaque=2;
-  document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
-  _limparMapa();
-  localStorage.removeItem(LS_KEY);
-  stepDone=[];currentStep=0;
-  renderBairrosLista();renderCircBiblioteca();renderCriativosBib();renderPacotesUI();
-  calcTotals();initCal();renderCal();buildProgress();buildMenu();goStep(0);
-}
 
 // ════ IMPORT / EXPORT ════
 function dl(content,type,name){var blob=new Blob([content],{type:type});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
-function exportProjeto(){
-  var proj={
-    version:60,
-    cliente:document.getElementById('pCliente').value,
-    campanha:document.getElementById('pCampanha').value,
-    bairrosList:bairrosList,circuitosBib:circuitosBib,criativosBib:criativosBib,
-    veiculacoes:veiculacoes,extras:extras,tipoIdx:tipoIdx,turnoIdx:turnoIdx,
-    pacotes:pacotes,pacoteDestaque:pacoteDestaque,stepDone:stepDone,
-  };
-  var name=((proj.cliente||'projeto')+'.json').replace(/\s+/g,'-').toLowerCase();
-  dl(JSON.stringify(proj,null,2),'application/json',name);
-}
-function importProjClick(){document.getElementById('importProjFile').click();}
-function importProj(ev){
-  var file=ev.target.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    try{
-      var p=JSON.parse(e.target.result);
-      document.getElementById('pCliente').value=p.cliente||'';
-      document.getElementById('pCampanha').value=p.campanha||'';
-      if(p.bairrosList){bairrosList=p.bairrosList;renderBairrosLista();}
-      if(p.circuitosBib){circuitosBib=p.circuitosBib;renderCircBiblioteca();}
-      if(p.veiculacoes)veiculacoes=p.veiculacoes;
-      if(p.extras)extras=p.extras;else extras=[];
-      if(p.criativosBib){criativosBib=p.criativosBib;renderCriativosBib();}
-      if(p.tipoIdx)tipoIdx=p.tipoIdx;
-      if(p.turnoIdx)turnoIdx=p.turnoIdx;
-      if(p.pacotes)pacotes=p.pacotes;
-      if(p.pacoteDestaque)pacoteDestaque=p.pacoteDestaque;
-      if(p.stepDone)stepDone=p.stepDone;
-      calcTotals();renderCal();goStep(0);
-    }catch(err){alert('Erro ao importar');}
-  };r.readAsText(file);ev.target.value='';
-}
-function novoProj(){
-  if(!confirm('Novo projeto?'))return;
-  document.getElementById('pCliente').value='';document.getElementById('pCampanha').value='';
-  bairrosList=[];circuitosBib=[];criativosBib=[];veiculacoes=[];extras=[];bairroAtual={pts:[],name:''};
-  circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
-  tipoIdx=1;turnoIdx=3;pacoteDestaque=2;
-  pacotes=[{nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}];
-  _limparMapa();
-  renderBairrosLista();renderCircBiblioteca();renderCriativosBib();renderPacotesUI();calcTotals();renderCal();
-}
-function onProjInput(){calcTotals();}
 
 // ════ ÁREA ════
 function polyAreaKm2(p){
@@ -1931,63 +2445,8 @@ function polyAreaKm2(p){
 }
 
 // ════ LOCALSTORAGE ════
-function salvarEstado(){
-  try{
-    var geomSerial=circAtivo.lastGeom?circAtivo.lastGeom.map(function(p){return[p.lat,p.lng];}):[];
-    localStorage.setItem(LS_KEY,JSON.stringify({
-      cliente:document.getElementById('pCliente').value,
-      campanha:document.getElementById('pCampanha').value,
-      bairrosList:bairrosList,circuitosBib:circuitosBib,criativosBib:criativosBib,
-      veiculacoes:veiculacoes,extras:extras,tipoIdx:tipoIdx,turnoIdx:turnoIdx,
-      pacotes:pacotes,pacoteDestaque:pacoteDestaque,stepDone:stepDone,currentStep:currentStep,
-      circAtivo:{waypoints:circAtivo.waypoints,startPt:circAtivo.startPt,lastData:circAtivo.lastData,geomSerial:geomSerial}
-    }));
-  }catch(e){}
-}
-function restaurarEstado(){
-  try{
-    var raw=localStorage.getItem(LS_KEY);if(!raw)return;
-    var s=JSON.parse(raw);
-    if(s.cliente)document.getElementById('pCliente').value=s.cliente;
-    if(s.campanha)document.getElementById('pCampanha').value=s.campanha;
-    if(s.bairrosList){bairrosList=s.bairrosList;renderBairrosLista();}
-    if(s.circuitosBib){circuitosBib=s.circuitosBib;renderCircBiblioteca();}
-    if(s.veiculacoes)veiculacoes=s.veiculacoes;
-    if(s.extras)extras=s.extras;
-    if(s.criativosBib){criativosBib=s.criativosBib;renderCriativosBib();}
-    if(s.tipoIdx)tipoIdx=s.tipoIdx;
-    if(s.turnoIdx)turnoIdx=s.turnoIdx;
-    if(s.pacotes)pacotes=s.pacotes;
-    if(s.pacoteDestaque)pacoteDestaque=s.pacoteDestaque;
-    if(s.stepDone)stepDone=s.stepDone;
-    if(s.circAtivo){
-      circAtivo.waypoints=s.circAtivo.waypoints||[];
-      circAtivo.startPt=s.circAtivo.startPt||null;
-      circAtivo.lastData=s.circAtivo.lastData||null;
-      if(s.circAtivo.geomSerial&&s.circAtivo.geomSerial.length&&typeof L!=='undefined')
-        circAtivo.lastGeom=s.circAtivo.geomSerial.map(function(p){return L.latLng(p[0],p[1]);});
-    }
-    calcTotals();
-  }catch(e){}
-}
 
 // ════ MINI MODAL NOME ════
-function abrirNomeModal(titulo,placeholder,callback){
-  var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px';
-  var box=document.createElement('div');box.style.cssText='background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:20px;width:100%;max-width:340px';
-  var lbl=document.createElement('div');lbl.textContent=titulo;lbl.style.cssText='font-size:11px;letter-spacing:2px;color:var(--am);text-transform:uppercase;margin-bottom:12px';
-  var inp=document.createElement('input');inp.type='text';inp.placeholder=placeholder;inp.style.cssText='width:100%;font-size:15px;padding:10px;margin-bottom:12px';
-  var row=document.createElement('div');row.style.cssText='display:flex;gap:8px';
-  var btnOk=document.createElement('button');btnOk.textContent='OK';btnOk.className='btn primary';btnOk.style.flex='1';
-  var btnCan=document.createElement('button');btnCan.textContent='Cancelar';btnCan.className='btn ghost';
-  function fechar(val){document.body.removeChild(overlay);if(val!==null)callback(val);}
-  btnOk.addEventListener('click',function(){fechar(inp.value.trim());});
-  btnCan.addEventListener('click',function(){fechar(null);});
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')fechar(inp.value.trim());if(e.key==='Escape')fechar(null);});
-  row.appendChild(btnOk);row.appendChild(btnCan);box.appendChild(lbl);box.appendChild(inp);box.appendChild(row);
-  overlay.appendChild(box);document.body.appendChild(overlay);setTimeout(function(){inp.focus();},100);
-}
 
 // ════ INIT ════
 window.addEventListener('load',function(){
@@ -2000,6 +2459,161 @@ window.addEventListener('load',function(){
   });
   setInterval(salvarEstado,8000);
 });
+
+// ════ PROGRESS + MENU + NAVIGATION ════
+function buildProgress(){
+  var el=document.getElementById('progress-steps');if(!el)return;
+  el.innerHTML='';
+  STEPS.forEach(function(s,i){
+    var done=stepDone.indexOf(i)>=0;
+    var active=i===currentStep;
+    var div=document.createElement('div');
+    div.className='pstep'+(done?' done':'')+(active?' active':'');
+    div.innerHTML='<div class="pstep-dot">'+s.icon+'</div><div class="pstep-label">'+s.label+'</div>';
+    div.addEventListener('click',function(){if(done||i===currentStep)goStep(i);});
+    el.appendChild(div);
+    if(i<STEPS.length-1){
+      var line=document.createElement('div');
+      line.className='pstep-line'+(done?' done':'');
+      el.appendChild(line);
+    }
+  });
+}
+
+function buildMenu(){
+  var el=document.getElementById('menu-items');if(!el)return;
+  el.innerHTML='';
+  STEPS.forEach(function(s,i){
+    var done=stepDone.indexOf(i)>=0;
+    var active=i===currentStep;
+    var d=document.createElement('div');
+    d.className='menu-item'+(active?' active':'')+(done?' done':'');
+    d.innerHTML='<span class="menu-icon">'+s.icon+'</span><span class="menu-label">'+s.label+'</span>'+(done?'<span class="menu-check">✓</span>':'');
+    d.addEventListener('click',function(){if(done||active){goStep(i);fecharMenu();}});
+    el.appendChild(d);
+  });
+}
+
+function goStep(idx){
+  if(idx<0||idx>=STEPS.length)return;
+  if(currentStep>=0&&stepDone.indexOf(currentStep)<0)stepDone.push(currentStep);
+  currentStep=idx;
+  STEPS.forEach(function(s,i){
+    var p=document.getElementById(s.panel);
+    if(p)p.classList.toggle('show',i===idx);
+  });
+  buildProgress();buildMenu();
+  if(idx===1){setTimeout(function(){if(!mapB)initMapB();if(mapB)mapB.invalidateSize();renderBairrosLista();renderBairrosSalvosNoMapa();},80);}
+  if(idx===2){setTimeout(function(){if(!mapC)initMapC();syncCircMapa();},80);}
+  if(idx===5){renderPacotesUI();renderPropostas();}
+  salvarEstado();
+}
+
+function abrirMenu(){
+  document.getElementById('menu-overlay').classList.add('show');
+  document.getElementById('side-menu').classList.add('show');
+}
+function fecharMenu(){
+  document.getElementById('menu-overlay').classList.remove('show');
+  document.getElementById('side-menu').classList.remove('show');
+}
+
+function fecharModal(){document.getElementById('modal-overlay').classList.add('hidden');renderCal();calcTotals();}
+
+function calcTotals(){
+  var dias=veiculacoes.length;
+  var blocos=veiculacoes.reduce(function(s,v){return s+(v.blocos||[]).length;},0);
+  var hSom=getTotalHorasSom();
+  var base=hSom*PRECOS[tipoIdx]||0;
+  function sv(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+  sv('t-veics',dias);sv('t-blocos',blocos);
+  sv('t-horas',hSom);sv('t-valor','R$'+Math.ceil(base));
+}
+
+// ════ SAVE / RESTORE ════
+function salvarEstado(){
+  // Sync wizard to current project before saving
+  if(currentView==='wizard'&&currentProjetoId){
+    var p=projetos.find(function(x){return x.id===currentProjetoId;});
+    if(p)syncWizardToProjeto(p);
+  }
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify({
+      empresa:empresa,
+      clientes:clientes,
+      projetos:projetos,
+      propostaCounter:propostaCounter,
+      currentView:currentView,
+      currentClienteId:currentClienteId,
+      currentProjetoId:currentProjetoId,
+    }));
+  }catch(e){}
+}
+
+function restaurarEstado(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);if(!raw)return;
+    var s=JSON.parse(raw);
+    if(s.empresa)empresa=s.empresa;
+    if(s.clientes)clientes=s.clientes;
+    if(s.projetos)projetos=s.projetos;
+    if(s.propostaCounter)propostaCounter=s.propostaCounter;
+    if(s.currentClienteId)currentClienteId=s.currentClienteId;
+    if(s.currentProjetoId)currentProjetoId=s.currentProjetoId;
+    if(s.currentView==='wizard'&&s.currentProjetoId){
+      setTimeout(function(){enterWizard(s.currentProjetoId);},50);
+    } else if(s.currentView==='projetos'&&s.currentClienteId){
+      setTimeout(function(){abrirCliente(s.currentClienteId);},50);
+    }
+  }catch(e){}
+}
+
+function _limparMapa(){
+  overpassElements=[];
+  if(mapB){if(bPolyL){mapB.removeLayer(bPolyL);bPolyL=null;}bVtxMarkers.forEach(function(m){mapB.removeLayer(m);});bVtxMarkers=[];bairrosSalvosLayers.forEach(function(l){mapB.removeLayer(l);});bairrosSalvosLayers=[];}
+  if(mapC){perimCircLayers.forEach(function(l){mapC.removeLayer(l);});perimCircLayers=[];if(startMkr){mapC.removeLayer(startMkr);startMkr=null;}if(routeLayer){mapC.removeLayer(routeLayer);routeLayer=null;}wpMarkers.forEach(function(m){mapC.removeLayer(m);});wpMarkers=[];if(streetsLayer){mapC.removeLayer(streetsLayer);streetsLayer=null;}}
+  cMode='start';
+}
+
+function resetTotal(){
+  if(!confirm('RESET TOTAL — apaga tudo. Continuar?'))return;
+  clientes=[];projetos=[];propostaCounter=0;
+  empresa.circuitos=[];empresa.criativos=[];
+  // Keep empresa.bairros (são recursos da empresa, não do projeto)
+  bairrosList=[];bairroAtual={pts:[],name:''};circuitosBib=[];criativosBib=[];
+  circAtivo={nome:'',waypoints:[],startPt:null,lastData:null,lastGeom:null};
+  veiculacoes=[];extras=[];tipoIdx=1;turnoIdx=3;
+  pacotes=[{nome:'Básico',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Intermediário',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]},{nome:'Premium',desc:'',estrategia:'',cheio:0,desconto:0,blocos:[],criativos:[]}];
+  pacoteDestaque=2;currentProjetoId=null;currentClienteId=null;
+  _limparMapa();
+  if(mapB){mapB.remove();mapB=null;}if(mapC){mapC.remove();mapC=null;}
+  localStorage.removeItem(LS_KEY);
+  goView('clientes');
+}
+
+function exportarProjeto(){
+  var p=projetos.find(function(x){return x.id===currentProjetoId;});
+  if(p){syncWizardToProjeto(p);}
+  var data=JSON.stringify({empresa:empresa,clientes:clientes,projetos:projetos,propostaCounter:propostaCounter},null,2);
+  dl(data,'application/json','autovision-backup.json');
+}
+
+function abrirNomeModal(titulo,placeholder,callback){
+  abrirModalGen(titulo,
+    '<input id="_nome-inp" type="text" placeholder="'+placeholder+'" style="width:100%"/>',
+    [{label:'OK',primary:true,action:function(){var v=document.getElementById('_nome-inp').value.trim();document.getElementById('modal-overlay').classList.add('hidden');if(v)callback(v);}},
+     {label:'Cancelar',action:fecharModal}]
+  );
+  setTimeout(function(){var el=document.getElementById('_nome-inp');if(el)el.focus();},200);
+}
+
+// ════ INIT ════
+window.addEventListener('load',function(){
+  restaurarEstado();
+  goView('clientes');
+  setInterval(salvarEstado,8000);
+});
+
 </script>
 </body>
 </html>
