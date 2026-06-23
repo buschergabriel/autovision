@@ -962,10 +962,8 @@ function syncWizardFromProjeto(p){
   if(p.circAtivo&&p.circAtivo.geomSerial&&p.circAtivo.geomSerial.length&&typeof L!=='undefined'){
     circAtivo.lastGeom=p.circAtivo.geomSerial.map(function(pt){return L.latLng(pt[0],pt[1]);});
   }
-  setTimeout(function(){
-    var nome=document.getElementById('pNome');if(nome)nome.value=p.nome||'';
-    var camp=document.getElementById('pCampanha');if(camp)camp.value=p.campanha||'';
-  },50);
+  var nome=document.getElementById('pNome');if(nome)nome.value=p.nome||'';
+  var camp=document.getElementById('pCampanha');if(camp)camp.value=p.campanha||'';
 }
 
 function syncWizardToProjeto(p){
@@ -2139,83 +2137,140 @@ async function loadStreets(){
   });
   streetsLayer=group;group.addTo(mapC);cSt('Ruas carregadas','g');
 }
+// ── Helpers de geometria para gerarCircuitoAuto ─────────────────
+function _distSegM(p,a,b){
+  var sc=Math.cos(p[0]*Math.PI/180);
+  var dx=(b[0]-a[0])*111320,dy=(b[1]-a[1])*111320*sc;
+  var len2=dx*dx+dy*dy;
+  if(len2<0.001)return distFlat(p,a);
+  var t=Math.max(0,Math.min(1,((p[0]-a[0])*111320*dx+(p[1]-a[1])*111320*sc*dy)/len2));
+  return distFlat(p,[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]);
+}
+function _distBoundary(pt,polyPts){
+  var minD=Infinity;
+  for(var i=0;i<polyPts.length;i++){
+    var d=_distSegM(pt,polyPts[i],polyPts[(i+1)%polyPts.length]);
+    if(d<minD)minD=d;
+  }
+  return minD;
+}
+function _d2(a,b){
+  var dLat=(a[0]-b[0])*111320,dLon=(a[1]-b[1])*111320*Math.cos(a[0]*Math.PI/180);
+  return Math.sqrt(dLat*dLat+dLon*dLon);
+}
+function _nnOrder(ruas,startPt){
+  if(!ruas.length)return[];
+  var ordered=[],remaining=ruas.slice(),current=startPt;
+  while(remaining.length){
+    var minD=Infinity,minI=0;
+    remaining.forEach(function(r,i){var d=_d2(r.centro,current);if(d<minD){minD=d;minI=i;}});
+    ordered.push(remaining[minI]);current=remaining[minI].centro;remaining.splice(minI,1);
+  }
+  return ordered;
+}
+
 async function gerarCircuitoAuto(){
   if(!bairrosList.length){cSt('Selecione um bairro primeiro','r');return;}
   if(!mapC){cSt('Mapa não iniciado','r');return;}
-  if(!overpassElements||!overpassElements.length){cSt('Carregando ruas...','y');await loadStreets();if(!overpassElements||!overpassElements.length){cSt('Sem dados de rua — verifique conexão','r');return;}}
-  // 1. Agrupar por nome, acumulando peso máximo, comprimento e pontos
+  if(!overpassElements||!overpassElements.length){
+    cSt('Carregando ruas...','y');
+    await loadStreets();
+    if(!overpassElements||!overpassElements.length){cSt('Sem dados de rua — verifique conexão','r');return;}
+  }
+  cSt('Analisando ruas...','y');
+
+  // ── 1. Agrupar por nome ──────────────────────────────────────
   var grupos={};
   overpassElements.forEach(function(el,idx){
     if(!el.geometry||el.geometry.length<2||!el.tags)return;
     var hw=el.tags.highway||'';
-    var peso=HIGHWAY_WEIGHT[hw]||0;
-    if(peso===0)return;
+    var peso=HIGHWAY_WEIGHT[hw]||0;if(peso===0)return;
     var pts=el.geometry.map(function(p){return[p.lat,p.lon];});
     var len=0;for(var i=0;i<pts.length-1;i++)len+=distFlat(pts[i],pts[i+1]);
-    var nome=el.tags.name||(peso>=60?'__via_'+hw+'_'+idx:null);
-    if(!nome)return; // unnamed baixo peso: ignora
+    var nome=el.tags.name||(peso>=60?'__via_'+hw+'_'+idx:null);if(!nome)return;
     if(!grupos[nome])grupos[nome]={nome:nome,peso:peso,totalLen:0,allPts:[],hw:hw};
     if(peso>grupos[nome].peso)grupos[nome].peso=peso;
     grupos[nome].totalLen+=len;
     grupos[nome].allPts=grupos[nome].allPts.concat(pts);
   });
-  // 2. Filtrar curtas de baixo peso
   var ruas=Object.values(grupos).filter(function(r){return r.totalLen>=MIN_LEN_M||r.peso>=80;});
-  if(!ruas.length){cSt('Nenhuma via válida — verifique o bairro selecionado','r');return;}
-  // 2b. MAX_WP dinâmico = rede total / 300m, cap 35
-  var totalRede=0;ruas.forEach(function(r){totalRede+=r.totalLen;});
-  var MAX_WP_DIN=Math.min(35,Math.max(8,Math.round(totalRede/300)));
-  // 3. Centroide, endpoints e ponto de start de cada rua
+  if(!ruas.length){cSt('Nenhuma via válida','r');return;}
+
+  // ── 2. Centroide, endpoints ──────────────────────────────────
   ruas.forEach(function(r){
     var mid=Math.floor(r.allPts.length/2);
-    r.centro=r.allPts[mid];
-    r.startPt=r.allPts[0];
-    r.endPt=r.allPts[r.allPts.length-1];
+    r.centro=r.allPts[mid];r.startPt=r.allPts[0];r.endPt=r.allPts[r.allPts.length-1];
   });
-  // 4. Ordenar por peso desc, comprimento desc
-  ruas.sort(function(a,b){return b.peso-a.peso||b.totalLen-a.totalLen;});
-  // 5. Buffer 60m: pular ruas de baixo peso já cobertas por via de maior peso
+
+  // ── 3. Polígono do bairro + centroide da área ────────────────
+  var allPolyPts=[];
+  bairrosList.forEach(function(b){allPolyPts=allPolyPts.concat(b.pts);});
+  var centLat=0,centLon=0;
+  allPolyPts.forEach(function(p){centLat+=p[0];centLon+=p[1];});
+  centLat/=allPolyPts.length;centLon/=allPolyPts.length;
+
+  // ── 4. Separar PERÍMETRO vs INTERIOR ────────────────────────
+  var PERIM_THRESH=120; // metros da borda
+  var perimRuas=[],interiorRuas=[];
+  ruas.forEach(function(r){
+    var d=allPolyPts.length>=3?_distBoundary(r.centro,allPolyPts):999;
+    r._distBorda=d;
+    r._angulo=Math.atan2(r.centro[0]-centLat,r.centro[1]-centLon);
+    if(d<=PERIM_THRESH)perimRuas.push(r);else interiorRuas.push(r);
+  });
+
+  // ── 5. Ordenar perímetro no sentido horário a partir do startPt ──
+  var savedStartPt=circAtivo.startPt;
+  var startAngle=savedStartPt
+    ?Math.atan2(savedStartPt.lat-centLat,savedStartPt.lng-centLon)
+    :(perimRuas.length?perimRuas[0]._angulo:0);
+  perimRuas.sort(function(a,b){
+    // Clockwise = decreasing angle from startAngle
+    var da=((startAngle-a._angulo)+2*Math.PI)%(2*Math.PI);
+    var db=((startAngle-b._angulo)+2*Math.PI)%(2*Math.PI);
+    return da-db;
+  });
+
+  // ── 6. Interior: filtrar por buffer + nearest-neighbor ───────
+  interiorRuas.sort(function(a,b){return b.peso-a.peso||b.totalLen-a.totalLen;});
   var selecionadas=[];
-  ruas.forEach(function(rua){
+  interiorRuas.forEach(function(rua){
     if(rua.peso>=80){selecionadas.push(rua);return;}
     var coberta=selecionadas.some(function(s){
       if(s.peso<=rua.peso)return false;
-      // Check all 3 key points: start, center, end — all must be within buffer
-      function d2(a,b){var dLat=(a[0]-b[0])*111320,dLon=(a[1]-b[1])*111320*Math.cos(a[0]*Math.PI/180);return Math.sqrt(dLat*dLat+dLon*dLon);}
-      var dStart=d2(s.centro,rua.startPt);
-      var dCentro=d2(s.centro,rua.centro);
-      var dEnd=d2(s.centro,rua.endPt||rua.centro);
-      return Math.min(dStart,dCentro,dEnd)<=BUFFER_M && Math.max(dStart,dEnd)<=BUFFER_M*3;
+      var dS=_d2(s.centro,rua.startPt),dC=_d2(s.centro,rua.centro),dE=_d2(s.centro,rua.endPt||rua.centro);
+      return Math.min(dS,dC,dE)<=BUFFER_M&&Math.max(dS,dE)<=BUFFER_M*3;
     });
     if(!coberta)selecionadas.push(rua);
   });
-  // 6. Cap de waypoints (dinâmico)
-  if(selecionadas.length>MAX_WP_DIN)selecionadas=selecionadas.slice(0,MAX_WP_DIN);
-  // 7. Nearest-neighbor: ordenar por proximidade a partir da rua mais prioritária
-  var ordered=[selecionadas[0]];
-  var remaining=selecionadas.slice(1);
-  var current=selecionadas[0].centro;
-  while(remaining.length){
-    var minD=Infinity,minI=0;
-    remaining.forEach(function(r,i){
-      var dLat=(r.centro[0]-current[0])*111320;
-      var dLon=(r.centro[1]-current[1])*111320*Math.cos(current[0]*Math.PI/180);
-      var d=Math.sqrt(dLat*dLat+dLon*dLon);
-      if(d<minD){minD=d;minI=i;}
-    });
-    ordered.push(remaining[minI]);
-    current=remaining[minI].centro;
-    remaining.splice(minI,1);
-  }
-  // 8. Popular circAtivo
+  // Nearest-neighbor começando do último ponto do perímetro
+  var lastPerimPt=perimRuas.length?perimRuas[perimRuas.length-1].centro:[centLat,centLon];
+  var interiorOrdered=_nnOrder(selecionadas,lastPerimPt);
+
+  // ── 7. Combinar: perímetro + interior ───────────────────────
+  var ordered=perimRuas.concat(interiorOrdered);
+
+  // ── 8. Cap dinâmico ─────────────────────────────────────────
+  var totalRede=0;ruas.forEach(function(r){totalRede+=r.totalLen;});
+  var MAX_WP_DIN=Math.min(50,Math.max(10,Math.round(totalRede/250)));
+  if(ordered.length>MAX_WP_DIN)ordered=ordered.slice(0,MAX_WP_DIN);
+
+  // ── 9. Popular circAtivo preservando startPt do usuário ─────
   limparCircuito(true);
-  var sp=ordered[0].startPt;
-  circAtivo.startPt={lat:sp[0],lng:sp[1]};
-  startMkr=L.circleMarker([circAtivo.startPt.lat,circAtivo.startPt.lng],
-    {radius:9,color:'#3DB87A',fillColor:'#3DB87A',fillOpacity:1,weight:2}).addTo(mapC);
-  circAtivo.waypoints=ordered.slice(1).map(function(r){return{lat:r.centro[0],lng:r.centro[1]};});
+  if(savedStartPt){
+    circAtivo.startPt=savedStartPt;
+    startMkr=L.circleMarker([savedStartPt.lat,savedStartPt.lng],
+      {radius:9,color:'#3DB87A',fillColor:'#3DB87A',fillOpacity:1,weight:2}).addTo(mapC);
+  } else if(ordered.length){
+    var sp=ordered[0].startPt;
+    circAtivo.startPt={lat:sp[0],lng:sp[1]};
+    startMkr=L.circleMarker([circAtivo.startPt.lat,circAtivo.startPt.lng],
+      {radius:9,color:'#3DB87A',fillColor:'#3DB87A',fillOpacity:1,weight:2}).addTo(mapC);
+    ordered=ordered.slice(1);
+  }
+  circAtivo.waypoints=ordered.map(function(r){return{lat:r.centro[0],lng:r.centro[1]};});
   renderWaypoints();
-  cSt(circAtivo.waypoints.length+' pontos gerados — edite e clique ▶ Gerar','g');
+  cSt(perimRuas.length+'🔲 perímetro + '+interiorOrdered.length+'⬛ interior — '+circAtivo.waypoints.length+' pts','g');
 }
 function setCMode(m){
   cMode=m;
@@ -2537,7 +2592,12 @@ function goStep(idx){
   if(idx===3){renderCriativosBib();}
   if(idx===4){renderCrono();}
   if(idx===5){renderPacotesUI();renderPropostas();}
-  salvarEstado();
+  // Save step progress but don't sync wizard inputs (avoid race with DOM population)
+  if(currentProjetoId){
+    var p=projetos.find(function(x){return x.id===currentProjetoId;});
+    if(p){p.stepDone=stepDone.slice();p.currentStep=currentStep;}
+  }
+  try{localStorage.setItem(LS_KEY,JSON.stringify({empresa:empresa,clientes:clientes,projetos:projetos,propostaCounter:propostaCounter,currentView:currentView,currentClienteId:currentClienteId,currentProjetoId:currentProjetoId}));}catch(e){}
 }
 
 function abrirMenu(){
