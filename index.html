@@ -504,8 +504,102 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 .area-cut{background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--am);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px}
 .area-cut span{color:var(--text2)}
 </style>
+<!-- ═══ FIREBASE SDK ═══ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+#v-login{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#v-login.show{display:flex}
+.login-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;}
+.login-logo{font-family:monospace;font-size:22px;font-weight:700;color:var(--am);letter-spacing:3px;margin-bottom:4px;}
+.login-sub{font-size:11px;color:var(--text3);letter-spacing:1px;margin-bottom:28px;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.login-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px;color:var(--text);font-size:14px;}
+.login-field input:focus{outline:none;border-color:var(--am);}
+.login-err{font-size:12px;color:var(--red);margin-bottom:12px;display:none;}
+.btn-google{width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;}
+.login-divider{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.login-divider::before,.login-divider::after{content:"";flex:1;height:1px;background:var(--border);}
+.login-divider span{font-size:11px;color:var(--text3);}
+#v-leads{display:none;flex-direction:column;height:100%;}
+#v-leads.show{display:flex;}
+.leads-hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.leads-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);}
+.leads-tab{padding:10px 16px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.leads-tab.active{color:var(--am);border-bottom-color:var(--am);}
+.leads-body{flex:1;overflow-y:auto;padding:16px;}
+.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .2s;}
+.lead-card:active{border-color:var(--am);}
+.lead-card-nome{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.lead-card-meta{font-size:11px;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap;}
+.funil-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:6px;}
+.funil-Identificado{background:rgba(90,90,106,.25);color:#9898A8;}
+.funil-Contato{background:rgba(58,186,186,.12);color:var(--cyan);}
+.funil-Relacionamento{background:rgba(139,114,212,.12);color:var(--purple);}
+.funil-Apresentação{background:rgba(232,148,58,.12);color:var(--orange);}
+.funil-Proposta{background:rgba(212,168,67,.18);color:var(--am);}
+.funil-Fechado{background:rgba(61,184,122,.14);color:var(--green);}
+.funil-Dormindo{background:rgba(212,92,92,.12);color:var(--red);}
+.leads-fab{position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--am);border:none;color:#000;font-size:24px;cursor:pointer;z-index:100;box-shadow:0 4px 16px rgba(212,168,67,.3);}
+.lead-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;}
+.lead-sheet-overlay.show{display:block;}
+.lead-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:12px 12px 0 0;padding:20px 20px 32px;max-height:92vh;overflow-y:auto;z-index:201;}
+.sheet-drag{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.sheet-field{margin-bottom:16px;}
+.sheet-field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.sheet-field input,.sheet-field select,.sheet-field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:11px 12px;color:var(--text);font-size:13px;font-family:inherit;}
+.interacao-item{padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.interacao-data{font-size:10px;color:var(--text3);margin-bottom:3px;}
+</style>
 </head>
 <body>
+
+<div id="v-login">
+  <div class="login-card">
+    <div class="login-logo">CHAMA</div>
+    <div class="login-sub">Sistema Operacional &middot; Agência Chama</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+      Entrar com Google
+    </button>
+    <div class="login-divider"><span>ou</span></div>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"/></div>
+    <div class="login-field"><label>Senha</label><input type="password" id="login-senha" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" onkeydown="if(event.key==='Enter')loginEmail()"/></div>
+    <button class="btn primary full" onclick="loginEmail()" style="margin-bottom:10px">Entrar</button>
+    <button class="btn ghost full" onclick="toggleCadastro()" id="btn-cad-toggle">Criar conta</button>
+    <div id="cad-sec" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div class="login-field"><label>Nome</label><input type="text" id="cad-nome" placeholder="Seu nome"/></div>
+      <div class="login-field"><label>E-mail</label><input type="email" id="cad-email" placeholder="seu@email.com"/></div>
+      <div class="login-field"><label>Senha</label><input type="password" id="cad-senha" placeholder="minimo 6 caracteres"/></div>
+      <button class="btn primary full" onclick="cadastrarEmail()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<div id="v-leads">
+  <div class="leads-hdr">
+    <div><div style="font-size:15px;letter-spacing:3px;color:var(--am);font-weight:700;font-family:monospace">CHAMA</div><div style="font-size:9px;color:var(--text3);letter-spacing:2px">CRM</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="leads-user-name" style="font-size:11px;color:var(--text3);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <button class="btn sm ghost" onclick="goViewLeads('clientes-ativos')">Op</button>
+      <button class="btn sm ghost" onclick="logoutChama()">Sair</button>
+    </div>
+  </div>
+  <div class="leads-tabs">
+    <div class="leads-tab active" id="ltab-funil" onclick="leadsTab('funil')">Funil</div>
+    <div class="leads-tab" id="ltab-todos" onclick="leadsTab('todos')">Todos</div>
+    <div class="leads-tab" id="ltab-dormindo" onclick="leadsTab('dormindo')">Dormindo</div>
+  </div>
+  <div class="leads-body" id="leads-body"><div style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px">Carregando...</div></div>
+  <button class="leads-fab" onclick="abrirSheetNovoLead()">+</button>
+</div>
+
+<div class="lead-sheet-overlay" id="lead-sheet-overlay" onclick="fecharSheetLead()"></div>
+<div class="lead-sheet" id="lead-sheet" style="display:none"><div class="sheet-drag"></div><div id="lead-sheet-content"></div></div>
+
 
 <!-- ══════════════════════════════════════════════════════════
      VIEW: CLIENTES
@@ -524,7 +618,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
       <button class="btn sm ghost" onclick="abrirMenu()">☰</button>
     </div>
   </div>
-  <div class="s-body" id="clientes-lista-wrap">
+  <div style="padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px"><button class="btn sm ghost" onclick="goViewLeads('leads')">&#8592; Leads CRM</button><span>Clientes Autovision</span></div><div class="s-body" id="clientes-lista-wrap">
     <div style="font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase">Clientes</div>
     <div id="clientes-lista"></div>
     <div id="cl-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;display:none">Nenhum cliente ainda</div>
@@ -3073,6 +3167,313 @@ window.addEventListener('load',function(){
   setInterval(salvarEstado,8000);
 });
 
+</script>
+<script>
+// ═══ CHAMA CRM — Firebase ═══
+var firebaseConfig={apiKey:"AIzaSyBAQLHno3VZ-QPlqLf08gRfpLKK38HfXvs",authDomain:"chama-crm.firebaseapp.com",projectId:"chama-crm",storageBucket:"chama-crm.firebasestorage.app",messagingSenderId:"694781641361",appId:"1:694781641361:web:ec5249e8a4c99d95abb530"};
+firebase.initializeApp(firebaseConfig);
+var fbAuth=firebase.auth();
+var fbDb=firebase.firestore();
+var currentUserChama=null,leadsUnsubscribe=null,leadsCache=[],leadsTabAtual='funil',leadSheetMode=null,leadSheetId=null;
+var FUNIL_ORDEM=['Identificado','Contato','Relacionamento','Apresentação','Proposta','Fechado','Dormindo'];
+
+fbAuth.onAuthStateChanged(function(user){
+  currentUserChama=user;
+  if(user){
+    document.getElementById('leads-user-name').textContent=user.displayName||user.email.split('@')[0];
+    mostrarApp();
+  }else{
+    mostrarLogin();
+  }
+});
+
+function mostrarLogin(){
+  document.getElementById('v-login').classList.add('show');
+  document.getElementById('v-leads').classList.remove('show');
+  ['v-clientes','v-projetos','v-wizard','v-recursos'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.classList.remove('show');
+  });
+  if(leadsUnsubscribe)leadsUnsubscribe();
+}
+
+function mostrarApp(){
+  document.getElementById('v-login').classList.remove('show');
+  goViewLeads('leads');
+  iniciarLeadsListener();
+}
+
+function loginGoogle(){
+  var p=new firebase.auth.GoogleAuthProvider();
+  fbAuth.signInWithPopup(p).catch(function(e){showLoginErr(e.message);});
+}
+
+function loginEmail(){
+  var e=document.getElementById('login-email').value.trim();
+  var s=document.getElementById('login-senha').value;
+  if(!e||!s){showLoginErr('Preencha email e senha');return;}
+  fbAuth.signInWithEmailAndPassword(e,s).catch(function(e){showLoginErr(e.message);});
+}
+
+function cadastrarEmail(){
+  var n=document.getElementById('cad-nome').value.trim();
+  var e=document.getElementById('cad-email').value.trim();
+  var s=document.getElementById('cad-senha').value;
+  if(!n||!e||!s){showLoginErr('Preencha todos os campos');return;}
+  fbAuth.createUserWithEmailAndPassword(e,s).then(function(c){
+    return c.user.updateProfile({displayName:n});
+  }).catch(function(e){showLoginErr(e.message);});
+}
+
+function toggleCadastro(){
+  var sec=document.getElementById('cad-sec');
+  var btn=document.getElementById('btn-cad-toggle');
+  if(sec.style.display==='none'){sec.style.display='block';btn.textContent='Cancelar';}
+  else{sec.style.display='none';btn.textContent='Criar conta';}
+}
+
+function showLoginErr(msg){
+  var el=document.getElementById('login-err');
+  el.textContent=msg;el.style.display='block';
+  setTimeout(function(){el.style.display='none';},4000);
+}
+
+function logoutChama(){fbAuth.signOut();}
+
+function goViewLeads(v){
+  ['v-leads','v-clientes','v-projetos','v-wizard','v-recursos'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.classList.remove('show');
+  });
+  if(v==='leads'){
+    document.getElementById('v-leads').classList.add('show');
+    renderLeads();
+  }else if(v==='clientes-ativos'){
+    document.getElementById('v-clientes').classList.add('show');
+    renderClientes();
+  }
+}
+
+function iniciarLeadsListener(){
+  if(leadsUnsubscribe)leadsUnsubscribe();
+  leadsUnsubscribe=fbDb.collection('leads').orderBy('criadoEm','desc').onSnapshot(function(snap){
+    leadsCache=[];
+    snap.forEach(function(doc){leadsCache.push(Object.assign({id:doc.id},doc.data()));});
+    renderLeads();
+  },function(err){console.error('Leads listener:',err);});
+}
+
+function leadsTab(t){
+  leadsTabAtual=t;
+  ['funil','todos','dormindo'].forEach(function(x){
+    document.getElementById('ltab-'+x).classList.toggle('active',x===t);
+  });
+  renderLeads();
+}
+
+function renderLeads(){
+  var body=document.getElementById('leads-body');
+  if(!body)return;
+  var lista=leadsCache.slice();
+  if(leadsTabAtual==='dormindo'){
+    lista=lista.filter(function(l){return l.status_funil==='Dormindo';});
+  }else if(leadsTabAtual==='funil'){
+    lista=lista.filter(function(l){return l.status_funil!=='Dormindo'&&l.status_funil!=='Fechado';});
+  }
+  if(!lista.length){
+    body.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px">'+(leadsTabAtual==='dormindo'?'Nenhum lead dormindo':'Nenhum lead. Toque + para adicionar.')+'</div>';
+    return;
+  }
+  if(leadsTabAtual==='funil'){
+    var html2='';
+    var grupos={};
+    lista.forEach(function(l){var s=l.status_funil||'Identificado';if(!grupos[s])grupos[s]=[];grupos[s].push(l);});
+    FUNIL_ORDEM.filter(function(s){return s!=='Dormindo'&&s!=='Fechado';}).forEach(function(status){
+      if(!grupos[status]||!grupos[status].length)return;
+      html2+='<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:16px 0 8px">'+status+' ('+grupos[status].length+')</div>';
+      grupos[status].forEach(function(l){html2+=renderLeadCard(l);});
+    });
+    body.innerHTML=html2;
+  }else{
+    body.innerHTML=lista.map(renderLeadCard).join('');
+  }
+}
+
+function renderLeadCard(l){
+  var s=l.status_funil||'Identificado';
+  var m='';
+  if(l.segmento)m+='<span>'+esc(l.segmento)+'</span>';
+  if(l.telefone)m+='<span>'+esc(l.telefone)+'</span>';
+  if(l.endereco)m+='<span>'+esc(l.endereco)+'</span>';
+  return '<div class="lead-card" onclick="abrirSheetLead(\''+l.id+'\')"><div class="lead-card-nome">'+esc(l.nome||'Sem nome')+'</div><div class="lead-card-meta">'+m+'</div><span class="funil-badge funil-'+s+'">'+s+'</span></div>';
+}
+
+function abrirSheetNovoLead(){
+  leadSheetMode='novo';leadSheetId=null;
+  document.getElementById('lead-sheet-content').innerHTML=sheetFormHTML({});
+  document.getElementById('lead-sheet').style.display='block';
+  document.getElementById('lead-sheet-overlay').classList.add('show');
+}
+
+function abrirSheetLead(id){
+  leadSheetMode='ver';leadSheetId=id;
+  var lead=leadsCache.find(function(l){return l.id===id;});
+  if(!lead)return;
+  document.getElementById('lead-sheet-content').innerHTML=sheetVerHTML(lead);
+  document.getElementById('lead-sheet').style.display='block';
+  document.getElementById('lead-sheet-overlay').classList.add('show');
+  carregarInteracoes(id);
+}
+
+function fecharSheetLead(){
+  document.getElementById('lead-sheet').style.display='none';
+  document.getElementById('lead-sheet-overlay').classList.remove('show');
+  leadSheetId=null;leadSheetMode=null;
+}
+
+function sheetFormHTML(dados){
+  var isEdicao=leadSheetMode==='editar';
+  var opts=FUNIL_ORDEM.map(function(s){
+    var sel=(dados.status_funil===s||(s==='Identificado'&&!dados.status_funil))?'selected':'';
+    return '<option value="'+s+'" '+sel+'>'+s+'</option>';
+  }).join('');
+  var dormDisplay=(dados.status_funil==='Dormindo')?'block':'none';
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">';
+  html+='<div style="font-size:14px;font-weight:700;color:var(--am)">'+(isEdicao?'Editar lead':'Novo lead')+'</div>';
+  html+='<button class="btn sm ghost" onclick="fecharSheetLead()">✕</button></div>';
+  html+='<div class="sheet-field"><label>Nome da empresa *</label>';
+  html+='<input type="text" id="sf-nome" placeholder="Ex: Barcelos Centro" value="'+esc(dados.nome||'')+'" oninput="checkDuplicado(this.value)"/></div>';
+  html+='<div id="sf-dup" style="font-size:11px;color:var(--orange);margin-top:-10px;margin-bottom:12px;display:none">⚠ Lead parecido já existe</div>';
+  html+='<div class="sheet-field"><label>Telefone</label><input type="tel" id="sf-tel" placeholder="(51) 9 9999-9999" value="'+esc(dados.telefone||'')+'"/></div>';
+  html+='<div class="sheet-field"><label>Segmento</label><input type="text" id="sf-seg" placeholder="Ex: Farmacia, Loja..." value="'+esc(dados.segmento||'')+'"/></div>';
+  html+='<div class="sheet-field"><label>Endereco</label><input type="text" id="sf-end" placeholder="Rua, numero, bairro" value="'+esc(dados.endereco||'')+'"/></div>';
+  html+='<div class="sheet-field"><label>Status no funil</label><select id="sf-status" onchange="document.getElementById(\'sf-dorm-f\').style.display=this.value===\'Dormindo\'?\'block\':\'none\'">'+opts+'</select></div>';
+  html+='<div class="sheet-field" id="sf-dorm-f" style="display:'+dormDisplay+'"><label>Recontato em</label><input type="date" id="sf-recontato" value="'+esc(dados.dataRecontato||'')+'"/></div>';
+  html+='<div class="sheet-field"><label>Observação</label><textarea id="sf-obs" rows="3">'+esc(dados.obs||'')+'</textarea></div>';
+  html+='<button class="btn primary full" onclick="salvarLead()" style="margin-top:4px">'+(isEdicao?'Salvar':'Adicionar lead')+'</button>';
+  if(isEdicao)html+='<button class="btn danger full" onclick="if(confirm(\'Excluir?\'))excluirLead()" style="margin-top:8px">Excluir</button>';
+  return html;
+}
+
+function sheetVerHTML(lead){
+  var dorm=lead.status_funil==='Dormindo';
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">';
+  html+='<div style="font-size:16px;font-weight:700;color:var(--text)">'+esc(lead.nome||'Lead')+'</div>';
+  html+='<button class="btn sm ghost" onclick="fecharSheetLead()">✕</button></div>';
+  if(dorm)html+='<div style="background:rgba(212,92,92,.08);border:1px solid rgba(212,92,92,.3);border-radius:6px;padding:10px;font-size:12px;color:var(--red);margin-bottom:12px">😴 Dormindo — recontato em '+(lead.dataRecontato||'?')+'</div>';
+  html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">';
+  FUNIL_ORDEM.filter(function(s){return s!=='Dormindo';}).forEach(function(s){
+    var ativo=lead.status_funil===s;
+    html+='<button class="btn sm '+(ativo?'on':'ghost')+'" onclick="moverFunil(\''+s+'\')">'+s+'</button>';
+  });
+  html+='<button class="btn sm ghost" onclick="moverFunil(\'Dormindo\')" style="'+(dorm?'color:var(--red)':'')+'">😴</button>';
+  html+='</div>';
+  html+='<div style="font-size:11px;color:var(--text3);margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap">';
+  if(lead.telefone)html+='<span>📞 '+esc(lead.telefone)+'</span>';
+  if(lead.segmento)html+='<span>🏷 '+esc(lead.segmento)+'</span>';
+  if(lead.endereco)html+='<span>📍 '+esc(lead.endereco)+'</span>';
+  html+='</div>';
+  if(lead.obs)html+='<div style="font-size:12px;color:var(--text2);background:var(--surface2);border-radius:6px;padding:10px;margin-bottom:16px">'+esc(lead.obs)+'</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:16px">';
+  html+='<button class="btn sm ghost" onclick="abrirSheetEditar()">✎ Editar</button>';
+  if(lead.status_funil==='Fechado')html+='<button class="btn sm on-green" onclick="abrirNoCliente()">▶ Autovision</button>';
+  html+='</div>';
+  html+='<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Interações</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:12px">';
+  html+='<input type="text" id="int-texto" placeholder="O que aconteceu? Proximo passo..." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-size:12px"/>';
+  html+='<button class="btn sm on" onclick="addInteracao()">+</button></div>';
+  html+='<div id="interacoes-lista"></div>';
+  return html;
+}
+
+function checkDuplicado(val){
+  if(val.length<3){document.getElementById('sf-dup').style.display='none';return;}
+  var norm=function(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'');};
+  var vn=norm(val);
+  var dup=leadsCache.find(function(l){return l.id!==leadSheetId&&norm(l.nome||'').indexOf(vn)>=0;});
+  document.getElementById('sf-dup').style.display=dup?'block':'none';
+}
+
+function salvarLead(){
+  var nome=document.getElementById('sf-nome').value.trim();
+  if(!nome){alert('Nome obrigatório');return;}
+  var recEl=document.getElementById('sf-recontato');
+  var dados={
+    nome:nome,
+    telefone:document.getElementById('sf-tel').value.trim(),
+    segmento:document.getElementById('sf-seg').value.trim(),
+    endereco:document.getElementById('sf-end').value.trim(),
+    status_funil:document.getElementById('sf-status').value,
+    dataRecontato:recEl?recEl.value:'',
+    obs:document.getElementById('sf-obs').value.trim(),
+    atualizadoEm:firebase.firestore.FieldValue.serverTimestamp(),
+    usuarioId:currentUserChama?currentUserChama.uid:''
+  };
+  if(leadSheetMode==='novo'){
+    dados.criadoEm=firebase.firestore.FieldValue.serverTimestamp();
+    fbDb.collection('leads').add(dados).then(fecharSheetLead).catch(function(e){alert('Erro: '+e.message);});
+  }else{
+    fbDb.collection('leads').doc(leadSheetId).update(dados).then(fecharSheetLead).catch(function(e){alert('Erro: '+e.message);});
+  }
+}
+
+function moverFunil(status){
+  if(!leadSheetId)return;
+  var d={status_funil:status,atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()};
+  if(status==='Dormindo'){
+    var dt=prompt('Data de recontato (AAAA-MM-DD):',new Date().toISOString().split('T')[0]);
+    if(dt)d.dataRecontato=dt;
+  }
+  fbDb.collection('leads').doc(leadSheetId).update(d).then(function(){
+    var l=leadsCache.find(function(x){return x.id===leadSheetId;});
+    if(l){Object.assign(l,d);document.getElementById('lead-sheet-content').innerHTML=sheetVerHTML(l);carregarInteracoes(leadSheetId);}
+  });
+}
+
+function abrirSheetEditar(){
+  leadSheetMode='editar';
+  var l=leadsCache.find(function(x){return x.id===leadSheetId;});
+  if(l)document.getElementById('lead-sheet-content').innerHTML=sheetFormHTML(l);
+}
+
+function excluirLead(){
+  fbDb.collection('leads').doc(leadSheetId).delete().then(fecharSheetLead);
+}
+
+function abrirNoCliente(){
+  var l=leadsCache.find(function(x){return x.id===leadSheetId;});
+  if(!l)return;
+  fecharSheetLead();
+  var c=clientes.find(function(x){return x.nome.toLowerCase()===l.nome.toLowerCase();});
+  if(c){abrirCliente(c.id);}
+  else{
+    var novo={id:'c'+Date.now(),nome:l.nome,segmento:l.segmento||'',endereco:l.endereco||'',telefone:l.telefone||'',lat:'',lng:'',obs:l.obs||'',projetos:[]};
+    clientes.push(novo);salvarEstado();abrirCliente(novo.id);
+  }
+}
+
+function carregarInteracoes(leadId){
+  fbDb.collection('leads').doc(leadId).collection('interacoes').orderBy('criadoEm','desc').limit(20).get().then(function(snap){
+    var el=document.getElementById('interacoes-lista');
+    if(!el)return;
+    if(snap.empty){el.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:10px">Nenhuma interação ainda</div>';return;}
+    el.innerHTML=snap.docs.map(function(d){
+      var dt=d.data().criadoEm?new Date(d.data().criadoEm.seconds*1000).toLocaleDateString('pt-BR'):'';
+      return '<div class="interacao-item"><div class="interacao-data">'+dt+' · '+(d.data().usuario||'')+'</div>'+esc(d.data().texto)+'</div>';
+    }).join('');
+  });
+}
+
+function addInteracao(){
+  var t=document.getElementById('int-texto');
+  if(!t||!t.value.trim()||!leadSheetId)return;
+  fbDb.collection('leads').doc(leadSheetId).collection('interacoes').add({
+    texto:t.value.trim(),
+    usuario:currentUserChama?(currentUserChama.displayName||currentUserChama.email):'',
+    criadoEm:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    t.value='';carregarInteracoes(leadSheetId);
+    fbDb.collection('leads').doc(leadSheetId).update({atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+  });
+}
 </script>
 </body>
 </html>
