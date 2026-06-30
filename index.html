@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AUTOVISION</title>
+<title>AUTOVISION - Agência Chama</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
 <style>
@@ -454,7 +454,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 /* ── ERR BANNER ─────────────────────────────────────────── */
 #err-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#3A0000;color:#FFAAAA;font-family:monospace;font-size:11px;padding:10px 12px;max-height:40vh;overflow-y:auto;border-bottom:2px solid var(--red);white-space:pre-wrap}
 
-
 /* ── V2: SCREENS ─────────────────────────────────────────── */
 .v-screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
 .v-screen.show{display:flex}
@@ -503,12 +502,8 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 /* ── ÁREA CUT LINE ──────────────────────────────────────── */
 .area-cut{background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--am);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px}
 .area-cut span{color:var(--text2)}
-</style>
-<!-- ═══ FIREBASE SDK ═══ -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<style>
+
+/* ── CHAMA CRM ─────────────────────────────────────────── */
 #v-login{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #v-login.show{display:flex}
 .login-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;}
@@ -523,6 +518,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 .login-divider{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
 .login-divider::before,.login-divider::after{content:"";flex:1;height:1px;background:var(--border);}
 .login-divider span{font-size:11px;color:var(--text3);}
+
 #v-leads{display:none;flex-direction:column;height:100%;}
 #v-leads.show{display:flex;}
 .leads-hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
@@ -542,6 +538,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 .funil-Proposta{background:rgba(212,168,67,.18);color:var(--am);}
 .funil-Fechado{background:rgba(61,184,122,.14);color:var(--green);}
 .funil-Dormindo{background:rgba(212,92,92,.12);color:var(--red);}
+
 .leads-fab{position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--am);border:none;color:#000;font-size:24px;cursor:pointer;z-index:100;box-shadow:0 4px 16px rgba(212,168,67,.3);}
 .lead-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;}
 .lead-sheet-overlay.show{display:block;}
@@ -552,7 +549,13 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 .sheet-field input,.sheet-field select,.sheet-field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:11px 12px;color:var(--text);font-size:13px;font-family:inherit;}
 .interacao-item{padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;}
 .interacao-data{font-size:10px;color:var(--text3);margin-bottom:3px;}
+
 </style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
 
@@ -567,7 +570,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
     <div class="login-divider"><span>ou</span></div>
     <div class="login-err" id="login-err"></div>
     <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"/></div>
-    <div class="login-field"><label>Senha</label><input type="password" id="login-senha" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" onkeydown="if(event.key==='Enter')loginEmail()"/></div>
+    <div class="login-field"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginEmail()"/></div>
     <button class="btn primary full" onclick="loginEmail()" style="margin-bottom:10px">Entrar</button>
     <button class="btn ghost full" onclick="toggleCadastro()" id="btn-cad-toggle">Criar conta</button>
     <div id="cad-sec" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
@@ -601,10 +604,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
 <div class="lead-sheet" id="lead-sheet" style="display:none"><div class="sheet-drag"></div><div id="lead-sheet-content"></div></div>
 
 
-<!-- ══════════════════════════════════════════════════════════
-     VIEW: CLIENTES
-══════════════════════════════════════════════════════════ -->
-<div id="v-clientes" class="v-screen show">
+<div id="v-clientes" class="v-screen">
   <div class="s-hdr">
     <div>
       <div class="logo">AUTOVISION</div>
@@ -628,9 +628,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     VIEW: PROJETOS
-══════════════════════════════════════════════════════════ -->
 <div id="v-projetos" class="v-screen">
   <div class="s-hdr">
     <button class="s-back" onclick="goView('clientes')">‹</button>
@@ -654,9 +651,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     VIEW: RECURSOS DA EMPRESA
-══════════════════════════════════════════════════════════ -->
 <div id="v-recursos" class="v-screen">
   <div class="s-hdr">
     <button class="s-back" onclick="goView('clientes')">‹</button>
@@ -674,12 +668,8 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     VIEW: WIZARD
-══════════════════════════════════════════════════════════ -->
 <div id="v-wizard" class="v-screen">
 
-<!-- HEADER WIZARD -->
 <div id="hdr">
   <div>
     <div class="logo">AUTOVISION</div>
@@ -693,12 +683,10 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- PROGRESS -->
 <div id="progress-wrap">
   <div id="progress-steps"></div>
 </div>
 
-<!-- ① CAMPANHA -->
 <div id="p-campanha" class="panel show">
   <div class="scroll-content">
     <div class="field-group">
@@ -730,7 +718,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ② ÁREA -->
 <div id="p-bairros" class="panel">
   <div class="toolbar">
     <input id="bairro-input" placeholder="Bairro" style="flex:1;min-width:80px;font-size:13px;height:36px;min-height:36px"/>
@@ -768,7 +755,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ③ CIRCUITO -->
 <div id="p-circ" class="panel">
   <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 10px;flex-shrink:0;max-height:80px;overflow-y:auto">
     <div style="font-size:9px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Circuitos salvos</div>
@@ -792,7 +778,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ④ CRIATIVO -->
 <div id="p-criativo" class="panel">
   <div class="toolbar" style="flex-wrap:wrap;gap:6px;padding:8px 10px">
     <input id="criativo-nome-inp" placeholder="Nome do criativo" style="flex:2;min-width:120px;font-size:14px;height:40px;min-height:40px"/>
@@ -812,7 +797,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ⑤ CRONOGRAMA -->
 <div id="p-crono" class="panel">
   <div class="scroll-content">
     <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:20px;display:none" id="crono-empty">Selecione dias no Projeto para criar veiculações</div>
@@ -824,7 +808,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- ⑥ PACOTES -->
 <div id="p-pacotes" class="panel">
   <div class="scroll-content">
     <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Monte as 3 opções. O cliente escolhe uma.</div>
@@ -842,7 +825,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
       <textarea id="pr-pgto-txt" rows="2" style="display:none;margin-top:8px;font-size:13px" placeholder="Descreva..."></textarea>
     </div>
 
-    <!-- PROPOSTAS DO PROJETO -->
     <div class="card" style="margin-top:4px">
       <div class="card-title">Propostas geradas</div>
       <div id="propostas-lista"></div>
@@ -855,7 +837,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- SIDE MENU -->
 <div id="menu-overlay" onclick="fecharMenu()"></div>
 <div id="side-menu">
   <div class="menu-title">Navegação</div>
@@ -866,10 +847,7 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   <div class="menu-item danger" onclick="resetTotal();fecharMenu()" style="color:#774444"><span class="menu-icon">🗑</span><span class="menu-label">Reset total</span></div>
 </div>
 
-</div><!-- /v-wizard -->
-
-<!-- MODAIS COMPARTILHADOS -->
-<div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)fecharModal()">
+</div><div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)fecharModal()">
   <div class="modal">
     <div class="modal-title" id="modal-title">—</div>
     <div id="modal-body"></div>
@@ -877,7 +855,6 @@ textarea{min-height:80px;resize:none;line-height:1.5;overflow:hidden}
   </div>
 </div>
 
-<!-- PROPOSTA MODAL (sheet) -->
 <div id="prop-modal-overlay" class="modal-overlay hidden">
   <div class="modal" style="max-height:92vh">
     <div class="modal-title" id="prop-modal-id">—</div>
@@ -908,6 +885,7 @@ window.onerror=function(msg,src,line,col){
   return false;
 };
 </script>
+
 <script>
 // ════ CONSTANTES ════
 var SPD=10;
@@ -3159,22 +3137,26 @@ function importarProjeto(event){
   };
   reader.readAsText(file);
 }
-
-// ════ INIT ════
-window.addEventListener('load',function(){
-  restaurarEstado();
-  goView('clientes');
-  setInterval(salvarEstado,8000);
-});
-
 </script>
+
 <script>
 // ═══ CHAMA CRM — Firebase ═══
-var firebaseConfig={apiKey:"AIzaSyBAQLHno3VZ-QPlqLf08gRfpLKK38HfXvs",authDomain:"chama-crm.firebaseapp.com",projectId:"chama-crm",storageBucket:"chama-crm.firebasestorage.app",messagingSenderId:"694781641361",appId:"1:694781641361:web:ec5249e8a4c99d95abb530"};
+var firebaseConfig = {
+  apiKey: "AIzaSyBAQ0Mho3VZ-QPjqLE08qRIpLKK38HlXvs",
+  authDomain: "chama-crm.firebaseapp.com",
+  projectId: "chama-crm",
+  storageBucket: "chama-crm.firebasestorage.app",
+  messagingSenderId: "694781641361",
+  appId: "1:694781641361:web:ec5249e8a4c99d95abb530",
+  measurementId: "G-NSMXY9EN6J"
+};
+
+// Inicializa o Firebase
 firebase.initializeApp(firebaseConfig);
-var fbAuth=firebase.auth();
-var fbDb=firebase.firestore();
-var currentUserChama=null,leadsUnsubscribe=null,leadsCache=[],leadsTabAtual='funil',leadSheetMode=null,leadSheetId=null;
+var fbAuth = firebase.auth();
+var fbDb = firebase.firestore();
+
+var currentUserChama=null, leadsUnsubscribe=null, leadsCache=[], leadsTabAtual='funil', leadSheetMode=null, leadSheetId=null;
 var FUNIL_ORDEM=['Identificado','Contato','Relacionamento','Apresentação','Proposta','Fechado','Dormindo'];
 
 fbAuth.onAuthStateChanged(function(user){
